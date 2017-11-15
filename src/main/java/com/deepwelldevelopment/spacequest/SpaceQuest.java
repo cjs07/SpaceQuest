@@ -2,15 +2,16 @@ package com.deepwelldevelopment.spacequest;
 
 import org.lwjgl.BufferUtils;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -18,7 +19,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SpaceQuest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (!glfwInit()) {
             System.err.println("Failed to initialize GLFW");
         }
@@ -29,7 +30,7 @@ public class SpaceQuest {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        long window = glfwCreateWindow(1024, 768, "Space Quest", NULL, NULL);
+        long window = glfwCreateWindow(700, 700, "Space Quest", NULL, NULL);
         if (window == NULL) {
             System.err.println("Failed to open Window. Is OpenGL 3.3 supported on your system?");
             return;
@@ -46,11 +47,27 @@ public class SpaceQuest {
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
-        FloatBuffer fb = BufferUtils.createFloatBuffer(3 * 3);
-        fb.put(-1.0f).put(-1.0f).put(0.0f);
-        fb.put(1.0f).put(-1.0f).put(0.0f);
-        fb.put(0.0f).put(1.0f).put(0.0f);
+        int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
+        int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
+        int program = createShaderProgram(vShader, fShader);
+
+        FloatBuffer fb = BufferUtils.createFloatBuffer((6 *(2 * (3 * 3))));
+        fb.put(-0.5f).put(-0.5f).put(0.0f);
+        fb.put(0.5f).put(-0.5f).put(0.0f);
+        fb.put(0.5f).put(0.5f).put(0.0f);
+        fb.put(0.5f).put(0.5f).put(0.0f);
+        fb.put(-0.5f).put(0.5f).put(0.0f);
+        fb.put(-0.5f).put(-0.5f).put(0.0f);
+
+        fb.put(-0.5f).put(-0.5f).put(0.5f);
+        fb.put(0.5f).put(-0.5f).put(0.5f);
+        fb.put(0.5f).put(0.5f).put(0.5f);
+        fb.put(0.5f).put(0.5f).put(0.5f);
+        fb.put(-0.5f).put(0.5f).put(0.5f);
+        fb.put(-0.5f).put(-0.5f).put(0.5f);
         fb.flip();
+
+
 
         int vertexBuffer = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -59,10 +76,12 @@ public class SpaceQuest {
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            glUseProgram(program);
+
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDrawArrays(GL_TRIANGLES, 0, 12);
             glDisableVertexAttribArray(0);
 
             glfwSwapBuffers(window);
