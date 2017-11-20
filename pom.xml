@@ -311,6 +311,11 @@
             <artifactId>steamworks4j</artifactId>
             <version>${steamworks4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.hackoeur</groupId>
+            <artifactId>jglm</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <profiles>
