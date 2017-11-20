@@ -1,6 +1,5 @@
 package com.deepwelldevelopment.spacequest;
 
-import com.deepwelldevelopment.spacequest.Block.EnumBlockSide;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -142,18 +141,7 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        Block[][] blocks = new Block[500][100];
-        for (int x = 0; x < blocks.length; x++) {
-            for (int y = 0; y < blocks[0].length; y++) {
-                blocks[x][y] = new Block(x, y, 0);
-                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.BOTTOM.ordinal());
-                blocks[x][y].setSidedtexture("texture.png", EnumBlockSide.TOP.ordinal());
-                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.FRONT.ordinal());
-                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.BACK.ordinal());
-                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.LEFT.ordinal());
-                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.RIGHT.ordinal());
-            }
-        }
+        Chunk chunk = new Chunk();
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -165,22 +153,14 @@ public class SpaceQuest {
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
-            for (Block[] blocks1 : blocks) {
-                for (Block b : blocks1) {
-                    b.draw();
-                }
-            }
+            chunk.render();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
             updateControls(dt);
         }
-        for (Block[] blocks1 : blocks) {
-            for (Block b : blocks1) {
-                b.cleanup();
-            }
-        }
+        chunk.cleanup();
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
         glfwTerminate();
