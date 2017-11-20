@@ -2,14 +2,20 @@ package com.deepwelldevelopment.spacequest;
 
 import org.joml.*;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.*;
+import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
@@ -36,7 +42,29 @@ public class SpaceQuest {
 
     private WorldCamera cam = new WorldCamera();
 
+    GLFWKeyCallback keyCallback;
+    GLFWCursorPosCallback cpCallback;
+    GLFWMouseButtonCallback mbCallback;
+
     long lastTime;
+    long window;
+
+    Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    float horizontalAngle = 3.14f;
+    float verticalAngle = 0.0f;
+    float fov = 45.0f;
+    float speed = 3.0f;
+    float mouseSpeed = 0.005f;
+
+    int width = 1024;
+    int height = 768;
+
+    private boolean windowed = true;
+    private boolean[] keyDown = new boolean[GLFW.GLFW_KEY_LAST];
+    private boolean leftMouseDown = false;
+    private boolean rightMouseDown = false;
+    private float mouseX = 0.0f;
+    private float mouseY = 0.0f;
 
     void run() throws IOException {
         if (!glfwInit()) {
@@ -49,11 +77,49 @@ public class SpaceQuest {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        long window = glfwCreateWindow(1024, 768, "Space Quest", NULL, NULL);
+        window = glfwCreateWindow(width, height, "Space Quest", NULL, NULL);
         if (window == NULL) {
             System.err.println("Failed to open Window. Is OpenGL 3.3 supported on your system?");
             return;
         }
+
+        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                if (key == GLFW_KEY_UNKNOWN)
+                    return;
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                    glfwSetWindowShouldClose(window, true);
+                }
+                if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                    keyDown[key] = true;
+                } else {
+                    keyDown[key] = false;
+                }
+            }
+        });
+//        glfwSetCursorPosCallback(window, cpCallback = new GLFWCursorPosCallback() {
+//            public void invoke(long window, double xpos, double ypos) {
+//                float normX = (float) ((xpos - width/2.0) / width * 2.0);
+//                float normY = (float) ((ypos - height/2.0) / height * 2.0);
+//                SpaceQuest.this.mouseX = Math.max(-width/2.0f, Math.min(width/2.0f, normX));
+//                SpaceQuest.this.mouseY = Math.max(-height/2.0f, Math.min(height/2.0f, normY));
+//            }
+//        });
+        glfwSetMouseButtonCallback(window, mbCallback = new GLFWMouseButtonCallback() {
+            public void invoke(long window, int button, int action, int mods) {
+                if (button == GLFW_MOUSE_BUTTON_LEFT) {
+                    if (action == GLFW_PRESS)
+                        leftMouseDown = true;
+                    else if (action == GLFW_RELEASE)
+                        leftMouseDown = false;
+                } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+                    if (action == GLFW_PRESS)
+                        rightMouseDown = true;
+                    else if (action == GLFW_RELEASE)
+                        rightMouseDown = false;
+                }
+            }
+        });
 
         glfwMakeContextCurrent(window);
         glfwShowWindow(window);
@@ -65,6 +131,7 @@ public class SpaceQuest {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
+        glEnable(GL_CULL_FACE);
 
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
@@ -191,17 +258,9 @@ public class SpaceQuest {
         glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
 
         while (!glfwWindowShouldClose(window)) {
-//            long thisTime = System.nanoTime();
-//            float dt = (thisTime - lastTime) / 1E9f;
-//            lastTime = thisTime;
-//            cam.update(dt);
-////            cam.angularAcc.set(0.5f, 0.0f, 0.0f);
-//
-//            projMatrix = new Matrix4f().perspective((float) Math.toRadians(45.0f), 4.0f / 3.0f, 0.1f, 100f);
-//            viewMatrix = new Matrix4f().set(cam.rotation).lookAt(4, 3, -3, 0, 0, 0, 0, 1, 0);
-//            modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-//            mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
-//            frustumIntersection.set(mvp);
+            long thisTime = System.nanoTime();
+            float dt = (thisTime - lastTime) / 1E9f;
+            lastTime = thisTime;
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -226,6 +285,8 @@ public class SpaceQuest {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            updateControls(dt);
         }
         glDeleteBuffers(vertexBuffer);
         glDeleteBuffers(uvBuffer);
@@ -233,6 +294,60 @@ public class SpaceQuest {
         glDeleteProgram(program);
         glDeleteTextures(tex);
         glfwTerminate();
+    }
+
+    void updateControls(float deltaTime) {
+        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
+        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
+        glfwGetCursorPos(window, xBuf, yBuf);
+        mouseX = (float) xBuf.get(0);
+        mouseY = (float) yBuf.get(0);
+//        glfwSetCursorPos(window, width/2, height/2);
+        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
+        verticalAngle += mouseSpeed * deltaTime * (height/2 - mouseY);
+
+        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
+        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(horizontalAngle - PI/2.0f));
+        Vector3f up = new Vector3f(right).cross(direction);
+
+        if (keyDown[GLFW_KEY_W]){
+            position = add(position, direction.mul(deltaTime * speed));
+        }
+        if (keyDown[GLFW_KEY_S]){
+            position = subtract(position, direction.mul(deltaTime * speed));
+        }
+        if (keyDown[GLFW_KEY_D]){
+            position = add(position, right.mul(deltaTime * speed));
+        }
+        if (keyDown[GLFW_KEY_A]){
+            position = subtract(position, right.mul(deltaTime * speed));
+        }
+
+        projMatrix = new Matrix4f().perspective((float) Math.toRadians(fov), 4.0f / 3.0f, 0.1f, 100f);
+        viewMatrix = new Matrix4f().lookAt(position, add(position, direction), up);
+        modelMatrix = new Matrix4f().set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+        mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
+        frustumIntersection.set(mvp);
+    }
+
+    Vector3f add(Vector3f vec1, Vector3f vec2) {
+        float x1 = vec1.x();
+        float y1 = vec1.y();
+        float z1 = vec1.z();
+        float x2 = vec2.x();
+        float y2 = vec2.y();
+        float z2 = vec2.z();
+        return new Vector3f(x1 + x2, y1 + y2, z1 + z2);
+    }
+
+    Vector3f subtract(Vector3f vec1, Vector3f vec2) {
+        float x1 = vec1.x();
+        float y1 = vec1.y();
+        float z1 = vec1.z();
+        float x2 = vec2.x();
+        float y2 = vec2.y();
+        float z2 = vec2.z();
+        return new Vector3f(x1 - x2, y1 - y2, z1 - z2);
     }
 
     public static void main(String[] args) throws IOException {
