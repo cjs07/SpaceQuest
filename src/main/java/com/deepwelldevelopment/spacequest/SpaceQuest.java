@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.Block.EnumBlockSide;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -9,22 +10,16 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
 import java.lang.Math;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.*;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SpaceQuest {
@@ -54,7 +49,7 @@ public class SpaceQuest {
     float verticalAngle = 0.0f;
     float fov = 45.0f;
     float speed = 3.0f;
-    float mouseSpeed = 0.005f;
+    float mouseSpeed = 0.5f;
 
     int width = 1024;
     int height = 768;
@@ -131,7 +126,7 @@ public class SpaceQuest {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_CULL_FACE);
 
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
@@ -140,7 +135,6 @@ public class SpaceQuest {
         int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
         int program = createShaderProgram(vShader, fShader);
 
-
         int matrixID = glGetUniformLocation(program, "MVP");
 
         projMatrix.perspective((float) Math.toRadians(45.0f), 4.0f / 3.0f, 0.1f, 100f);
@@ -148,114 +142,18 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        //create a texture
-        int tex = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ByteBuffer imageBuffer;
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-        ByteBuffer image;
-        imageBuffer = ioResourceToByteBuffer("texture.png", 16 * 16);
-        if (!stbi_info_from_memory(imageBuffer, w, h, comp)) {
-            throw new IOException("Failed to bind texture " + stbi_failure_reason());
+        Block[][] blocks = new Block[500][100];
+        for (int x = 0; x < blocks.length; x++) {
+            for (int y = 0; y < blocks[0].length; y++) {
+                blocks[x][y] = new Block(x, y, 0);
+                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.BOTTOM.ordinal());
+                blocks[x][y].setSidedtexture("texture.png", EnumBlockSide.TOP.ordinal());
+                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.FRONT.ordinal());
+                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.BACK.ordinal());
+                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.LEFT.ordinal());
+                blocks[x][y].setSidedtexture("texture2.png", EnumBlockSide.RIGHT.ordinal());
+            }
         }
-        image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
-        if (image == null) {
-            throw new IOException("Failed to read image" + stbi_failure_reason());
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w.get(0), h.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        stbi_image_free(image);
-
-        int textureID = glGetUniformLocation(program, "textureSampler");
-
-        FloatBuffer fb = BufferUtils.createFloatBuffer((6 *(2 * (3 * 3))));
-        fb.put(-1.0f).put(-1.0f).put(-1.0f); // triangle 1 : begin
-        fb.put(-1.0f).put(-1.0f).put( 1.0f);
-        fb.put(-1.0f).put( 1.0f).put( 1.0f); // triangle 1 : end
-        fb.put(1.0f).put( 1.0f).put(-1.0f); // triangle 2 : begin
-        fb.put(-1.0f).put(-1.0f).put(-1.0f);
-        fb.put(-1.0f).put( 1.0f).put(-1.0f); // triangle 2 : end
-        fb.put(1.0f).put(-1.0f).put( 1.0f);
-        fb.put(-1.0f).put(-1.0f).put(-1.0f);
-        fb.put(1.0f).put(-1.0f).put(-1.0f);
-        fb.put(1.0f).put( 1.0f).put(-1.0f);
-        fb.put(1.0f).put(-1.0f).put(-1.0f);
-        fb.put(-1.0f).put(-1.0f).put(-1.0f);
-        fb.put(-1.0f).put(-1.0f).put(-1.0f);
-        fb.put(-1.0f).put( 1.0f).put( 1.0f);
-        fb.put(-1.0f).put( 1.0f).put(-1.0f);
-        fb.put(1.0f).put(-1.0f).put( 1.0f);
-        fb.put(-1.0f).put(-1.0f).put( 1.0f);
-        fb.put(-1.0f).put(-1.0f).put(-1.0f);
-        fb.put(-1.0f).put( 1.0f).put( 1.0f);
-        fb.put(-1.0f).put(-1.0f).put( 1.0f);
-        fb.put(1.0f).put(-1.0f).put( 1.0f);
-        fb.put(1.0f).put( 1.0f).put( 1.0f);
-        fb.put(1.0f).put(-1.0f).put(-1.0f);
-        fb.put(1.0f).put( 1.0f).put(-1.0f);
-        fb.put(1.0f).put(-1.0f).put(-1.0f);
-        fb.put(1.0f).put( 1.0f).put( 1.0f);
-        fb.put(1.0f).put(-1.0f).put( 1.0f);
-        fb.put(1.0f).put( 1.0f).put( 1.0f);
-        fb.put(1.0f).put( 1.0f).put(-1.0f);
-        fb.put(-1.0f).put( 1.0f).put(-1.0f);
-        fb.put(1.0f).put( 1.0f).put( 1.0f);
-        fb.put(-1.0f).put( 1.0f).put(-1.0f);
-        fb.put(-1.0f).put( 1.0f).put( 1.0f);
-        fb.put(1.0f).put( 1.0f).put( 1.0f);
-        fb.put(-1.0f).put( 1.0f).put( 1.0f);
-        fb.put(1.0f).put(-1.0f).put( 1.0f);
-        fb.flip();
-
-        float[] uv = {
-                0.000059f, 0.000004f,
-                0.000103f, 0.336048f,
-                0.335973f, 0.335903f,
-                1.000023f, 0.000013f,
-                0.667979f, 0.335851f,
-                0.999958f, 0.336064f,
-                0.667979f, 0.335851f,
-                0.336024f, 0.671877f,
-                0.667969f, 0.671889f,
-                1.000023f, 0.000013f,
-                0.668104f, 0.000013f,
-                0.667979f, 0.335851f,
-                0.000059f, 0.000004f,
-                0.335973f, 0.335903f,
-                0.336098f, 0.000071f,
-                0.667979f, 0.335851f,
-                0.335973f, 0.335903f,
-                0.336024f, 0.671877f,
-                1.000004f, 0.671847f,
-                0.999958f, 0.336064f,
-                0.667979f, 0.335851f,
-                0.668104f, 0.000013f,
-                0.335973f, 0.335903f,
-                0.667979f, 0.335851f,
-                0.335973f, 0.335903f,
-                0.668104f, 0.000013f,
-                0.336098f, 0.000071f,
-                0.000103f, 0.336048f,
-                0.000004f, 0.671870f,
-                0.336024f, 0.671877f,
-                0.000103f, 0.336048f,
-                0.336024f, 0.671877f,
-                0.335973f, 0.335903f,
-                0.667969f, 0.671889f,
-                1.000004f, 0.671847f,
-                0.667979f, 0.335851f
-        };
-
-        int vertexBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-
-        int uvBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-        glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -267,44 +165,52 @@ public class SpaceQuest {
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, tex);
-            glUniform1i(textureID, 0);
-
-            glEnableVertexAttribArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-            glEnableVertexAttribArray(1);
-            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-
-            glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-            glDisableVertexAttribArray(0);
-            glDisableVertexAttribArray(1);
+            for (Block[] blocks1 : blocks) {
+                for (Block b : blocks1) {
+                    b.draw();
+                }
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
             updateControls(dt);
         }
-        glDeleteBuffers(vertexBuffer);
-        glDeleteBuffers(uvBuffer);
+        for (Block[] blocks1 : blocks) {
+            for (Block b : blocks1) {
+                b.cleanup();
+            }
+        }
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
-        glDeleteTextures(tex);
         glfwTerminate();
     }
 
     void updateControls(float deltaTime) {
-        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
-        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
-        glfwGetCursorPos(window, xBuf, yBuf);
-        mouseX = (float) xBuf.get(0);
-        mouseY = (float) yBuf.get(0);
+//        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
+//        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
+//        glfwGetCursorPos(window, xBuf, yBuf);
+//        mouseX = (float) xBuf.get(0);
+//        mouseY = (float) yBuf.get(0);
 //        glfwSetCursorPos(window, width/2, height/2);
-        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
-        verticalAngle += mouseSpeed * deltaTime * (height/2 - mouseY);
+//        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
+//        verticalAngle += mouseSpeed * deltaTime * (height/2 - mouseY);
+
+        if (keyDown[GLFW_KEY_Q]){
+            horizontalAngle += mouseSpeed * deltaTime;
+        }
+
+        if (keyDown[GLFW_KEY_E]){
+            horizontalAngle -= mouseSpeed * deltaTime;
+        }
+
+        if (keyDown[GLFW_KEY_R]){
+            verticalAngle += mouseSpeed * deltaTime;
+        }
+
+        if (keyDown[GLFW_KEY_F]){
+            verticalAngle -= mouseSpeed * deltaTime;
+        }
 
         Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
         Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(horizontalAngle - PI/2.0f));
