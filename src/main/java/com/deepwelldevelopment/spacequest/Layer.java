@@ -17,7 +17,7 @@ public class Layer {
         for (int x = 0; x < blocks.length; x++) {
             for (int z = 0; z < blocks[0].length; z++) {
 
-                blocks[x][z] = new Block(x, y, z);
+                blocks[x][z] = new Block(chunk.x*16 + x, y, chunk.z * 16 + z);
                 blocks[x][z].setSidedTexture("texture2.png", EnumBlockSide.BOTTOM.ordinal());
                 blocks[x][z].setSidedTexture("texture.png", EnumBlockSide.TOP.ordinal());
                 blocks[x][z].setSidedTexture("texture2.png", EnumBlockSide.FRONT.ordinal());
@@ -45,10 +45,10 @@ public class Layer {
                         b.setToDraw(false, EnumBlockSide.RIGHT.ordinal());
                     }
                     if (z > 0 && blocks[x][z - 1] != null) {
-                        b.setToDraw(false, EnumBlockSide.FRONT.ordinal());
+                        b.setToDraw(false, EnumBlockSide.BACK.ordinal());
                     }
                     if (z < blocks[0].length-1 && blocks[x][z + 1] != null) {
-                        b.setToDraw(false, EnumBlockSide.BACK.ordinal());
+                        b.setToDraw(false, EnumBlockSide.FRONT.ordinal());
                     }
 
                     //out of layer edge checks

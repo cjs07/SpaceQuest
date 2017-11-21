@@ -2,9 +2,15 @@ package com.deepwelldevelopment.spacequest;
 
 public class Chunk {
 
+    int x;
+    int z;
+
     Layer[] layers;
 
-    public Chunk() {
+    public Chunk(int x, int z) {
+        this.x = x;
+        this.z = z;
+
         layers = new Layer[16];
         for (int i = 0; i < layers.length; i++) {
             layers[i] = new Layer(this,16, i);

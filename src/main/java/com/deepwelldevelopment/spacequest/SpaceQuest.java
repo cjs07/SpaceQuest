@@ -141,7 +141,12 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        Chunk chunk = new Chunk();
+        Chunk[][] chunks = new Chunk[3][3];
+        for (int x = 0; x < chunks.length; x++) {
+            for (int z = 0; z < chunks[0].length; z++) {
+                chunks[x][z] = new Chunk(x * 16, z* 16);
+            }
+        }
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -153,14 +158,22 @@ public class SpaceQuest {
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
-            chunk.render();
+            for (Chunk[] chunks1 : chunks) {
+                for (Chunk chunk : chunks1) {
+                    chunk.render();
+                }
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
             updateControls(dt);
         }
-        chunk.cleanup();
+        for (Chunk[] chunks1 : chunks) {
+            for (Chunk chunk : chunks1) {
+                chunk.cleanup();
+            }
+        }
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
         glfwTerminate();
