@@ -141,39 +141,27 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        Chunk[][] chunks = new Chunk[3][3];
-        for (int x = 0; x < chunks.length; x++) {
-            for (int z = 0; z < chunks[0].length; z++) {
-                chunks[x][z] = new Chunk(x * 16, z* 16);
-            }
-        }
+        World world = new World();
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
+//            System.out.println(dt);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
-            for (Chunk[] chunks1 : chunks) {
-                for (Chunk chunk : chunks1) {
-                    chunk.render();
-                }
-            }
+            world.render();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
             updateControls(dt);
         }
-        for (Chunk[] chunks1 : chunks) {
-            for (Chunk chunk : chunks1) {
-                chunk.cleanup();
-            }
-        }
+        world.cleanup();
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
         glfwTerminate();
@@ -251,6 +239,32 @@ public class SpaceQuest {
 
     public static void main(String[] args) throws IOException {
         new SpaceQuest().run();
+//        spiralTest();
+    }
+
+    public static void spiralTest() {
+        spiral(5);
+    }
+
+    public static void spiral(int s) {
+        int xpos = 1;
+        int ypos = 1;
+        int n = 1;
+        int iterations = (2 * s);
+        double inc = PI/ 2;
+        int count = 0;
+        for (int i = 1; i < iterations; i++) {
+            int xoff = (int) (round(cos(i*inc)));
+            int yoff = (int) (round(sin(i*inc)));
+            for (int j = 0; j < 2 * n; j ++) {
+                xpos += xoff;
+                ypos -= yoff;
+                System.out.println(count + ": " + xpos + ", " + ypos);
+                count++;
+            }
+            n = (int) ceil((i*inc)/ (2*PI));
+            System.out.println(ceil((i*inc)/(2*PI)) + "\n");
+        }
     }
 
     private static class WorldCamera {
