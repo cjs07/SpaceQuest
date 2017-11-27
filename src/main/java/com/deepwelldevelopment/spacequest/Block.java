@@ -4,24 +4,21 @@ package com.deepwelldevelopment.spacequest;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.ioResourceToByteBuffer;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.loadTexture;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.stb.STBImage.*;
 
 /***
  * Represents a block object in the world. Each block is self contained, and self-rendering.
  */
-public class Block {
+public class Block implements ICrossThreadObject {
 
     enum EnumBlockSide {
         BOTTOM(0),
@@ -43,6 +40,7 @@ public class Block {
     private int z;
 
     private boolean individualTextures;
+    private boolean initialized = false;
 
     private FloatBuffer[] vertices = new FloatBuffer[6];
     private FloatBuffer allVertices;
@@ -121,12 +119,8 @@ public class Block {
         vertices[5].put(x + 1).put(y + 1).put(z);
         vertices[5].put(x + 1).put(y).put(z);
 
-        for (int i = 0; i < vertices.length; i++) {
-            vertices[i].flip();
-
-            vertexBuffers[i] = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
-            glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+        for (FloatBuffer vertice : vertices) {
+            vertice.flip();
         }
 
         allVertices = BufferUtils.createFloatBuffer(6 * (2 * (3 * 3))); //each vertex has three points, each triangle has three vertices, each face has two triangle, and each block has 5 faces
@@ -135,10 +129,6 @@ public class Block {
             allVertices.put(fb);
         }
         allVertices.flip();
-
-        allVertexBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
 
         uv = BufferUtils.createFloatBuffer(6 * (2 * (3 * 2)));
         uv.put(0.0f).put(0.0f);
@@ -179,6 +169,16 @@ public class Block {
         uv.put(0.0f).put(0.0f);
         uv.flip();
 
+        for (int i = 0; i < vertices.length; i++) {
+            vertexBuffers[i] = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
+            glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+        }
+
+        allVertexBuffer = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
+
         uvBuffer = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
         glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
@@ -191,6 +191,47 @@ public class Block {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        initialized = true;
+
+//        if (Thread.currentThread().getName().equals("renderThread")) {
+//            init();
+//        } else {
+//            ThreadManager.INSTANCE.openRequest(new CrossThreadRequest(ThreadManager.GENERATION_THREAD, ThreadManager.RENDER_THREAD, CrossThreadRequest.BLOCK_INIT_REQUEST, this));
+//            initialized = false;
+//        }
+    }
+
+    @Override
+    public void completeRequest() {
+        if (!initialized) {
+            init();
+        }
+    }
+
+    public void init() {
+        for (int i = 0; i < vertices.length; i++) {
+            vertexBuffers[i] = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
+            glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+        }
+
+        allVertexBuffer = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
+
+        uvBuffer = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+        glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
+
+        try {
+            int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
+            int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
+            int program = createShaderProgram(vShader, fShader);
+            textureID = glGetUniformLocation(program, "textureSampler");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        initialized = true;
     }
 
     public void setSidedTexture(String texture, int side) {
@@ -206,33 +247,13 @@ public class Block {
         this.toDraw[side] = toDraw;
     }
 
-    int loadTexture(String loc) throws IOException {
-        int tex = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ByteBuffer imageBuffer;
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-        ByteBuffer image;
-        imageBuffer = ioResourceToByteBuffer(loc, 16 * 16);
-        if (!stbi_info_from_memory(imageBuffer, w, h, comp)) {
-            throw new IOException("Failed to bind texture " + stbi_failure_reason());
-        }
-        image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
-        if (image == null) {
-            throw new IOException("Failed to read image" + stbi_failure_reason());
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w.get(0), h.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        stbi_image_free(image);
-        return tex;
-    }
-
     /**
      * Draws this block. Each block is responsible for drawing itself.
      */
     public void draw() {
+        if (!initialized) {
+            return;
+        }
         if (individualTextures) {
             for (EnumBlockSide side : EnumBlockSide.values()) {
                 if (toDraw[side.ordinal()]) {

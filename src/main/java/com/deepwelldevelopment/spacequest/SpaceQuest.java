@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.Block.EnumBlockSide;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -10,9 +11,10 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.FloatBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.*;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
@@ -60,7 +62,12 @@ public class SpaceQuest {
     private float mouseX = 0.0f;
     private float mouseY = 0.0f;
 
+    static Map<String, Integer> textureMap;
+
     void run() throws IOException {
+//        new ThreadManager(); //creates the thread manager instance
+        textureMap = new HashMap<>();
+
         if (!glfwInit()) {
             System.err.println("Failed to initialize GLFW");
         }
@@ -121,11 +128,17 @@ public class SpaceQuest {
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
         createCapabilities(); //DON'T EVER FORGET THIS CALL; FUCK YOU C++ FOR NOT NEEDING IT YOU CONFOUNDED ME FOR 20 MINUTES
+
+//        ThreadManager.INSTANCE.attachRenderThread(Thread.currentThread());
+
         glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 //        glEnable(GL_CULL_FACE);
+
+//        textureMap.put("texture.png", loadTexture("texture.png"));
+//        textureMap.put("texture2.png", loadTexture("texture2.png"));
 
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
@@ -141,9 +154,16 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        World world = new World();
+//        World world = new World();
+//        Random random = new Random();
+//        ArrayList<Block> blocks = new ArrayList<>();
+        Block block = createBlock(0, 0, 0);
 
         while (!glfwWindowShouldClose(window)) {
+            //handle cross-thread requests
+//            ThreadManager.INSTANCE.getRequestsForThread(ThreadManager.RENDER_THREAD).forEach(CrossThreadRequest::complete);
+//            System.out.println("Render thread completed cross threading");
+
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
@@ -154,17 +174,48 @@ public class SpaceQuest {
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
-            world.render();
+            block.draw();
+//            world.render();
+//            for (Block b : blocks) {
+//                if (b != null) {
+//                    b.draw();
+//                }
+//            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
             updateControls(dt);
+//            blocks.add(createBlock(random.nextInt(16), random.nextInt(16), random.nextInt(16)));
+//            blockCount++;
+//            System.out.println(blockCount);
+//            try {
+//                Thread.sleep(5000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
-        world.cleanup();
+        block.cleanup();
+//        world.cleanup();
+//        for (Block b : blocks) {
+//            b.cleanup();
+//        }
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
         glfwTerminate();
+    }
+
+    int blockCount = 0;
+
+    Block createBlock(int x, int y, int z) {
+        Block block = new Block(x, y, z);
+        block.setSidedTexture("texture2.png", EnumBlockSide.BOTTOM.ordinal());
+        block.setSidedTexture("texture.png", EnumBlockSide.TOP.ordinal());
+        block.setSidedTexture("texture2.png", EnumBlockSide.FRONT.ordinal());
+        block.setSidedTexture("texture2.png", EnumBlockSide.BACK.ordinal());
+        block.setSidedTexture("texture2.png", EnumBlockSide.LEFT.ordinal());
+        block.setSidedTexture("texture2.png", EnumBlockSide.RIGHT.ordinal());
+        return block;
     }
 
     void updateControls(float deltaTime) {
