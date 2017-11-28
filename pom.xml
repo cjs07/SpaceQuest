@@ -322,6 +322,12 @@
             <artifactId>flow-noise</artifactId>
             <version>1.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>8.1.0</version>
+        </dependency>
     </dependencies>
 
     <profiles>

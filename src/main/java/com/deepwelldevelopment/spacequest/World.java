@@ -2,33 +2,29 @@ package com.deepwelldevelopment.spacequest;
 
 public class World {
 
-    Chunk[][] chunks;
     Generator generator;
 
-    public World() {
-        chunks = new Chunk[3][3];
-        generator = new Generator(this);
+    ChunkProvider provider;
 
-        for (int x = 0; x < chunks.length; x++) {
-            for (int z = 0; z < chunks[0].length; z++) {
-                chunks[x][z] = generator.generateChunk(x, z);
-            }
-        }
+    public World() {
+        generator = new Generator(this);
+        Chunk origin = generator.generateChunk(0, 0);
+        provider = new ChunkProvider(this, generator, origin);
+    }
+
+    public ChunkProvider getChunkProvider() {
+        return provider;
     }
 
     public void render() {
-        for (Chunk[] chunks1 : chunks) {
-            for (Chunk chunk : chunks1) {
-                chunk.render();
-            }
+        for (Chunk c : provider.getLoadedChunks()) {
+            c.render();
         }
     }
 
     public void cleanup() {
-        for (Chunk[] chunks1 : chunks) {
-            for (Chunk chunk : chunks1) {
-                chunk.cleanup();
-            }
+        for (Chunk c : provider.getLoadedChunks()) {
+            c.cleanup();
         }
     }
 }
