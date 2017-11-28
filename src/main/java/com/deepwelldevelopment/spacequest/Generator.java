@@ -9,7 +9,7 @@ public class Generator {
     int noiseSeed;
     Perlin perlin;
 
-    double offsetIncrement = 0.005;
+    double offsetIncrement = 0.001;
 
     public Generator(World world) {
         this.world = world;

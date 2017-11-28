@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.FloatBuffer;
+import java.util.Random;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
@@ -34,14 +35,13 @@ public class SpaceQuest {
 
     private FrustumIntersection frustumIntersection = new FrustumIntersection();
 
-    private WorldCamera cam = new WorldCamera();
-
     GLFWKeyCallback keyCallback;
     GLFWCursorPosCallback cpCallback;
     GLFWMouseButtonCallback mbCallback;
 
     long lastTime;
     long window;
+    long lastChunkTime;
 
     Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
     float horizontalAngle = 3.14f;
@@ -137,11 +137,13 @@ public class SpaceQuest {
         int matrixID = glGetUniformLocation(program, "MVP");
 
         projMatrix.perspective((float) Math.toRadians(45.0f), 4.0f / 3.0f, 0.1f, 100f);
-        viewMatrix.lookAt(4, 3, -3, 0, 0, 0, 0, 1, 0);
+        viewMatrix.lookAt(0, 32, 0, 0, 0, 0, 0, 1, 0);
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
         World world = new World();
+        lastChunkTime = System.nanoTime();
+        Random random = new Random();
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -160,6 +162,11 @@ public class SpaceQuest {
             glfwPollEvents();
 
             updateControls(dt);
+
+            if ((thisTime - lastChunkTime) / 1E9F > 5) {
+                world.getChunkProvider().generateChunk(random.nextInt(16) - 8, random.nextInt(16) - 8);
+                lastChunkTime = System.nanoTime();
+            }
         }
         world.cleanup();
         glDeleteVertexArrays(vao);
@@ -264,43 +271,6 @@ public class SpaceQuest {
             }
             n = (int) ceil((i*inc)/ (2*PI));
             System.out.println(ceil((i*inc)/(2*PI)) + "\n");
-        }
-    }
-
-    private static class WorldCamera {
-        public Vector3f linearAcc = new Vector3f();
-        public Vector3f linearVel = new Vector3f();
-        public float linearDamping = 0.08f;
-
-        /** ALWAYS rotation about the local XYZ axes of the camera! */
-        public Vector3f angularAcc = new Vector3f();
-        public Vector3f angularVel = new Vector3f();
-        public float angularDamping = 0.5f;
-
-        public Vector3d position = new Vector3d(4, 3, -3);
-        public Quaternionf rotation = new Quaternionf();
-
-        public WorldCamera update(float dt) {
-            // update linear velocity based on linear acceleration
-            linearVel.fma(dt, linearAcc);
-            // update angular velocity based on angular acceleration
-            angularVel.fma(dt, angularAcc);
-            // update the rotation based on the angular velocity
-            rotation.integrate(dt, angularVel.x, angularVel.y, angularVel.z);
-            angularVel.mul(1.0f - angularDamping * dt);
-            // update position based on linear velocity
-            position.fma(dt, linearVel);
-            linearVel.mul(1.0f - linearDamping * dt);
-            return this;
-        }
-        public Vector3f right(Vector3f dest) {
-            return rotation.positiveX(dest);
-        }
-        public Vector3f up(Vector3f dest) {
-            return rotation.positiveY(dest);
-        }
-        public Vector3f forward(Vector3f dest) {
-            return rotation.positiveZ(dest).negate();
         }
     }
 }
