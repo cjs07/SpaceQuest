@@ -11,7 +11,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class ShaderUtil {
@@ -113,5 +115,28 @@ public class ShaderUtil {
         glDeleteShader(vShader);
         glDeleteShader(fShader);
         return program;
+    }
+
+    public static int loadTexture(String loc) throws IOException {
+        int tex = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        ByteBuffer imageBuffer;
+        IntBuffer w = BufferUtils.createIntBuffer(1);
+        IntBuffer h = BufferUtils.createIntBuffer(1);
+        IntBuffer comp = BufferUtils.createIntBuffer(1);
+        ByteBuffer image;
+        imageBuffer = ioResourceToByteBuffer(loc, 16 * 16);
+        if (!stbi_info_from_memory(imageBuffer, w, h, comp)) {
+            throw new IOException("Failed to bind texture " + stbi_failure_reason());
+        }
+        image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
+        if (image == null) {
+            throw new IOException("Failed to read image" + stbi_failure_reason());
+        }
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w.get(0), h.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+        stbi_image_free(image);
+        return tex;
     }
 }

@@ -26,9 +26,9 @@ public class Generator {
         Chunk chunk = new Chunk(world, chunkX, chunkZ);
 
         for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
+            for (int z = 15; z >= 0; z--) {
                 double yPercent = perlin.getValue(xOff, 0, zOff);
-                zOff += offsetIncrement;
+                zOff -= offsetIncrement;
                 chunk.adjustHeight(yPercent, x, z);
             }
             xOff += offsetIncrement;

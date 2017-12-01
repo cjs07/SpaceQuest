@@ -43,6 +43,16 @@ public class Layer {
         return blocks[x][z];
     }
 
+    public void initBlocks() {
+        for (Block[] block : blocks) {
+            for (Block b : block) {
+                if (b != null) {
+                    b.init();
+                }
+            }
+        }
+    }
+
     public void render() {
         for (int x = 0; x < blocks.length; x++) {
             for (int z = 0; z < blocks[0].length; z++) {

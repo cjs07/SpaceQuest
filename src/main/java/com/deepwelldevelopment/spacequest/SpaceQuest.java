@@ -1,6 +1,8 @@
 package com.deepwelldevelopment.spacequest;
 
-import org.joml.*;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -8,12 +10,13 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
-import java.lang.Math;
 import java.nio.FloatBuffer;
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
+import static com.deepwelldevelopment.spacequest.util.ShaderUtil.loadTexture;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
@@ -23,6 +26,8 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SpaceQuest {
+
+    public static SpaceQuest INSTANCE;
 
     private Matrix4f projMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
@@ -43,7 +48,7 @@ public class SpaceQuest {
     long window;
     long lastChunkTime;
 
-    Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    Vector3f position = new Vector3f(0.0f, 32.0f, 0.0f);
     float horizontalAngle = 3.14f;
     float verticalAngle = 0.0f;
     float fov = 45.0f;
@@ -60,7 +65,12 @@ public class SpaceQuest {
     private float mouseX = 0.0f;
     private float mouseY = 0.0f;
 
+    Map<String, Integer> textureMap;
+
     void run() throws IOException {
+        INSTANCE = this;
+        new ThreadManager();
+        ThreadManager.INSTANCE.attatchRenderThread(Thread.currentThread());
         if (!glfwInit()) {
             System.err.println("Failed to initialize GLFW");
         }
@@ -141,15 +151,22 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
+        textureMap = new HashMap<>();
+        textureMap.put("texture.png", loadTexture("texture.png"));
+        textureMap.put("texture2.png", loadTexture("texture2.png"));
+
         World world = new World();
         lastChunkTime = System.nanoTime();
-        Random random = new Random();
 
         while (!glfwWindowShouldClose(window)) {
+            //handle cross-thread requests
+//            ThreadManager.INSTANCE.getRequestsForThread(ThreadManager.RENDER_THREAD).forEach(CrossThreadRequest::complete);
+//            System.out.println("Render thread completed cross threading");
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
-//            System.out.println(dt);
+            System.out.println(dt);
+            world.initBlocks();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -162,12 +179,9 @@ public class SpaceQuest {
             glfwPollEvents();
 
             updateControls(dt);
-
-            if ((thisTime - lastChunkTime) / 1E9F > 5) {
-                world.getChunkProvider().generateChunk(random.nextInt(16) - 8, random.nextInt(16) - 8);
-                lastChunkTime = System.nanoTime();
-            }
         }
+        ThreadManager.INSTANCE.setRunning(false);
+        ThreadManager.INSTANCE.finish();
         world.cleanup();
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
@@ -246,31 +260,5 @@ public class SpaceQuest {
 
     public static void main(String[] args) throws IOException {
         new SpaceQuest().run();
-//        spiralTest();
-    }
-
-    public static void spiralTest() {
-        spiral(5);
-    }
-
-    public static void spiral(int s) {
-        int xpos = 1;
-        int ypos = 1;
-        int n = 1;
-        int iterations = (2 * s);
-        double inc = PI/ 2;
-        int count = 0;
-        for (int i = 1; i < iterations; i++) {
-            int xoff = (int) (round(cos(i*inc)));
-            int yoff = (int) (round(sin(i*inc)));
-            for (int j = 0; j < 2 * n; j ++) {
-                xpos += xoff;
-                ypos -= yoff;
-                System.out.println(count + ": " + xpos + ", " + ypos);
-                count++;
-            }
-            n = (int) ceil((i*inc)/ (2*PI));
-            System.out.println(ceil((i*inc)/(2*PI)) + "\n");
-        }
     }
 }

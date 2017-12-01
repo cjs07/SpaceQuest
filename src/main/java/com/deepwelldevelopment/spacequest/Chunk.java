@@ -43,6 +43,12 @@ public class Chunk {
         return heightmap[x][z];
     }
 
+    public void initBlocks() {
+        for (Layer layer : layers) {
+            layer.initBlocks();
+        }
+    }
+
     public void render() {
         for (Layer layer : layers) {
             layer.render();

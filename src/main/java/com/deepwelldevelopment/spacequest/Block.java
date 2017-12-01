@@ -4,37 +4,35 @@ package com.deepwelldevelopment.spacequest;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.stb.STBImage.*;
 
 /***
  * Represents a block object in the world. Each block is self contained, and self-rendering.
  */
-public class Block {
+public class Block implements ICrossThreadObject {
 
     enum EnumBlockSide {
-        BOTTOM(0),
-        TOP(1),
-        FRONT(2),
-        BACK(3),
-        LEFT(4),
-        RIGHT(5);
+        BOTTOM(0, "bottom"),
+        TOP(1, "top"),
+        FRONT(2, "front"),
+        BACK(3, "back"),
+        LEFT(4, "left"),
+        RIGHT(5, "right");
 
         int id;
+        String name;
 
-        EnumBlockSide(int id) {
+        EnumBlockSide(int id, String name) {
             this.id = id;
+            this.name = name;
         }
     }
 
@@ -57,6 +55,8 @@ public class Block {
 
     private boolean[] toDraw = new boolean[6];
 
+    private boolean initialized;
+
     public Block(int x, int y, int z) {
         this(x, y, z, false);
     }
@@ -73,6 +73,8 @@ public class Block {
         this.y = y;
         this.z = z;
         this.individualTextures = individualTextures;
+
+        boolean toInit = Thread.currentThread().getName().equals(ThreadManager.INSTANCE.getRenderThread().getName());
 
         for (int i = 0; i < vertices.length; i++) {
             vertices[i] = BufferUtils.createFloatBuffer(2 * (3 * 3)); //each vertex has three points, each triangle has three vertices and each face has two triangles
@@ -121,24 +123,11 @@ public class Block {
         vertices[5].put(x + 1).put(y + 1).put(z);
         vertices[5].put(x + 1).put(y).put(z);
 
-        for (int i = 0; i < vertices.length; i++) {
-            vertices[i].flip();
-
-            vertexBuffers[i] = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
-            glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
-        }
-
         allVertices = BufferUtils.createFloatBuffer(6 * (2 * (3 * 3))); //each vertex has three points, each triangle has three vertices, each face has two triangle, and each block has 5 faces
 
         for (FloatBuffer fb : vertices) {
             allVertices.put(fb);
         }
-        allVertices.flip();
-
-        allVertexBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
 
         uv = BufferUtils.createFloatBuffer(6 * (2 * (3 * 2)));
         uv.put(0.0f).put(0.0f);
@@ -177,62 +166,95 @@ public class Block {
         uv.put(1.0f).put(1.0f);
         uv.put(0.0f).put(1.0f);
         uv.put(0.0f).put(0.0f);
-        uv.flip();
 
-        uvBuffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-        glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
+        if (toInit) {
+            for (int i = 0; i < vertices.length; i++) {
+                vertices[i].flip();
 
-        try {
-            int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
-            int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
-            int program = createShaderProgram(vShader, fShader);
-            textureID = glGetUniformLocation(program, "textureSampler");
-        } catch (IOException e) {
-            e.printStackTrace();
+                vertexBuffers[i] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
+                glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+            }
+
+            allVertices.flip();
+            allVertexBuffer = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
+
+            uv.flip();
+            uvBuffer = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+            glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
+
+            try {
+                int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
+                int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
+                int program = createShaderProgram(vShader, fShader);
+                textureID = glGetUniformLocation(program, "textureSampler");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            initialized = true;
+        } else {
+            ThreadManager.INSTANCE.openRequest(new CrossThreadRequest(ThreadManager.GENERATION_THREAD, ThreadManager.RENDER_THREAD,
+                    CrossThreadRequest.BLOCK_INIT_REQUEST, this));
+        }
+    }
+
+    @Override
+    public void completeRequest() {
+        init();
+    }
+
+    public void init() {
+        if (!initialized) {
+            for (int i = 0; i < vertices.length; i++) {
+                vertices[i].flip();
+
+                vertexBuffers[i] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
+                glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+            }
+
+            allVertices.flip();
+            allVertexBuffer = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
+
+            uv.flip();
+            uvBuffer = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+            glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
+
+            try {
+                int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
+                int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
+                int program = createShaderProgram(vShader, fShader);
+                textureID = glGetUniformLocation(program, "textureSampler");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            initialized = true;
         }
     }
 
     public void setSidedTexture(String texture, int side) {
-        try {
-            individualTextures = true;
-            textures[side] = loadTexture(texture);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        individualTextures = true;
+        textures[side] = SpaceQuest.INSTANCE.textureMap.get(texture);
     }
 
     public void setToDraw(boolean toDraw, int side) {
         this.toDraw[side] = toDraw;
     }
 
-    int loadTexture(String loc) throws IOException {
-        int tex = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        ByteBuffer imageBuffer;
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-        ByteBuffer image;
-        imageBuffer = ioResourceToByteBuffer(loc, 16 * 16);
-        if (!stbi_info_from_memory(imageBuffer, w, h, comp)) {
-            throw new IOException("Failed to bind texture " + stbi_failure_reason());
-        }
-        image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
-        if (image == null) {
-            throw new IOException("Failed to read image" + stbi_failure_reason());
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w.get(0), h.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        stbi_image_free(image);
-        return tex;
-    }
-
     /**
      * Draws this block. Each block is responsible for drawing itself.
      */
     public void draw() {
+        if (!initialized) {
+            return;
+        }
+//        System.out.println(this);
         if (individualTextures) {
             for (EnumBlockSide side : EnumBlockSide.values()) {
                 if (toDraw[side.ordinal()]) {
@@ -284,5 +306,22 @@ public class Block {
         glDeleteBuffers(allVertexBuffer);
         glDeleteBuffers(uvBuffer);
         glDeleteTextures(textures);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("Position: (" + x + ", " + y + ", " + z + ") \n");
+        str.append("Full Cube Vertex Buffer: ").append(allVertexBuffer).append("\n");
+        str.append("UV Buffer: ").append(uvBuffer).append("\n");
+        str.append("Texture ID: ").append(textureID).append("\n");
+        str.append("Individual textures: ").append(individualTextures);
+        str.append("Sided Data:\n");
+        for (EnumBlockSide side : EnumBlockSide.values()) {
+            str.append("\tSide: ").append(side).append("\n");
+            str.append("\ttoDraw: ").append(toDraw[side.ordinal()]).append("\n");
+            str.append("\tVertex Buffer: ").append(vertexBuffers[side.ordinal()]).append("\n");
+            str.append("\tTexture: ").append(textures[side.ordinal()]).append("\n");
+        }
+        return str.toString();
     }
 }
