@@ -1,6 +1,10 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.block;
 
 
+import com.deepwelldevelopment.spacequest.CrossThreadRequest;
+import com.deepwelldevelopment.spacequest.ICrossThreadObject;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
+import com.deepwelldevelopment.spacequest.ThreadManager;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
@@ -19,7 +23,7 @@ import static org.lwjgl.opengl.GL20.*;
  */
 public class Block implements ICrossThreadObject {
 
-    enum EnumBlockSide {
+    public enum EnumBlockSide {
         BOTTOM(0, "bottom"),
         TOP(1, "top"),
         FRONT(2, "front"),

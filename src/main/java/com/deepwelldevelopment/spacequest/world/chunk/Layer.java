@@ -1,6 +1,7 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.world.chunk;
 
-import com.deepwelldevelopment.spacequest.Block.EnumBlockSide;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.Block.EnumBlockSide;
 
 public class Layer {
 

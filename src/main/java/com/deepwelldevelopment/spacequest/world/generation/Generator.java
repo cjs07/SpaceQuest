@@ -1,5 +1,7 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.world.generation;
 
+import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
+import com.deepwelldevelopment.spacequest.world.World;
 import com.flowpowered.noise.module.source.Perlin;
 
 public class Generator {

@@ -1,4 +1,6 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.world.chunk;
+
+import com.deepwelldevelopment.spacequest.world.World;
 
 public class Chunk {
 

@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.world.World;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -65,7 +66,7 @@ public class SpaceQuest {
     private float mouseX = 0.0f;
     private float mouseY = 0.0f;
 
-    Map<String, Integer> textureMap;
+    public Map<String, Integer> textureMap;
 
     void run() throws IOException {
         INSTANCE = this;

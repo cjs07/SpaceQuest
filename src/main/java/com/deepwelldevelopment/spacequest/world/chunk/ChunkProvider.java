@@ -1,5 +1,8 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.world.chunk;
 
+import com.deepwelldevelopment.spacequest.ThreadManager;
+import com.deepwelldevelopment.spacequest.world.World;
+import com.deepwelldevelopment.spacequest.world.generation.Generator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;

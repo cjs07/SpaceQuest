@@ -1,4 +1,9 @@
-package com.deepwelldevelopment.spacequest;
+package com.deepwelldevelopment.spacequest.world;
+
+import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
+import com.deepwelldevelopment.spacequest.world.chunk.ChunkProvider;
+import com.deepwelldevelopment.spacequest.world.generation.Generator;
+import com.deepwelldevelopment.spacequest.ThreadManager;
 
 public class World {
 
