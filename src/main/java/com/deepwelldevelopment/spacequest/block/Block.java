@@ -3,8 +3,9 @@ package com.deepwelldevelopment.spacequest.block;
 
 import com.deepwelldevelopment.spacequest.CrossThreadRequest;
 import com.deepwelldevelopment.spacequest.ICrossThreadObject;
-import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.ThreadManager;
+import com.deepwelldevelopment.spacequest.renderer.ResourceManager;
+import com.deepwelldevelopment.spacequest.renderer.Texture;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
@@ -47,14 +48,12 @@ public class Block implements ICrossThreadObject {
     private boolean individualTextures;
 
     private FloatBuffer[] vertices = new FloatBuffer[6];
-    private FloatBuffer allVertices;
-    private FloatBuffer uv;
+    private FloatBuffer[] uv = new FloatBuffer[6];
 
     private int[] vertexBuffers = new int[6];
-    private int allVertexBuffer;
-    private int uvBuffer;
+    private int[] uvBuffers = new int[6];
 
-    private int[] textures = new int[6];
+    private Texture[] textures = new Texture[6];
     private int textureID;
 
     private boolean[] toDraw = new boolean[6];
@@ -82,6 +81,7 @@ public class Block implements ICrossThreadObject {
 
         for (int i = 0; i < vertices.length; i++) {
             vertices[i] = BufferUtils.createFloatBuffer(2 * (3 * 3)); //each vertex has three points, each triangle has three vertices and each face has two triangles
+            uv[i] = BufferUtils.createFloatBuffer(2 * (3 * 2));
             toDraw[i] = true;
         }
 
@@ -127,49 +127,10 @@ public class Block implements ICrossThreadObject {
         vertices[5].put(x + 1).put(y + 1).put(z);
         vertices[5].put(x + 1).put(y).put(z);
 
-        allVertices = BufferUtils.createFloatBuffer(6 * (2 * (3 * 3))); //each vertex has three points, each triangle has three vertices, each face has two triangle, and each block has 5 faces
-
-        for (FloatBuffer fb : vertices) {
-            allVertices.put(fb);
+        //TODO: REPLACE WITH NONEXISTENT TEXTURE
+        for (EnumBlockSide side : EnumBlockSide.values()) {
+            textures[side.ordinal()] = ResourceManager.INSTANCE.textures.get("dirt");
         }
-
-        uv = BufferUtils.createFloatBuffer(6 * (2 * (3 * 2)));
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(0.0f).put(0.0f);
-        uv.put(1.0f).put(0.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(1.0f).put(1.0f);
-        uv.put(0.0f).put(1.0f);
-        uv.put(0.0f).put(0.0f);
 
         if (toInit) {
             for (int i = 0; i < vertices.length; i++) {
@@ -178,17 +139,16 @@ public class Block implements ICrossThreadObject {
                 vertexBuffers[i] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
                 glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+
+                FloatBuffer buf = textures[i].getUvCoordinates();
+                uv[i].put(buf);
+                buf.rewind();
+
+                uv[i].flip();
+                uvBuffers[i] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[i]);
+                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_STATIC_DRAW);
             }
-
-            allVertices.flip();
-            allVertexBuffer = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
-
-            uv.flip();
-            uvBuffer = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-            glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
 
             try {
                 int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
@@ -218,17 +178,16 @@ public class Block implements ICrossThreadObject {
                 vertexBuffers[i] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[i]);
                 glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
+
+                FloatBuffer buf = textures[i].getUvCoordinates();
+                uv[i].put(buf);
+                buf.rewind();
+
+                uv[i].flip();
+                uvBuffers[i] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[i]);
+                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_STATIC_DRAW);
             }
-
-            allVertices.flip();
-            allVertexBuffer = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, allVertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, allVertices, GL_STATIC_DRAW);
-
-            uv.flip();
-            uvBuffer = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-            glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
 
             try {
                 int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
@@ -244,7 +203,11 @@ public class Block implements ICrossThreadObject {
 
     public void setSidedTexture(String texture, int side) {
         individualTextures = true;
-        textures[side] = SpaceQuest.INSTANCE.textureMap.get(texture);
+        textures[side] = ResourceManager.INSTANCE.textures.get(texture);
+        uv[side].clear();
+        FloatBuffer buf = textures[side].getUvCoordinates();
+        uv[side].put(buf);
+        buf.rewind();
     }
 
     public void setToDraw(boolean toDraw, int side) {
@@ -258,46 +221,23 @@ public class Block implements ICrossThreadObject {
         if (!initialized) {
             return;
         }
-//        System.out.println(this);
-        if (individualTextures) {
-            for (EnumBlockSide side : EnumBlockSide.values()) {
-                if (toDraw[side.ordinal()]) {
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textures[side.ordinal()]);
-                    glUniform1i(textureID, 0);
+        for (EnumBlockSide side : EnumBlockSide.values()) {
+            if (toDraw[side.ordinal()]) {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, ResourceManager.INSTANCE.textureSheet);
+                glUniform1i(textureID, 0);
 
-                    glEnableVertexAttribArray(0);
-                    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[side.ordinal()]);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+                glEnableVertexAttribArray(0);
+                glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[side.ordinal()]);
+                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
-                    glEnableVertexAttribArray(1);
-                    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-                    glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+                glEnableVertexAttribArray(1);
+                glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[side.ordinal()]);
+                glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
-                    glDrawArrays(GL_TRIANGLES, 0, vertices[side.ordinal()].capacity());
-                    glDisableVertexAttribArray(0);
-                    glDisableVertexAttribArray(1);
-                }
-            }
-        } else { //dont load nonexistent textures
-            for (EnumBlockSide side : EnumBlockSide.values()) {
-                if (toDraw[side.ordinal()]) {
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textures[0]);
-                    glUniform1i(textureID, 0);
-
-                    glEnableVertexAttribArray(0);
-                    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[side.ordinal()]);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-                    glEnableVertexAttribArray(1);
-                    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-                    glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-
-                    glDrawArrays(GL_TRIANGLES, 0, vertices[side.ordinal()].capacity());
-                    glDisableVertexAttribArray(0);
-                    glDisableVertexAttribArray(1);
-                }
+                glDrawArrays(GL_TRIANGLES, 0, vertices[side.ordinal()].capacity());
+                glDisableVertexAttribArray(0);
+                glDisableVertexAttribArray(1);
             }
         }
     }
@@ -307,23 +247,20 @@ public class Block implements ICrossThreadObject {
      */
     public void cleanup() {
         glDeleteBuffers(vertexBuffers);
-        glDeleteBuffers(allVertexBuffer);
-        glDeleteBuffers(uvBuffer);
-        glDeleteTextures(textures);
+        glDeleteBuffers(uvBuffers);
     }
 
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("Position: (" + x + ", " + y + ", " + z + ") \n");
-        str.append("Full Cube Vertex Buffer: ").append(allVertexBuffer).append("\n");
-        str.append("UV Buffer: ").append(uvBuffer).append("\n");
         str.append("Texture ID: ").append(textureID).append("\n");
-        str.append("Individual textures: ").append(individualTextures);
+        str.append("Individual textures: ").append(individualTextures).append("\n");
         str.append("Sided Data:\n");
         for (EnumBlockSide side : EnumBlockSide.values()) {
             str.append("\tSide: ").append(side).append("\n");
             str.append("\ttoDraw: ").append(toDraw[side.ordinal()]).append("\n");
             str.append("\tVertex Buffer: ").append(vertexBuffers[side.ordinal()]).append("\n");
+            str.append("UV Buffer: ").append(uvBuffers[side.ordinal()]).append("\n");
             str.append("\tTexture: ").append(textures[side.ordinal()]).append("\n");
         }
         return str.toString();

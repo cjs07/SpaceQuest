@@ -1,5 +1,7 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.renderer.ResourceManager;
+import com.deepwelldevelopment.spacequest.renderer.Texture;
 import com.deepwelldevelopment.spacequest.world.World;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
@@ -12,12 +14,10 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
-import static com.deepwelldevelopment.spacequest.util.ShaderUtil.loadTexture;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
@@ -53,7 +53,7 @@ public class SpaceQuest {
     float horizontalAngle = 3.14f;
     float verticalAngle = 0.0f;
     float fov = 45.0f;
-    float speed = 3.0f;
+    float speed = 7.5f;
     float mouseSpeed = 0.5f;
 
     int width = 1024;
@@ -66,11 +66,12 @@ public class SpaceQuest {
     private float mouseX = 0.0f;
     private float mouseY = 0.0f;
 
-    public Map<String, Integer> textureMap;
+    public ArrayList<Texture> textures;
 
     void run() throws IOException {
         INSTANCE = this;
         new ThreadManager();
+        new ResourceManager();
         ThreadManager.INSTANCE.attatchRenderThread(Thread.currentThread());
         if (!glfwInit()) {
             System.err.println("Failed to initialize GLFW");
@@ -138,6 +139,8 @@ public class SpaceQuest {
         glDepthFunc(GL_LESS);
 //        glEnable(GL_CULL_FACE);
 
+        ResourceManager.INSTANCE.loadTextures();
+
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
@@ -152,9 +155,7 @@ public class SpaceQuest {
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
 
-        textureMap = new HashMap<>();
-        textureMap.put("texture.png", loadTexture("texture.png"));
-        textureMap.put("texture2.png", loadTexture("texture2.png"));
+        textures = new ArrayList<>();
 
         World world = new World();
         lastChunkTime = System.nanoTime();
@@ -166,7 +167,7 @@ public class SpaceQuest {
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
-            System.out.println(dt);
+//            System.out.println(dt);
             world.initBlocks();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -184,6 +185,7 @@ public class SpaceQuest {
         ThreadManager.INSTANCE.setRunning(false);
         ThreadManager.INSTANCE.finish();
         world.cleanup();
+        ResourceManager.INSTANCE.cleanup();
         glDeleteVertexArrays(vao);
         glDeleteProgram(program);
         glfwTerminate();
@@ -215,21 +217,32 @@ public class SpaceQuest {
             verticalAngle -= mouseSpeed * deltaTime;
         }
 
+//        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
+//        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(horizontalAngle - PI/2.0f));
+//        Vector3f up = new Vector3f(right).cross(direction);
+
         Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
-        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(horizontalAngle - PI/2.0f));
-        Vector3f up = new Vector3f(right).cross(direction);
+        Vector3f forward = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), 0.0f, (float) (cos(verticalAngle) * cos(horizontalAngle)));
+        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(verticalAngle + PI/2.0f));
+        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 
         if (keyDown[GLFW_KEY_W]){
-            position = add(position, direction.mul(deltaTime * speed));
+            position = add(position, forward.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_S]){
-            position = subtract(position, direction.mul(deltaTime * speed));
+            position = subtract(position, forward.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_D]){
             position = add(position, right.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_A]){
             position = subtract(position, right.mul(deltaTime * speed));
+        }
+        if (keyDown[GLFW_KEY_SPACE]) {
+            position = add(position, up.mul(deltaTime * speed));
+        }
+        if (keyDown[GLFW_KEY_LEFT_SHIFT]) {
+            position = subtract(position, up.mul(deltaTime * speed));
         }
 
         projMatrix = new Matrix4f().perspective((float) Math.toRadians(fov), 4.0f / 3.0f, 0.1f, 100f);
