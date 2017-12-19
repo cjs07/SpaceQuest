@@ -29,6 +29,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class SpaceQuest {
 
+    public static final int MAX_CHUNKS = 16;
+
     public static SpaceQuest INSTANCE;
 
     private Matrix4f projMatrix = new Matrix4f();
@@ -141,7 +143,7 @@ public class SpaceQuest {
         glDepthFunc(GL_LESS);
 //        glEnable(GL_CULL_FACE);
 
-        new GLManager(16);
+        new GLManager(MAX_CHUNKS);
         ResourceManager.INSTANCE.loadTextures();
 
         int vao = glGenVertexArrays();

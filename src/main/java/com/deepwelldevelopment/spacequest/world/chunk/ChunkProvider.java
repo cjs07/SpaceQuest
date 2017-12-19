@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest.world.chunk;
 
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.ThreadManager;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.generation.Generator;
@@ -96,7 +97,7 @@ public class ChunkProvider implements Runnable {
     @Override
     public void run() {
         int xpos = -1;
-        int zpos = 1;
+        int zpos = -1;
         double inc = PI / 2;
         int s = 3;
         int generatedChunks = 0;
@@ -109,7 +110,7 @@ public class ChunkProvider implements Runnable {
                     zpos += zoff;
                     generateChunk(xpos, zpos);
                     generatedChunks++;
-                    if (generatedChunks >= 15) {
+                    if (generatedChunks >= SpaceQuest.MAX_CHUNKS-1) {
                         return;
                     }
                     if (!ThreadManager.INSTANCE.isRunning()) {

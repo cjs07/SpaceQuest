@@ -11,7 +11,7 @@ public class Generator {
     int noiseSeed;
     Perlin perlin;
 
-    double offsetIncrement = 0.001;
+    double offsetIncrement = 0.005;
 
     public Generator(World world) {
         this.world = world;
@@ -27,6 +27,7 @@ public class Generator {
         double  zOff = chunkZ * 16 * offsetIncrement;
         Chunk chunk = new Chunk(world, chunkX, chunkZ);
 
+        double oldZ = zOff;
         for (int x = 0; x < 16; x++) {
             for (int z = 15; z >= 0; z--) {
                 double yPercent = perlin.getValue(xOff, 0, zOff);
@@ -34,7 +35,7 @@ public class Generator {
                 chunk.adjustHeight(yPercent, x, z);
             }
             xOff += offsetIncrement;
-            System.out.println();
+            zOff = oldZ;
         }
         chunk.generateLayers();
         return chunk;

@@ -46,7 +46,6 @@ public class Chunk {
      */
     public void adjustHeight(double heightPercent, int x, int z) {
         heightmap[x][z] = averageHeight + (int)Math.floor(averageHeight * heightPercent);
-        System.out.print(heightmap[x][z] + " ");
     }
 
     public int getHeight(int x, int z) {
