@@ -83,11 +83,11 @@ public class ThreadManager {
     public void openRequest(CrossThreadRequest request) {
         synchronized (activeRequests) {
             activeRequests.add(request);
-            try {
-                activeRequests.wait(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                activeRequests.wait(1);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }

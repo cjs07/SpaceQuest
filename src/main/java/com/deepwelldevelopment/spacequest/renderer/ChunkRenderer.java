@@ -4,6 +4,7 @@ import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.util.GLManager;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.Layer;
+import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -15,8 +16,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ChunkRenderer {
@@ -50,17 +49,15 @@ public class ChunkRenderer {
             }
         }
 
-        float[] verticesArray = new float[blockVertices.size()];
-        for (int i = 0; i < blockVertices.size(); i++) {
-            verticesArray[i] = blockVertices.get(i);
+        vertices = BufferUtils.createFloatBuffer(blockVertices.size());
+        for (Float f : blockVertices) {
+            vertices.put(f);
         }
 
-        float[] uvArray = new float[blockUV.size()];
-        for (int i = 0; i < blockUV.size(); i++) {
-            uvArray[i] = blockUV.get(i);
+        uv = BufferUtils.createFloatBuffer(blockUV.size());
+        for (float f : blockUV) {
+            uv.put(f);
         }
-        vertices = FloatBuffer.wrap(verticesArray);
-        uv = FloatBuffer.wrap(uvArray);
     }
 
     public void init() {
@@ -86,37 +83,32 @@ public class ChunkRenderer {
 
     //only called when a block in the chunk is added or removed, can probably be optimized
     public void update() {
-        new Thread(() -> {
+        ArrayList<Float> blockVertices = new ArrayList<>();
+        ArrayList<Float> blockUV = new ArrayList<>();
 
-            ArrayList<Float> blockVertices = new ArrayList<>();
-            ArrayList<Float> blockUV = new ArrayList<>();
-
-            for (Layer l : chunk.getLayers()) {
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        if (l != null) {
-                            Block b = l.getBlock(x, z);
-                            if (b != null) {
-                                blockVertices.addAll(b.getDrawnVertices());
-                                blockUV.addAll(b.getDrawnUV());
-                            }
+        for (Layer l : chunk.getLayers()) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    if (l != null) {
+                        Block b = l.getBlock(x, z);
+                        if (b != null) {
+                            blockVertices.addAll(b.getDrawnVertices());
+                            blockUV.addAll(b.getDrawnUV());
                         }
                     }
                 }
             }
+        }
 
-            float[] verticesArray = new float[blockVertices.size()];
-            for (int i = 0; i < blockVertices.size(); i++) {
-                verticesArray[i] = blockVertices.get(i);
-            }
+        vertices = BufferUtils.createFloatBuffer(blockVertices.size());
+        for (Float f : blockVertices) {
+            vertices.put(f);
+        }
 
-            float[] uvArray = new float[blockUV.size()];
-            for (int i = 0; i < blockUV.size(); i++) {
-                uvArray[i] = blockUV.get(i);
-            }
-            vertices = FloatBuffer.wrap(verticesArray);
-            uv = FloatBuffer.wrap(uvArray);
-        }).start();
+        uv = BufferUtils.createFloatBuffer(blockUV.size());
+        for (float f : blockUV) {
+            uv.put(f);
+        }
     }
 
     public void render() {

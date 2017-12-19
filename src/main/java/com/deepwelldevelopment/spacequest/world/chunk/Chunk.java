@@ -28,7 +28,6 @@ public class Chunk {
 
         layers = new Layer[32];
 
-        renderer = new ChunkRenderer(this);
         initialized = false;
     }
 
@@ -36,6 +35,7 @@ public class Chunk {
         for (int i = 0; i < layers.length; i++) {
             layers[i] = new Layer(this,16, i);
         }
+        renderer = new ChunkRenderer(this);
     }
 
     /***
@@ -55,9 +55,9 @@ public class Chunk {
 
     public void initBlocks() {
         if (!initialized) {
-            for (Layer layer : layers) {
-                layer.initBlocks();
-            }
+//            for (Layer layer : layers) {
+//                layer.initBlocks();
+//            }
             renderer.init();
 //            renderer.update();
             initialized = true;
@@ -68,7 +68,9 @@ public class Chunk {
 //        for (Layer layer : layers) {
 //            layer.render();
 //        }
-        renderer.render();
+        if (initialized) {
+            renderer.render();
+        }
     }
 
     public Layer getLayer(int i) {

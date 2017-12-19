@@ -100,7 +100,7 @@ public class ChunkProvider implements Runnable {
         double inc = PI / 2;
         int s = 3;
         int generatedChunks = 0;
-        while (ThreadManager.INSTANCE.isRunning()) {
+        while (true) {
             for (int i = 0; i < 4; i++) {
                 int xoff = (int) round(cos(i * inc));
                 int zoff = (int) round(sin(i * inc));
@@ -109,11 +109,12 @@ public class ChunkProvider implements Runnable {
                     zpos += zoff;
                     generateChunk(xpos, zpos);
                     generatedChunks++;
-//                    try {
-//                        Thread.currentThread().wait();
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    if (generatedChunks >= 15) {
+                        return;
+                    }
+                    if (!ThreadManager.INSTANCE.isRunning()) {
+                        return;
+                    }
                 }
             }
             xpos -= 1;

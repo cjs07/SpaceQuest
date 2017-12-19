@@ -1,6 +1,5 @@
 package com.deepwelldevelopment.spacequest;
 
-import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.renderer.ResourceManager;
 import com.deepwelldevelopment.spacequest.renderer.Texture;
 import com.deepwelldevelopment.spacequest.util.GLManager;
@@ -69,8 +68,6 @@ public class SpaceQuest {
     private float mouseY = 0.0f;
 
     public ArrayList<Texture> textures;
-
-    Block b;
 
     void run() throws IOException {
         INSTANCE = this;

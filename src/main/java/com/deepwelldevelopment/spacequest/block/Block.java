@@ -181,6 +181,7 @@ public class Block implements ICrossThreadObject {
                 glBufferData(GL_ARRAY_BUFFER, vertices[i], GL_STATIC_DRAW);
 
                 FloatBuffer buf = textures[i].getUvCoordinates();
+                uv[i].clear();
                 uv[i].put(buf);
                 buf.rewind();
 
@@ -209,8 +210,8 @@ public class Block implements ICrossThreadObject {
         FloatBuffer buf = textures[side].getUvCoordinates();
         uv[side].put(buf);
         uv[side].flip();
-        glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[side]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, uv[side]);
+//        glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[side]);
+//        glBufferSubData(GL_ARRAY_BUFFER, 0, uv[side]);
         buf.rewind();
     }
 
