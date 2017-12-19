@@ -18,7 +18,7 @@ public class ResourceManager {
     public static final int TEXTURE_SIZE = 16;
 
     public static final int FILE_WIDTH = 2;
-    public static final int FILE_HEIGHT = 1;
+    public static final int FILE_HEIGHT = 2;
 
     public static final float TEXTURE_WIDTH_FLOAT = 1.0f / FILE_WIDTH;
     public static final float TEXTURE_HEIGHT_FLOAT = 1.0f / FILE_HEIGHT;
@@ -62,8 +62,8 @@ public class ResourceManager {
 
         for (int i = 0; i < FILE_WIDTH; i++) {
             for (int j = 0; j < FILE_HEIGHT; j++) {
-                float u = i * ((float)TEXTURE_SIZE/w);
-                float v = j * (TEXTURE_SIZE/h);
+                float u = j * ((float)TEXTURE_SIZE/w);
+                float v = i * ((float)TEXTURE_SIZE/h);
                 textures.put(names[i][j], new Texture(names[i][j], u, v));
             }
         }

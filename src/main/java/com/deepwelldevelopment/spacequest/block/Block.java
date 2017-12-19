@@ -10,6 +10,7 @@ import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
@@ -147,7 +148,7 @@ public class Block implements ICrossThreadObject {
                 uv[i].flip();
                 uvBuffers[i] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[i]);
-                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_DYNAMIC_DRAW);
             }
 
             try {
@@ -186,7 +187,7 @@ public class Block implements ICrossThreadObject {
                 uv[i].flip();
                 uvBuffers[i] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[i]);
-                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, uv[i], GL_DYNAMIC_DRAW);
             }
 
             try {
@@ -207,11 +208,42 @@ public class Block implements ICrossThreadObject {
         uv[side].clear();
         FloatBuffer buf = textures[side].getUvCoordinates();
         uv[side].put(buf);
+        uv[side].flip();
+        glBindBuffer(GL_ARRAY_BUFFER, uvBuffers[side]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, uv[side]);
         buf.rewind();
     }
 
     public void setToDraw(boolean toDraw, int side) {
         this.toDraw[side] = toDraw;
+    }
+
+    public ArrayList<Float> getDrawnVertices() {
+        ArrayList<Float> ret = new ArrayList<>();
+        for (EnumBlockSide side : EnumBlockSide.values()) {
+            if (toDraw[side.ordinal()]) {
+                FloatBuffer buf = vertices[side.ordinal()];
+                buf.rewind();
+                while (buf.hasRemaining()) {
+                    ret.add(buf.get());
+                }
+            }
+        }
+        return ret;
+    }
+
+    public ArrayList<Float> getDrawnUV() {
+        ArrayList<Float> ret = new ArrayList<>();
+        for (EnumBlockSide side : EnumBlockSide.values()) {
+            if (toDraw[side.ordinal()]) {
+                FloatBuffer buf = uv[side.ordinal()];
+                buf.rewind();
+                while (buf.hasRemaining()) {
+                    ret.add(buf.get());
+                }
+            }
+        }
+        return ret;
     }
 
     /**

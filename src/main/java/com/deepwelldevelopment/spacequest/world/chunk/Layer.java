@@ -19,20 +19,20 @@ public class Layer {
             for (int z = 0; z < blocks[0].length; z++) {
                 if (chunk.getHeight(x, z) > y) {
                     blocks[x][z] = new Block((chunk.x * 16) + x, y, (chunk.z * 16) + z); //part of (x, z) column below surface
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.BOTTOM.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.TOP.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.FRONT.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.BACK.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.LEFT.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.RIGHT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.BOTTOM.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.TOP.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.FRONT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.BACK.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.LEFT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.RIGHT.ordinal());
                 } else if (chunk.getHeight(x, z) == y) { //surface block of (x, z) column
                     blocks[x][z] = new Block((chunk.x * 16) + x, y, (chunk.z * 16) + z);
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.BOTTOM.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.BOTTOM.ordinal());
                     blocks[x][z].setSidedTexture("grass", EnumBlockSide.TOP.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.FRONT.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.BACK.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.LEFT.ordinal());
-                    blocks[x][z].setSidedTexture("grass", EnumBlockSide.RIGHT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.FRONT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.BACK.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.LEFT.ordinal());
+                    blocks[x][z].setSidedTexture("dirt", EnumBlockSide.RIGHT.ordinal());
                 } else {
                     blocks[x][z] = null;
                 }

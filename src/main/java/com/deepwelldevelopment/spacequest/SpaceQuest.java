@@ -1,7 +1,9 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.renderer.ResourceManager;
 import com.deepwelldevelopment.spacequest.renderer.Texture;
+import com.deepwelldevelopment.spacequest.util.GLManager;
 import com.deepwelldevelopment.spacequest.world.World;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
@@ -68,6 +70,8 @@ public class SpaceQuest {
 
     public ArrayList<Texture> textures;
 
+    Block b;
+
     void run() throws IOException {
         INSTANCE = this;
         new ThreadManager();
@@ -114,14 +118,15 @@ public class SpaceQuest {
         glfwSetMouseButtonCallback(window, mbCallback = new GLFWMouseButtonCallback() {
             public void invoke(long window, int button, int action, int mods) {
                 if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                    if (action == GLFW_PRESS)
+                    if (action == GLFW_PRESS) {
                         leftMouseDown = true;
+                    }
                     else if (action == GLFW_RELEASE)
                         leftMouseDown = false;
                 } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                    if (action == GLFW_PRESS)
+                    if (action == GLFW_PRESS) {
                         rightMouseDown = true;
-                    else if (action == GLFW_RELEASE)
+                    } else if (action == GLFW_RELEASE)
                         rightMouseDown = false;
                 }
             }
@@ -139,6 +144,7 @@ public class SpaceQuest {
         glDepthFunc(GL_LESS);
 //        glEnable(GL_CULL_FACE);
 
+        new GLManager(16);
         ResourceManager.INSTANCE.loadTextures();
 
         int vao = glGenVertexArrays();

@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest.world.chunk;
 
+import com.deepwelldevelopment.spacequest.renderer.ChunkRenderer;
 import com.deepwelldevelopment.spacequest.world.World;
 
 public class Chunk {
@@ -9,10 +10,14 @@ public class Chunk {
     int x;
     int z;
 
+    private boolean initialized;
+
     int averageHeight = 16;
 
     int[][] heightmap;
     Layer[] layers;
+
+    private ChunkRenderer renderer;
 
     public Chunk(World world, int x, int z) {
         this .world = world;
@@ -22,6 +27,9 @@ public class Chunk {
         heightmap = new int[16][16];
 
         layers = new Layer[32];
+
+        renderer = new ChunkRenderer(this);
+        initialized = false;
     }
 
     public void generateLayers() {
@@ -46,20 +54,31 @@ public class Chunk {
     }
 
     public void initBlocks() {
-        for (Layer layer : layers) {
-            layer.initBlocks();
+        if (!initialized) {
+            for (Layer layer : layers) {
+                layer.initBlocks();
+            }
+            renderer.init();
+//            renderer.update();
+            initialized = true;
         }
     }
 
     public void render() {
-        for (Layer layer : layers) {
-            layer.render();
-        }
+//        for (Layer layer : layers) {
+//            layer.render();
+//        }
+        renderer.render();
     }
 
     public Layer getLayer(int i) {
         return layers[i];
     }
+
+    public Layer[] getLayers() {
+        return layers;
+    }
+
     public int getMaxHeight() {
         return layers.length;
     }
