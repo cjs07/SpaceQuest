@@ -42,9 +42,9 @@ public class Block implements ICrossThreadObject {
         }
     }
 
-    private int x;
-    private int y;
-    private int z;
+    public int x;
+    public int y;
+    public int z;
 
     private boolean individualTextures;
 

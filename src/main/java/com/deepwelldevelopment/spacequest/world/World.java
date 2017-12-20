@@ -1,6 +1,9 @@
 package com.deepwelldevelopment.spacequest.world;
 
 import com.deepwelldevelopment.spacequest.ThreadManager;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.event.Event;
+import com.deepwelldevelopment.spacequest.event.PlayerClickEvent;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.ChunkProvider;
 import com.deepwelldevelopment.spacequest.world.generation.Generator;
@@ -32,6 +35,35 @@ public class World {
     public void render() {
         for (Chunk c : provider.getLoadedChunks()) {
             c.render();
+        }
+    }
+
+    public void dispatchEvent(Event event) {
+        event.dispatch();
+    }
+
+    public Block getBlock(int x, int y, int z) {
+        int chunkX  = x / 16;
+        int chunkZ = z / 16;
+        Chunk chunk = provider.getChunk(chunkX, chunkZ);
+        int posX = (((x % 16) + 16) % 16);
+        int posZ = (((z % 16) + 16) % 16);
+        return chunk.getLayer(y).getBlock(posX, posZ);
+    }
+
+    public void setBlock(int x, int y, int z, Block b) {
+        int chunkX  = x / 16;
+        int chunkZ = z / 16;
+        Chunk chunk = provider.getChunk(chunkX, chunkZ);
+        chunk.getLayer(y).setBlock(x%16, z%16, b);
+        chunk.update();
+    }
+
+    //0 = left click, 1 = right click, 2 = middle click ?
+    public void playerClicked(int mouseCode, boolean dispatch) {
+        PlayerClickEvent event = new PlayerClickEvent(this, mouseCode);
+        if (dispatch) {
+            dispatchEvent(event);
         }
     }
 

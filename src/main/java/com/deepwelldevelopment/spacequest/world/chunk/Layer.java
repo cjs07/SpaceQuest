@@ -44,6 +44,10 @@ public class Layer {
         return blocks[x][z];
     }
 
+    public void setBlock(int x, int z, Block b) {
+        blocks[x][z] = b;
+    }
+
     public void initBlocks() {
         for (Block[] block : blocks) {
             for (Block b : block) {

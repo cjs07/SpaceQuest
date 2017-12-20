@@ -14,12 +14,14 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
-import static java.lang.Math.*;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
@@ -52,12 +54,12 @@ public class SpaceQuest {
     long window;
     long lastChunkTime;
 
-    Vector3f position = new Vector3f(0.0f, 32.0f, 0.0f);
-    float horizontalAngle = 3.14f;
-    float verticalAngle = 0.0f;
+    public Vector3f position = new Vector3f(0.0f, 32.0f, 0.0f);
+    public float horizontalAngle = 3.14f;
+    public float verticalAngle = 0.0f;
     float fov = 45.0f;
     float speed = 7.5f;
-    float mouseSpeed = 0.5f;
+    float mouseSpeed = 0.07f;
 
     int width = 1024;
     int height = 768;
@@ -70,6 +72,8 @@ public class SpaceQuest {
     private float mouseY = 0.0f;
 
     public ArrayList<Texture> textures;
+
+    World world;
 
     void run() throws IOException {
         INSTANCE = this;
@@ -106,16 +110,15 @@ public class SpaceQuest {
                 }
             }
         });
-//        glfwSetCursorPosCallback(window, cpCallback = new GLFWCursorPosCallback() {
-//            public void invoke(long window, double xpos, double ypos) {
-//                float normX = (float) ((xpos - width/2.0) / width * 2.0);
-//                float normY = (float) ((ypos - height/2.0) / height * 2.0);
-//                SpaceQuest.this.mouseX = Math.max(-width/2.0f, Math.min(width/2.0f, normX));
-//                SpaceQuest.this.mouseY = Math.max(-height/2.0f, Math.min(height/2.0f, normY));
-//            }
-//        });
+        glfwSetCursorPosCallback(window, cpCallback = new GLFWCursorPosCallback() {
+            public void invoke(long window, double xpos, double ypos) {
+                SpaceQuest.this.mouseX = (float) xpos;
+                SpaceQuest.this.mouseY = (float) ypos;
+            }
+        });
         glfwSetMouseButtonCallback(window, mbCallback = new GLFWMouseButtonCallback() {
             public void invoke(long window, int button, int action, int mods) {
+                world.playerClicked(button, true);
                 if (button == GLFW_MOUSE_BUTTON_LEFT) {
                     if (action == GLFW_PRESS) {
                         leftMouseDown = true;
@@ -135,6 +138,7 @@ public class SpaceQuest {
         glfwShowWindow(window);
 
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         createCapabilities(); //DON'T EVER FORGET THIS CALL; FUCK YOU C++ FOR NOT NEEDING IT YOU CONFOUNDED ME FOR 20 MINUTES
         glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
@@ -162,17 +166,13 @@ public class SpaceQuest {
 
         textures = new ArrayList<>();
 
-        World world = new World();
+        world = new World();
         lastChunkTime = System.nanoTime();
 
         while (!glfwWindowShouldClose(window)) {
-            //handle cross-thread requests
-//            ThreadManager.INSTANCE.getRequestsForThread(ThreadManager.RENDER_THREAD).forEach(CrossThreadRequest::complete);
-//            System.out.println("Render thread completed cross threading");
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
-//            System.out.println(dt);
             world.initBlocks();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -197,14 +197,14 @@ public class SpaceQuest {
     }
 
     void updateControls(float deltaTime) {
-//        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
-//        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
-//        glfwGetCursorPos(window, xBuf, yBuf);
-//        mouseX = (float) xBuf.get(0);
-//        mouseY = (float) yBuf.get(0);
-//        glfwSetCursorPos(window, width/2, height/2);
-//        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
-//        verticalAngle += mouseSpeed * deltaTime * (height/2 - mouseY);
+        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
+        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
+        glfwGetCursorPos(window, xBuf, yBuf);
+        mouseX = (float) xBuf.get(0);
+        mouseY = (float) yBuf.get(0);
+        glfwSetCursorPos(window, width/2, height/2);
+        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
+        verticalAngle += -mouseSpeed * deltaTime * (height/2 - mouseY);
 
         if (keyDown[GLFW_KEY_Q]){
             horizontalAngle += mouseSpeed * deltaTime;
@@ -227,9 +227,10 @@ public class SpaceQuest {
 //        Vector3f up = new Vector3f(right).cross(direction);
 
         Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
-        Vector3f forward = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), 0.0f, (float) (cos(verticalAngle) * cos(horizontalAngle)));
-        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(verticalAngle + PI/2.0f));
+        Vector3f forward = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), 0.0f, (float) (cos(verticalAngle) * cos(horizontalAngle))).normalize();
         Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+        Vector3f right = new Vector3f(forward).cross(up).normalize();
+//        System.out.println(verticalAngle + ", " + direction.y);
 
         if (keyDown[GLFW_KEY_W]){
             position = add(position, forward.mul(deltaTime * speed));

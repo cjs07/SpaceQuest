@@ -109,6 +109,14 @@ public class ChunkRenderer {
         for (float f : blockUV) {
             uv.put(f);
         }
+
+        vertices.flip();
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+
+        uv.flip();
+        glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+        glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
     }
 
     public void render() {

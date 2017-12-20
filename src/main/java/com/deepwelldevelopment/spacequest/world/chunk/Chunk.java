@@ -63,6 +63,10 @@ public class Chunk {
         }
     }
 
+    public void update() {
+        renderer.update();
+    }
+
     public void render() {
 //        for (Layer layer : layers) {
 //            layer.render();
@@ -73,7 +77,10 @@ public class Chunk {
     }
 
     public Layer getLayer(int i) {
-        return layers[i];
+        if (i < layers.length) {
+            return layers[i];
+        }
+        return layers[layers.length-1];
     }
 
     public Layer[] getLayers() {
