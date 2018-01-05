@@ -5,6 +5,7 @@ import com.deepwelldevelopment.spacequest.renderer.Texture;
 import com.deepwelldevelopment.spacequest.util.GLManager;
 import com.deepwelldevelopment.spacequest.world.World;
 import org.joml.FrustumIntersection;
+import org.joml.FrustumRayBuilder;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -14,17 +15,16 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.io.IOException;
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShader;
 import static com.deepwelldevelopment.spacequest.util.ShaderUtil.createShaderProgram;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
+import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -35,14 +35,22 @@ public class SpaceQuest {
 
     public static SpaceQuest INSTANCE;
 
-    private Matrix4f projMatrix = new Matrix4f();
+    private boolean resetFrameBuffer;
+
+    public Matrix4f projMatrix = new Matrix4f();
+    Matrix4f invProjMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
-    private Matrix4f modelMatrix = new Matrix4f();
-    private Matrix4f viewProjMatrix = new Matrix4f();
+    public Matrix4f viewProjMatrix = new Matrix4f();
     private Matrix4f invViewMatrix = new Matrix4f();
-    private Matrix4f invViewProjMatrix = new Matrix4f();
+    private Matrix4f modelMatrix = new Matrix4f();
+    public Matrix4f invViewProjMatrix = new Matrix4f();
     private Matrix4f mvp = new Matrix4f();
     private FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
+
+    Vector3f tmpVector = new Vector3f();
+    public Vector3f cameraPosition = new Vector3f(0.0f, 32.0f, 0.0f);
+    public Vector3f cameraLookAt = new Vector3f(0.0f, 32.0f, 0.0f);
+    Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
 
     private FrustumIntersection frustumIntersection = new FrustumIntersection();
 
@@ -59,10 +67,10 @@ public class SpaceQuest {
     public float verticalAngle = 0.0f;
     float fov = 45.0f;
     float speed = 7.5f;
-    float mouseSpeed = 0.07f;
+    float mouseSpeed = 0.25f;
 
-    int width = 1024;
-    int height = 768;
+    public int width = 1024;
+    public int height = 768;
 
     private boolean windowed = true;
     private boolean[] keyDown = new boolean[GLFW.GLFW_KEY_LAST];
@@ -138,7 +146,7 @@ public class SpaceQuest {
         glfwShowWindow(window);
 
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
         createCapabilities(); //DON'T EVER FORGET THIS CALL; FUCK YOU C++ FOR NOT NEEDING IT YOU CONFOUNDED ME FOR 20 MINUTES
         glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
@@ -153,21 +161,53 @@ public class SpaceQuest {
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
+        int rayBuffer = glGenBuffers();
+        int rayUVBUffer = glGenBuffers();
+
         int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
         int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
         int program = createShaderProgram(vShader, fShader);
 
         int matrixID = glGetUniformLocation(program, "MVP");
 
-        projMatrix.perspective((float) Math.toRadians(45.0f), 4.0f / 3.0f, 0.1f, 100f);
+        int crosshairVShader = createShader("crosshair.vert", GL_VERTEX_SHADER);
+        int crosshairFShader = createShader("crosshair.frag", GL_FRAGMENT_SHADER);
+        int crosshairProgram = createShaderProgram(crosshairVShader, crosshairFShader);
+        int crosshairVertexBuffer = glGenBuffers();
+        FloatBuffer crosshairVertices = BufferUtils.createFloatBuffer(8);
+        crosshairVertices.put(width/2 - 10).put(height/2);
+        crosshairVertices.put(width/2 + 10).put(height/2);
+        crosshairVertices.put(width/2).put(height/2 - 10);
+        crosshairVertices.put(width/2).put(height/2 + 10);
+        crosshairVertices.flip();
+        glBindBuffer(GL_ARRAY_BUFFER, crosshairVertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, crosshairVertices, GL_STATIC_DRAW);
+        int screenBuffer = glGenBuffers();
+        FloatBuffer screen = BufferUtils.createFloatBuffer(2);
+        screen.put(width);
+        screen.put(height);
+        glBindBuffer(GL_ARRAY_BUFFER, screenBuffer);
+        glBufferData(GL_ARRAY_BUFFER, screenBuffer, GL_STATIC_DRAW);
+        int screenID = glGetUniformLocation(crosshairProgram, "screen");
+
+        int rayVShader = createShader("ray.vert", GL_VERTEX_SHADER);
+        int rayFShader = createShader("ray.frag", GL_FRAGMENT_SHADER);
+        int rayProgram = createShaderProgram(rayVShader, rayFShader);
+
+        int rayMatrixID = glGetUniformLocation(program, "MVP");
+
+        projMatrix.perspective((float) Math.toRadians(45.0f), (float) width / height, 0.1f, 100f);
         viewMatrix.lookAt(0, 32, 0, 0, 0, 0, 0, 1, 0);
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
+//        projMatrix.invertPerspectiveView(viewMatrix, invViewProjMatrix);
 
         textures = new ArrayList<>();
 
         world = new World();
         lastChunkTime = System.nanoTime();
+
+        glfwSetCursorPos(window, width/2, height/2);
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -180,7 +220,19 @@ public class SpaceQuest {
             glUseProgram(program);
             glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
 
+            glUseProgram(crosshairProgram);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, crosshairVertexBuffer);
+            glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+            glUniform2fv(screenID, screen);
+            glDrawArrays(GL_LINES, 0, crosshairVertices.capacity());
+
+            glDisableVertexAttribArray(0);
+
+            glUseProgram(program);
             world.render();
+
+            drawRay(rayProgram, rayMatrixID, rayBuffer);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -192,19 +244,77 @@ public class SpaceQuest {
         world.cleanup();
         ResourceManager.INSTANCE.cleanup();
         glDeleteVertexArrays(vao);
+        glDeleteBuffers(rayBuffer);
+        glDeleteBuffers(rayUVBUffer);
         glDeleteProgram(program);
         glfwTerminate();
     }
 
+    void drawRay(int program, int matrixID, int buffer) {
+        FloatBuffer points = BufferUtils.createFloatBuffer(3 * 25);
+//        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * sin(horizontalAngle)), (float) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
+//        Vector3f direction = new Vector3f();
+//        invProjMatrix.transformProject(direction);
+//        float currX = cameraPosition.x;
+//        float currY = cameraPosition.y;
+//        float currZ = cameraPosition.z;
+//        float startX = cameraPosition.x;
+//        float startY = cameraPosition.y;
+//        float startZ = cameraPosition.z;
+//        float endX = cameraLookAt.x;
+//        float endY = cameraLookAt.y;
+//        float endZ = cameraLookAt.z;
+//        for(int i = 0; i < 25; i++) {
+//            points.put(currX).put(currY).put(currZ);
+//            currX += direction.x;
+//            currY += direction.y;
+//            currZ += direction.z;
+//        }
+//        Vector3f direction = subtract(cameraLookAt, cameraPosition).normalize();
+//        points.put(startX).put(startY).put(startZ);
+//        points.put(endX).put(endY).put(endZ);
+
+        FrustumRayBuilder rayBuilder = new FrustumRayBuilder(viewProjMatrix);
+        Vector3f origin = new Vector3f();
+        rayBuilder.origin(origin);
+//        System.out.println(origin);
+        float currX = origin.x;
+        float currY = origin.y;
+        float currZ = origin.z;
+
+        Vector3f direction = new Vector3f();
+        rayBuilder.dir(0.5f, 0.5f, direction);
+//        System.out.println(direction);
+
+        for(int i = 0; i < 25; i++) {
+            points.put(currX).put(currY).put(currZ);
+            currX += direction.x;
+            currY += direction.y;
+            currZ += direction.z;
+        }
+
+        points.flip();
+
+        glUseProgram(program);
+        glUniformMatrix4fv(matrixID, false, mvp.get(matrixBuffer));
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, points, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+        glDrawArrays(GL_LINE_STRIP, 0, points.capacity());
+        glDisableVertexAttribArray(0);
+    }
+
     void updateControls(float deltaTime) {
-        DoubleBuffer xBuf = BufferUtils.createDoubleBuffer(1);
-        DoubleBuffer yBuf = BufferUtils.createDoubleBuffer(1);
-        glfwGetCursorPos(window, xBuf, yBuf);
-        mouseX = (float) xBuf.get(0);
-        mouseY = (float) yBuf.get(0);
+        horizontalAngle += mouseSpeed * deltaTime * ((float)width/2 - mouseX);
+        verticalAngle += mouseSpeed * deltaTime * ((float)height/2 - mouseY);
+        //don't allow player to have full vertical motion, includes slight compensation, look inversion occurs at exactly -pi/2 and pi/2
+        if (verticalAngle < -PI/2)
+            verticalAngle = (float) (-PI/2) + 0.0000001f;
+        if (verticalAngle > PI/2)
+            verticalAngle = (float) (PI/2) - 0.0000001f;
+
         glfwSetCursorPos(window, width/2, height/2);
-        horizontalAngle += mouseSpeed * deltaTime * (width/2 - mouseX);
-        verticalAngle += -mouseSpeed * deltaTime * (height/2 - mouseY);
 
         if (keyDown[GLFW_KEY_Q]){
             horizontalAngle += mouseSpeed * deltaTime;
@@ -226,36 +336,59 @@ public class SpaceQuest {
 //        Vector3f right = new Vector3f((float) sin(horizontalAngle - PI/2.0f), 0.0f, (float) cos(horizontalAngle - PI/2.0f));
 //        Vector3f up = new Vector3f(right).cross(direction);
 
-        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
-        Vector3f forward = new Vector3f((float) (cos(verticalAngle) * Math.sin(horizontalAngle)), 0.0f, (float) (cos(verticalAngle) * cos(horizontalAngle))).normalize();
-        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-        Vector3f right = new Vector3f(forward).cross(up).normalize();
+        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * sin(horizontalAngle)), (float ) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
+        Vector3f forward = new Vector3f((float) (cos(verticalAngle) * sin(horizontalAngle)), 0.0f, (float) (cos(verticalAngle) * cos(horizontalAngle)));
+        cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
+        Vector3f right = new Vector3f(forward).cross(cameraUp).normalize();
 //        System.out.println(verticalAngle + ", " + direction.y);
 
         if (keyDown[GLFW_KEY_W]){
-            position = add(position, forward.mul(deltaTime * speed));
+            cameraPosition.add(forward.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_S]){
-            position = subtract(position, forward.mul(deltaTime * speed));
+            cameraPosition.sub(forward.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_D]){
-            position = add(position, right.mul(deltaTime * speed));
+            cameraPosition.add(right.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_A]){
-            position = subtract(position, right.mul(deltaTime * speed));
+            cameraPosition.sub(right.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_SPACE]) {
-            position = add(position, up.mul(deltaTime * speed));
+            cameraPosition.add(cameraUp.mul(deltaTime * speed));
         }
         if (keyDown[GLFW_KEY_LEFT_SHIFT]) {
-            position = subtract(position, up.mul(deltaTime * speed));
+            cameraPosition.sub(cameraUp.mul(deltaTime * speed));
         }
 
+        cameraLookAt = new Vector3f(add(cameraPosition, direction));
+
         projMatrix = new Matrix4f().perspective((float) Math.toRadians(fov), 4.0f / 3.0f, 0.1f, 100f);
-        viewMatrix = new Matrix4f().lookAt(position, add(position, direction), up);
-        modelMatrix = new Matrix4f().set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-        mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
-        frustumIntersection.set(mvp);
+        projMatrix.invert(invProjMatrix);
+        viewMatrix.setLookAt(cameraPosition, cameraLookAt, cameraUp);
+        viewMatrix.invert(invViewMatrix);
+        viewProjMatrix.set(projMatrix).mul(viewMatrix);
+        viewProjMatrix.invert(invViewProjMatrix);
+        mvp = viewProjMatrix;
+        frustumIntersection.set(viewProjMatrix);
+//        viewMatrix = new Matrix4f().lookAt(cameraPosition, add(cameraPosition, direction), cameraUp);
+//        viewMatrix = projMatrix.lookAt(cameraPosition, add(cameraPosition, direction), cameraUp);
+//        System.out.println(viewMatrix);
+//        modelMatrix = new Matrix4f().set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+//        mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
+//        mvp = viewMatrix.mul(modelMatrix);
+//        frustumIntersection.set(mvp);
+
+//        viewMatrix.setLookAt(cameraPosition, add(cameraPosition, direction), cameraUp);
+//        mvp = viewMatrix;
+//        frustumIntersection.set(mvp);
+//
+//        if (resetFrameBuffer) {
+//            projMatrix.setPerspective((float) toRadians(45.0f), (float) width / height, 0.1f, 100f);
+//            resetFrameBuffer = false;
+//        }
+
+        projMatrix.invertPerspectiveView(viewMatrix, invViewProjMatrix);
     }
 
     Vector3f add(Vector3f vec1, Vector3f vec2) {

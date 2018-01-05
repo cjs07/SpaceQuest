@@ -6,8 +6,6 @@ import com.deepwelldevelopment.spacequest.physics.Raycast;
 import com.deepwelldevelopment.spacequest.world.World;
 import org.joml.Vector3f;
 
-import static java.lang.Math.floor;
-
 public class PlayerClickEvent extends Event {
 
     int mouseCode;
@@ -19,8 +17,8 @@ public class PlayerClickEvent extends Event {
 
     @Override
     public boolean dispatch() {
-        Vector3f pos = SpaceQuest.INSTANCE.position;
-        Raycast raycast = new Raycast((int)floor(pos.x), (int)floor(pos.y), (int)floor(pos.z), 4, world, SpaceQuest.INSTANCE.horizontalAngle,
+        Vector3f pos = SpaceQuest.INSTANCE.cameraPosition;
+        Raycast raycast = new Raycast(pos.x, pos.y, pos.z, 25, world, SpaceQuest.INSTANCE.horizontalAngle,
                 SpaceQuest.INSTANCE.verticalAngle);
         Block b = raycast.getHitResult();
         if (b != null) {

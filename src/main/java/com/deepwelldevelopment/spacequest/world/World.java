@@ -46,16 +46,21 @@ public class World {
         int chunkX  = x / 16;
         int chunkZ = z / 16;
         Chunk chunk = provider.getChunk(chunkX, chunkZ);
-        int posX = (((x % 16) + 16) % 16);
-        int posZ = (((z % 16) + 16) % 16);
-        return chunk.getLayer(y).getBlock(posX, posZ);
+        if (chunk != null && y >= 0) {
+            int posX = (((x % 16) + 16) % 16);
+            int posZ = (((z % 16) + 16) % 16);
+            return chunk.getLayer(y).getBlock(posX, posZ);
+        }
+        return null;
     }
 
     public void setBlock(int x, int y, int z, Block b) {
         int chunkX  = x / 16;
         int chunkZ = z / 16;
         Chunk chunk = provider.getChunk(chunkX, chunkZ);
-        chunk.getLayer(y).setBlock(x%16, z%16, b);
+        int posX = (((x % 16) + 16) % 16);
+        int posZ = (((z % 16) + 16) % 16);
+        chunk.getLayer(y).setBlock(posX, posZ, b);
         chunk.update();
     }
 

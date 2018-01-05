@@ -233,6 +233,16 @@ public class Block implements ICrossThreadObject {
         return ret;
     }
 
+    public ArrayList<Float> getDrawnVertices(int side) {
+        ArrayList<Float> ret = new ArrayList<>();
+        FloatBuffer buf = vertices[side];
+        buf.rewind();
+        while (buf.hasRemaining()) {
+            ret.add(buf.get());
+        }
+        return ret;
+    }
+
     public ArrayList<Float> getDrawnUV() {
         ArrayList<Float> ret = new ArrayList<>();
         for (EnumBlockSide side : EnumBlockSide.values()) {

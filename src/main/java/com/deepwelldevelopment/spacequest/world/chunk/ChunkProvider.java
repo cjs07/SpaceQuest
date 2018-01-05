@@ -42,7 +42,7 @@ public class ChunkProvider implements Runnable {
         if (chunks.containsKey(l)) {
             return chunks.get(l);
         } else {
-            return generateChunk(x, z);
+            return null;
         }
     }
 
