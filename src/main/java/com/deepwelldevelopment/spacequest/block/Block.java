@@ -51,6 +51,8 @@ public class Block implements ICrossThreadObject {
     private FloatBuffer[] vertices = new FloatBuffer[6];
     private FloatBuffer[] uv = new FloatBuffer[6];
 
+    private boolean selected = false;
+
     private int[] vertexBuffers = new int[6];
     private int[] uvBuffers = new int[6];
 
@@ -255,6 +257,14 @@ public class Block implements ICrossThreadObject {
             }
         }
         return ret;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public boolean isSelected() {
+        return selected;
     }
 
     /**

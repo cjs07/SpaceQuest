@@ -11,16 +11,19 @@ public class GLManager {
 
     private Queue<Integer> vertexBuffers;
     private Queue<Integer> uvBuffers;
+    private Queue<Integer> selectionBuffers;
 
     public GLManager(int maxBuffers) {
         INSTANCE = this;
 
         vertexBuffers = new ArrayBlockingQueue<>(maxBuffers);
         uvBuffers = new ArrayBlockingQueue<>(maxBuffers);
+        selectionBuffers = new ArrayBlockingQueue<>(maxBuffers);
 
         for (int i = 0; i < maxBuffers; i++) {
             vertexBuffers.add(glGenBuffers());
             uvBuffers.add(glGenBuffers());
+            selectionBuffers.add(glGenBuffers());
         }
     }
 
@@ -30,5 +33,9 @@ public class GLManager {
 
     public int getUVBuffer() {
         return uvBuffers.remove();
+    }
+
+    public int getSelectionBuffer() {
+        return selectionBuffers.remove();
     }
 }

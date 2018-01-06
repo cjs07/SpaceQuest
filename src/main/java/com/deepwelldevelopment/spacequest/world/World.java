@@ -8,6 +8,8 @@ import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.ChunkProvider;
 import com.deepwelldevelopment.spacequest.world.generation.Generator;
 
+import java.util.ArrayList;
+
 public class World {
 
     Generator generator;
@@ -34,12 +36,21 @@ public class World {
 
     public void render() {
         for (Chunk c : provider.getLoadedChunks()) {
+            c.update(false);
             c.render();
         }
     }
 
     public void dispatchEvent(Event event) {
         event.dispatch();
+    }
+
+    public ArrayList<Block> getAllBlocks() {
+        ArrayList<Block> ret = new ArrayList<>();
+        for (Chunk c : provider.getLoadedChunks()) {
+            ret.addAll(c.getBlocks());
+        }
+        return ret;
     }
 
     public Block getBlock(int x, int y, int z) {
@@ -61,7 +72,7 @@ public class World {
         int posX = (((x % 16) + 16) % 16);
         int posZ = (((z % 16) + 16) % 16);
         chunk.getLayer(y).setBlock(posX, posZ, b);
-        chunk.update();
+        chunk.update(true);
     }
 
     //0 = left click, 1 = right click, 2 = middle click ?

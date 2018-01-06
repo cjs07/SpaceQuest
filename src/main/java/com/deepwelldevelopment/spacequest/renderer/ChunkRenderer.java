@@ -22,9 +22,11 @@ public class ChunkRenderer {
 
     private FloatBuffer vertices;
     private FloatBuffer uv;
+    private FloatBuffer selection;
 
     private int vertexBuffer;
     private int uvBuffer;
+    private int selectionBuffer;
     private int textureID;
 
     private Chunk chunk;
@@ -35,6 +37,8 @@ public class ChunkRenderer {
         ArrayList<Float> blockVertices = new ArrayList<>();
         ArrayList<Float> blockUV = new ArrayList<>();
 
+        selection = BufferUtils.createFloatBuffer(0);
+
         for(Layer l : chunk.getLayers()) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
@@ -43,6 +47,13 @@ public class ChunkRenderer {
                         if (b != null) {
                             blockVertices.addAll(b.getDrawnVertices());
                             blockUV.addAll(b.getDrawnUV());
+                            if (b.isSelected()) {
+                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+                                selection.put(1).put(1).put(1).put(1).put(1).put(1);
+                            } else {
+                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+                                selection.put(0).put(0).put(0).put(0).put(0).put(0);
+                            }
                         }
                     }
                 }
@@ -71,6 +82,11 @@ public class ChunkRenderer {
         glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
         glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
 
+        selection.flip();
+        selectionBuffer = GLManager.INSTANCE.getSelectionBuffer();
+        glBindBuffer(GL_ARRAY_BUFFER, selectionBuffer);
+        glBufferData(GL_ARRAY_BUFFER, selection, GL_DYNAMIC_DRAW);
+
         try {
             int vShader = createShader("vertex.vert", GL_VERTEX_SHADER);
             int fShader = createShader("fragment.frag", GL_FRAGMENT_SHADER);
@@ -83,6 +99,7 @@ public class ChunkRenderer {
 
     //only called when a block in the chunk is added or removed, can probably be optimized
     public void update() {
+        selection = BufferUtils.createFloatBuffer(0);
         ArrayList<Float> blockVertices = new ArrayList<>();
         ArrayList<Float> blockUV = new ArrayList<>();
 
@@ -94,6 +111,13 @@ public class ChunkRenderer {
                         if (b != null) {
                             blockVertices.addAll(b.getDrawnVertices());
                             blockUV.addAll(b.getDrawnUV());
+                            if (b.isSelected()) {
+                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+                                selection.put(1).put(1).put(1).put(1).put(1).put(1);
+                            } else {
+                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+                                selection.put(0).put(0).put(0).put(0).put(0).put(0);
+                            }
                         }
                     }
                 }
@@ -117,6 +141,32 @@ public class ChunkRenderer {
         uv.flip();
         glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
         glBufferData(GL_ARRAY_BUFFER, uv, GL_STATIC_DRAW);
+
+        selection.flip();
+        glBindBuffer(GL_ARRAY_BUFFER, selectionBuffer);
+        glBufferData(GL_ARRAY_BUFFER, selection, GL_DYNAMIC_DRAW);
+    }
+
+    public void updateSelected() {
+//        selection = BufferUtils.createFloatBuffer(0);
+//        for (Layer l : chunk.getLayers()) {
+//            for (int x = 0; x < 16; x++) {
+//                for (int z = 0; z < 16; z++) {
+//                    if (l != null) {
+//                        Block b = l.getBlock(x, z);
+//                        if (b != null) {
+//                            if (b.isSelected()) {
+//                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+//                                selection.put(1).put(1).put(1).put(1).put(1).put(1);
+//                            } else {
+//                                selection = BufferUtils.createFloatBuffer(selection.capacity()+6).put(selection);
+//                                selection.put(0).put(0).put(0).put(0).put(0).put(0);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     public void render() {
@@ -132,8 +182,13 @@ public class ChunkRenderer {
         glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, selectionBuffer);
+        glVertexAttribPointer(2, 1, GL_FLOAT, false, 0, 0);
+
         glDrawArrays(GL_TRIANGLES, 0, vertices.capacity());
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
     }
 }

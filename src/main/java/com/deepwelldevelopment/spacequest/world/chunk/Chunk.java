@@ -1,7 +1,10 @@
 package com.deepwelldevelopment.spacequest.world.chunk;
 
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.renderer.ChunkRenderer;
 import com.deepwelldevelopment.spacequest.world.World;
+
+import java.util.ArrayList;
 
 public class Chunk {
 
@@ -63,8 +66,12 @@ public class Chunk {
         }
     }
 
-    public void update() {
-        renderer.update();
+    public void update(boolean blockUpdate) {
+        if (blockUpdate) {
+            renderer.update();
+        } else {
+            renderer.updateSelected();
+        }
     }
 
     public void render() {
@@ -74,6 +81,18 @@ public class Chunk {
         if (initialized) {
             renderer.render();
         }
+    }
+
+    public ArrayList<Block> getBlocks() {
+        ArrayList<Block> ret = new ArrayList<>();
+        for (Layer l : layers) {
+            for (int x = 0; x < l.blocks.length; x++) {
+                for (int z = 0; z < l.blocks[0].length; z++) {
+                    ret.add(l.getBlock(x, z));
+                }
+            }
+        }
+        return ret;
     }
 
     public Layer getLayer(int i) {

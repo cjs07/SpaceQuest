@@ -1,13 +1,11 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.renderer.ResourceManager;
 import com.deepwelldevelopment.spacequest.renderer.Texture;
 import com.deepwelldevelopment.spacequest.util.GLManager;
 import com.deepwelldevelopment.spacequest.world.World;
-import org.joml.FrustumIntersection;
-import org.joml.FrustumRayBuilder;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -39,7 +37,7 @@ public class SpaceQuest {
 
     public Matrix4f projMatrix = new Matrix4f();
     Matrix4f invProjMatrix = new Matrix4f();
-    private Matrix4f viewMatrix = new Matrix4f();
+    public Matrix4f viewMatrix = new Matrix4f();
     public Matrix4f viewProjMatrix = new Matrix4f();
     private Matrix4f invViewMatrix = new Matrix4f();
     private Matrix4f modelMatrix = new Matrix4f();
@@ -196,7 +194,7 @@ public class SpaceQuest {
 
         int rayMatrixID = glGetUniformLocation(program, "MVP");
 
-        projMatrix.perspective((float) Math.toRadians(45.0f), (float) width / height, 0.1f, 100f);
+        projMatrix.perspective((float) toRadians(45.0f), (float) width / height, 0.1f, 100f);
         viewMatrix.lookAt(0, 32, 0, 0, 0, 0, 0, 1, 0);
         modelMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         mvp = projMatrix.mul(viewMatrix.mul(modelMatrix));
@@ -208,6 +206,11 @@ public class SpaceQuest {
         lastChunkTime = System.nanoTime();
 
         glfwSetCursorPos(window, width/2, height/2);
+
+        Vector3f direction = new Vector3f();
+        Vector3f min = new Vector3f();
+        Vector3f max = new Vector3f();
+        Vector2f nearFar = new Vector2f();
 
         while (!glfwWindowShouldClose(window)) {
             long thisTime = System.nanoTime();
@@ -232,6 +235,24 @@ public class SpaceQuest {
             glUseProgram(program);
             world.render();
 
+            Block selectedBlock = null;
+            float closesetDistance = Float.POSITIVE_INFINITY;
+            viewMatrix.positiveZ(direction).negate();
+            for (Block b : world.getAllBlocks()) {
+                if (b != null) {
+                    b.setSelected(true);
+                    min.set(b.x, b.y, b.z);
+                    max.set(b.x + 1, b.y + 1, b.z + 1);
+                    if (Intersectionf.intersectRayAab(cameraPosition, direction, min, max, nearFar) && nearFar.x < closesetDistance) {
+                        closesetDistance = nearFar.x;
+                        selectedBlock = b;
+                    }
+                }
+            }
+            if (selectedBlock != null) {
+                selectedBlock.setSelected(true);
+            }
+
             drawRay(rayProgram, rayMatrixID, rayBuffer);
 
             glfwSwapBuffers(window);
@@ -255,36 +276,12 @@ public class SpaceQuest {
 //        Vector3f direction = new Vector3f((float) (cos(verticalAngle) * sin(horizontalAngle)), (float) sin(verticalAngle), (float) (cos(verticalAngle) * cos(horizontalAngle)));
 //        Vector3f direction = new Vector3f();
 //        invProjMatrix.transformProject(direction);
-//        float currX = cameraPosition.x;
-//        float currY = cameraPosition.y;
-//        float currZ = cameraPosition.z;
-//        float startX = cameraPosition.x;
-//        float startY = cameraPosition.y;
-//        float startZ = cameraPosition.z;
-//        float endX = cameraLookAt.x;
-//        float endY = cameraLookAt.y;
-//        float endZ = cameraLookAt.z;
-//        for(int i = 0; i < 25; i++) {
-//            points.put(currX).put(currY).put(currZ);
-//            currX += direction.x;
-//            currY += direction.y;
-//            currZ += direction.z;
-//        }
-//        Vector3f direction = subtract(cameraLookAt, cameraPosition).normalize();
-//        points.put(startX).put(startY).put(startZ);
-//        points.put(endX).put(endY).put(endZ);
-
-        FrustumRayBuilder rayBuilder = new FrustumRayBuilder(viewProjMatrix);
-        Vector3f origin = new Vector3f();
-        rayBuilder.origin(origin);
-//        System.out.println(origin);
-        float currX = origin.x;
-        float currY = origin.y;
-        float currZ = origin.z;
-
         Vector3f direction = new Vector3f();
-        rayBuilder.dir(0.5f, 0.5f, direction);
-//        System.out.println(direction);
+        viewProjMatrix.positiveZ(direction);
+        direction.negate();
+        float currX = cameraPosition.x;
+        float currY = cameraPosition.y;
+        float currZ = cameraPosition.z;
 
         for(int i = 0; i < 25; i++) {
             points.put(currX).put(currY).put(currZ);
@@ -363,7 +360,7 @@ public class SpaceQuest {
 
         cameraLookAt = new Vector3f(add(cameraPosition, direction));
 
-        projMatrix = new Matrix4f().perspective((float) Math.toRadians(fov), 4.0f / 3.0f, 0.1f, 100f);
+        projMatrix = new Matrix4f().perspective((float) toRadians(fov), 4.0f / 3.0f, 0.1f, 100f);
         projMatrix.invert(invProjMatrix);
         viewMatrix.setLookAt(cameraPosition, cameraLookAt, cameraUp);
         viewMatrix.invert(invViewMatrix);
