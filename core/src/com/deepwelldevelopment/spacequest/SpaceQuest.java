@@ -87,7 +87,7 @@ public class SpaceQuest implements ApplicationListener {
                 left = true;
             }
             if (b.getX() == 9) {
-                left = true;
+                right = true;
             }
             if (b.getY() == 0) {
                 bottom = true;
@@ -96,10 +96,10 @@ public class SpaceQuest implements ApplicationListener {
                 top = true;
             }
             if (b.getZ() == 0) {
-                back = true;
+                front = true;
             }
             if (b.getZ() == 9) {
-                front = true;
+                back = true;
             }
 
             blockInstances.add(new BlockInstance(b, grassModel, front, back, top, bottom, left, right));

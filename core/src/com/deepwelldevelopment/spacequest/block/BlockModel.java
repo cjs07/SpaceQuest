@@ -49,7 +49,7 @@ public class BlockModel implements Disposable {
 
         meshBuilder.begin(attr);
         this.front = meshBuilder.part("front", GL20.GL_TRIANGLES);
-        meshBuilder.rect(-0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -2, 0.5f, -0.5f, -0.5f, 0, 0, -1);
+        meshBuilder.rect(-0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0, 0, -1);
         meshBuilder.end();
 
         meshBuilder.begin(attr);
