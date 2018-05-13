@@ -2,26 +2,40 @@ package com.deepwelldevelopment.spacequest;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.BlockInstance;
+import com.deepwelldevelopment.spacequest.block.BlockModel;
+
+import java.util.ArrayList;
 
 public class SpaceQuest implements ApplicationListener {
 
     private Environment environment;
     private PerspectiveCamera cam;
     private ModelBatch modelBatch;
-    private Model model;
+    private BlockModel grassModel;
     private Texture texture;
-    private ModelInstance instance;
+    private Texture texture2;
+    private ArrayList<BlockInstance> blockInstances;
+    private ArrayList<Block> world;
     private CameraInputController camController;
+
+    private Stage stage;
+    private Label label;
+    private BitmapFont font;
 
     @Override
     public void create() {
@@ -37,17 +51,59 @@ public class SpaceQuest implements ApplicationListener {
         cam.update();
 
         texture = new Texture("texture.png");
-        ModelBuilder builder = new ModelBuilder();
-//        builder.begin();
-//
-//        builder.end();
-        model = builder.createBox(5f, 5f, 5f,
-                new Material(TextureAttribute.createDiffuse(texture)),
-                Usage.Position | Usage.Normal | Usage.TextureCoordinates);
-        instance = new ModelInstance(model);
+        texture2 = new Texture("texture2.png");
+
+        grassModel = new BlockModel("grass", texture, texture, texture2, texture, texture, texture);
+
+        world = new ArrayList<>();
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                for (int z = 0; z < 10; z++) {
+                    Block block = new Block(x, y, z);
+                    world.add(block);
+                }
+            }
+        }
 
         camController = new CameraInputController(cam);
         Gdx.input.setInputProcessor(camController);
+
+        stage = new Stage();
+        font = new BitmapFont();
+        label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
+        stage.addActor(label);
+
+        blockInstances = new ArrayList<>();
+        for (int i = 0; i < world.size(); i++) {
+            Block b = world.get(i);
+            boolean front = false;
+            boolean back = false;
+            boolean top = false;
+            boolean bottom = false;
+            boolean left = false;
+            boolean right = false;
+
+            if (b.getX() == 0) {
+                left = true;
+            }
+            if (b.getX() == 9) {
+                left = true;
+            }
+            if (b.getY() == 0) {
+                bottom = true;
+            }
+            if (b.getY() == 9) {
+                top = true;
+            }
+            if (b.getZ() == 0) {
+                back = true;
+            }
+            if (b.getZ() == 9) {
+                front = true;
+            }
+
+            blockInstances.add(new BlockInstance(b, grassModel, front, back, top, bottom, left, right));
+        }
     }
 
     @Override
@@ -58,15 +114,24 @@ public class SpaceQuest implements ApplicationListener {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(cam);
-        modelBatch.render(instance, environment);
+        for (ModelInstance instance : blockInstances) {
+            modelBatch.render(instance, environment);
+        }
         modelBatch.end();
+
+        label.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+        stage.draw();
     }
 
     @Override
     public void dispose() {
         texture.dispose();
+        texture2.dispose();
+        grassModel.dispose();
+        blockInstances.clear();
         modelBatch.dispose();
-        model.dispose();
+        font.dispose();
+        stage.dispose();
     }
 
     @Override
@@ -75,6 +140,7 @@ public class SpaceQuest implements ApplicationListener {
 
     @Override
     public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
