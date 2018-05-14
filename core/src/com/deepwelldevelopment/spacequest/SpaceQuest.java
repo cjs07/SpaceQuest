@@ -12,8 +12,8 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockInstance;
@@ -31,11 +31,13 @@ public class SpaceQuest implements ApplicationListener {
     private Texture texture2;
     private ArrayList<BlockInstance> blockInstances;
     private ArrayList<Block> world;
-    private CameraInputController camController;
+    private CameraController camController;
 
     private Stage stage;
     private Label label;
     private BitmapFont font;
+    private Image crosshair;
+    private Texture crosshairTexture;
 
     @Override
     public void create() {
@@ -65,13 +67,19 @@ public class SpaceQuest implements ApplicationListener {
             }
         }
 
-        camController = new CameraInputController(cam);
+        camController = new CameraController(cam);
+        cam.up.set(0, 1, 0);
         Gdx.input.setInputProcessor(camController);
+        Gdx.input.setCursorCatched(true);
 
         stage = new Stage();
         font = new BitmapFont();
         label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
+        crosshairTexture = new Texture("crosshair.png");
+        crosshair = new Image(crosshairTexture);
+        crosshair.setPosition(Gdx.graphics.getWidth() / 2,Gdx.graphics.getHeight() / 2);
         stage.addActor(label);
+        stage.addActor(crosshair);
 
         blockInstances = new ArrayList<>();
         for (int i = 0; i < world.size(); i++) {
@@ -134,6 +142,7 @@ public class SpaceQuest implements ApplicationListener {
         blockInstances.clear();
         modelBatch.dispose();
         font.dispose();
+        crosshairTexture.dispose();
         stage.dispose();
     }
 
@@ -144,6 +153,8 @@ public class SpaceQuest implements ApplicationListener {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        cam.viewportWidth = width;
+        cam.viewportHeight = height;
     }
 
     @Override
