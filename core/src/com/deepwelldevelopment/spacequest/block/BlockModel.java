@@ -142,6 +142,11 @@ public class BlockModel implements Disposable {
 
     @Override
     public void dispose() {
-
+        frontTexture.dispose();
+        backTexture.dispose();
+        topTexture.dispose();
+        bottomTexture.dispose();
+        leftTexture.dispose();
+        rightTexture.dispose();
     }
 }

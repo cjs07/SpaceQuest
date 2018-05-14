@@ -128,6 +128,9 @@ public class SpaceQuest implements ApplicationListener {
         texture.dispose();
         texture2.dispose();
         grassModel.dispose();
+        for (BlockInstance bi : blockInstances) {
+            bi.dispose();
+        }
         blockInstances.clear();
         modelBatch.dispose();
         font.dispose();
