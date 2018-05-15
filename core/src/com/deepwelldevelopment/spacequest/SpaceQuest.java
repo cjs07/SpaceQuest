@@ -15,11 +15,9 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.deepwelldevelopment.spacequest.block.Block;
-import com.deepwelldevelopment.spacequest.block.BlockInstance;
 import com.deepwelldevelopment.spacequest.block.BlockModel;
-
-import java.util.ArrayList;
+import com.deepwelldevelopment.spacequest.world.World;
+import com.deepwelldevelopment.spacequest.world.WorldModel;
 
 public class SpaceQuest implements ApplicationListener {
 
@@ -29,8 +27,7 @@ public class SpaceQuest implements ApplicationListener {
     private BlockModel grassModel;
     private Texture texture;
     private Texture texture2;
-    private ArrayList<BlockInstance> blockInstances;
-    private ArrayList<Block> world;
+    private World world;
     private CameraController camController;
 
     private Stage stage;
@@ -38,6 +35,8 @@ public class SpaceQuest implements ApplicationListener {
     private BitmapFont font;
     private Image crosshair;
     private Texture crosshairTexture;
+
+    private ModelInstance worldModelInstance;
 
     @Override
     public void create() {
@@ -56,16 +55,7 @@ public class SpaceQuest implements ApplicationListener {
         texture2 = new Texture("texture2.png");
 
         grassModel = new BlockModel("grass", texture, texture, texture2, texture, texture, texture);
-
-        world = new ArrayList<>();
-        for (int x = 0; x < 10; x++) {
-            for (int y = 0; y < 10; y++) {
-                for (int z = 0; z < 10; z++) {
-                    Block block = new Block(x, y, z);
-                    world.add(block);
-                }
-            }
-        }
+        new BlockModel("dirt", texture);
 
         camController = new CameraController(cam);
         cam.up.set(0, 1, 0);
@@ -81,37 +71,40 @@ public class SpaceQuest implements ApplicationListener {
         stage.addActor(label);
         stage.addActor(crosshair);
 
-        blockInstances = new ArrayList<>();
-        for (int i = 0; i < world.size(); i++) {
-            Block b = world.get(i);
-            boolean front = false;
-            boolean back = false;
-            boolean top = false;
-            boolean bottom = false;
-            boolean left = false;
-            boolean right = false;
+        world = new World();
+        worldModelInstance = new ModelInstance(new WorldModel(world).buildModel());
 
-            if (b.getX() == 0) {
-                left = true;
-            }
-            if (b.getX() == 9) {
-                right = true;
-            }
-            if (b.getY() == 0) {
-                bottom = true;
-            }
-            if (b.getY() == 9) {
-                top = true;
-            }
-            if (b.getZ() == 0) {
-                front = true;
-            }
-            if (b.getZ() == 9) {
-                back = true;
-            }
-
-            blockInstances.add(new BlockInstance(b, grassModel, front, back, top, bottom, left, right));
-        }
+//        blockInstances = new ArrayList<>();
+//        for (int i = 0; i < world.size(); i++) {
+//            Block b = world.get(i);
+//            boolean front = false;
+//            boolean back = false;
+//            boolean top = false;
+//            boolean bottom = false;
+//            boolean left = false;
+//            boolean right = false;
+//
+//            if (b.getX() == 0) {
+//                left = true;
+//            }
+//            if (b.getX() == 9) {
+//                right = true;
+//            }
+//            if (b.getY() == 0) {
+//                bottom = true;
+//            }
+//            if (b.getY() == 9) {
+//                top = true;
+//            }
+//            if (b.getZ() == 0) {
+//                front = true;
+//            }
+//            if (b.getZ() == 9) {
+//                back = true;
+//            }
+//
+//            blockInstances.add(new BlockInstance(b, grassModel, front, back, top, bottom, left, right));
+//        }
     }
 
     @Override
@@ -122,9 +115,10 @@ public class SpaceQuest implements ApplicationListener {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(cam);
-        for (ModelInstance instance : blockInstances) {
-            modelBatch.render(instance, environment);
-        }
+//        for (ModelInstance instance : blockInstances) {
+//            modelBatch.render(instance, environment);
+//        }
+        modelBatch.render(worldModelInstance, environment);
         modelBatch.end();
 
         label.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
@@ -136,10 +130,11 @@ public class SpaceQuest implements ApplicationListener {
         texture.dispose();
         texture2.dispose();
         grassModel.dispose();
-        for (BlockInstance bi : blockInstances) {
-            bi.dispose();
-        }
-        blockInstances.clear();
+//        for (BlockInstance bi : blockInstances) {
+//            bi.dispose();
+//        }
+//        blockInstances.clear();
+        worldModelInstance.model.dispose();
         modelBatch.dispose();
         font.dispose();
         crosshairTexture.dispose();

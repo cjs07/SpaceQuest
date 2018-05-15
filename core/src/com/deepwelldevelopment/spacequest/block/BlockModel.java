@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -20,7 +19,6 @@ public class BlockModel implements Disposable {
     public static final Map<String, BlockModel> blockModels = new HashMap<>();
 
     private static int attr = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
-    private static MeshPartBuilder meshBuilder;
 
     private MeshPart front;
     private MeshPart back;
@@ -76,6 +74,8 @@ public class BlockModel implements Disposable {
         this.right = meshBuilder.part("right", GL20.GL_TRIANGLES);
         meshBuilder.rect(0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 1, 0, 0);
         meshBuilder.end();
+
+        blockModels.put(name, this);
     }
 
     /**
