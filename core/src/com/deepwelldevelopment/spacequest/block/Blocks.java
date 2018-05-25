@@ -5,6 +5,7 @@ package com.deepwelldevelopment.spacequest.block;
  */
 public class Blocks {
 
-//    public static final Block dirt;
-//    public static final Block grass;
+    public static Block AIR;
+    public static Block DIRT;
+    public static Block GRASS;
 }

@@ -109,7 +109,7 @@ public class BlockModel implements Disposable {
             modelBuilder.part(this.back, new Material(TextureAttribute.createDiffuse(backTexture)));
         }
         if (top) {
-            modelBuilder.part(this.top, new Material(TextureAttribute.createDiffuse(topTexture)));
+            modelBuilder.part(this.top, new Material(TextureAttribute.createDiffuse(topTexture), TextureAttribute.createDiffuse(leftTexture)));
         }
         if (bottom) {
             modelBuilder.part(this.bottom, new Material(TextureAttribute.createDiffuse(bottomTexture)));

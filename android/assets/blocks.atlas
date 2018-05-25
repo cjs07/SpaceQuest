@@ -1,0 +1,83 @@
+
+blocks.png
+size: 512,64
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+dirt
+  rotate: false
+  xy: 36, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+flower
+  rotate: false
+  xy: 206, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+glass
+  rotate: false
+  xy: 342, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+grass_side
+  rotate: false
+  xy: 2, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+grass_top
+  rotate: false
+  xy: 104, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+leaves
+  rotate: false
+  xy: 240, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+limestone
+  rotate: false
+  xy: 274, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+trunk
+  rotate: false
+  xy: 308, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+trunk_top
+  rotate: false
+  xy: 70, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+wall
+  rotate: false
+  xy: 138, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+water
+  rotate: false
+  xy: 172, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
