@@ -100,14 +100,14 @@ public class VoxelEngine {
 
     private void renderVoxelBatch() {
         if (!world.isPlayerInWater(camera)) {
-//            shaderProgram.begin();
-//            shaderProgram.setUniformf("u_fogstr", 0.04f);
-//            environment.set(skyFogColorAttribute);
-//        } else {
-//            shaderProgram.begin();
-//            shaderProgram.setUniformf("u_fogstr", 0.10f);
-//            environment.set(fogColorAttribute);
-//            Gdx.gl.glClearColor(waterFog.r, waterFog.g, waterFog.b, waterFog.a);
+            shaderProgram.begin();
+            shaderProgram.setUniformf("u_fogstr", 0.04f);
+            environment.set(skyFogColorAttribute);
+        } else {
+            shaderProgram.begin();
+            shaderProgram.setUniformf("u_fogstr", 0.10f);
+            environment.set(fogColorAttribute);
+            Gdx.gl.glClearColor(waterFog.r, waterFog.g, waterFog.b, waterFog.a);
         }
         voxelBatch.begin(camera);
         voxelBatch.render(voxelRender, environment);
@@ -207,7 +207,7 @@ public class VoxelEngine {
     private void setupCameraController() {
         cameraController = new CameraController(camera);
         //cameraController = new FlyingCameraController(camera);
-        cameraController.setVelocity(5f);
+        cameraController.setVelocity(7.5f);
         Gdx.input.setInputProcessor(cameraController);
         Gdx.input.setCursorCatched(true);
     }

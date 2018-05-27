@@ -97,14 +97,14 @@ public class World {
             int localZ = (int) z & 15;
             chunk.setBlock(localX, localY, localZ, block, updateLight);
             try {
-                getBlock((int) x + 1, (int) y, (int) z).onNeighborBlockChange((int) x + 1, (int) y, (int) z);
-                getBlock((int) x + 1, (int) y, (int) z - 1).onNeighborBlockChange((int) x + 1, (int) y, (int) z - 1);
-                getBlock((int) x + 1, (int) y, (int) z + 1).onNeighborBlockChange((int) x + 1, (int) y, (int) z + 1);
-                getBlock((int) x - 1, (int) y, (int) z).onNeighborBlockChange((int) x - 1, (int) y, (int) z);
-                getBlock((int) x - 1, (int) y, (int) z - 1).onNeighborBlockChange((int) x - 1, (int) y, (int) z - 1);
-                getBlock((int) x - 1, (int) y, (int) z + 1).onNeighborBlockChange((int) x - 1, (int) y, (int) z + 1);
-                getBlock((int) x, (int) y, (int) z + 1).onNeighborBlockChange((int) x, (int) y, (int) z + 1);
-                getBlock((int) x, (int) y, (int) z - 1).onNeighborBlockChange((int) x, (int) y, (int) z - 1);
+                getBlock((int) x + 1, (int) y, (int) z).onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z);
+                getBlock((int) x + 1, (int) y, (int) z - 1).onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z - 1);
+                getBlock((int) x + 1, (int) y, (int) z + 1).onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z + 1);
+                getBlock((int) x - 1, (int) y, (int) z).onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z);
+                getBlock((int) x - 1, (int) y, (int) z - 1).onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z - 1);
+                getBlock((int) x - 1, (int) y, (int) z + 1).onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z + 1);
+                getBlock((int) x, (int) y, (int) z + 1).onNeighborBlockChange(this, (int) x, (int) y, (int) z + 1);
+                getBlock((int) x, (int) y, (int) z - 1).onNeighborBlockChange(this, (int) x, (int) y, (int) z - 1);
             } catch (NullPointerException ex) {
                 ex.printStackTrace();
             }

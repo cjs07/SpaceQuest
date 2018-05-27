@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
 import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
+import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 public class Block {
@@ -91,7 +92,7 @@ public class Block {
         return blockProvider.getBlockById(blockAtSide).getOpacity() < 32;
     }
 
-    public void onNeighborBlockChange(int x, int y, int z) {
+    public void onNeighborBlockChange(World world, int x, int y, int z) {
     }
 
     public boolean isLightSource() {
