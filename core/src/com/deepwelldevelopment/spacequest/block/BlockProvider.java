@@ -25,7 +25,7 @@ public class BlockProvider implements IBlockProvider {
     public static final Block leaves = new Block((byte) 7, "leaves");
     //    public static final Block straws = new Block((byte) 8, "straw");
     public static final Block straws = new Block((byte) 8, "leaves").setOpacity(0).setCollidable(false);
-    public static final Block flower = new Block((byte) 9, "flower").setOpacity(0).setCollidable(false);
+    public static final Block flower = new BlockFlower((byte) 9, "flower");
     public static final Block water = new Block((byte) 10, "water").setOpacity(24).setCollidable(false);
     //    public static final Block shale = new Block((byte) 11, "shale");
     public static final Block shale = new Block((byte) 11, "limestone");
