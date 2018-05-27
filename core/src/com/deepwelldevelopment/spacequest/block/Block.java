@@ -19,12 +19,21 @@ public class Block {
     private Vector2[] bottomTextureUVs;
     private Vector2[] sidesTextureUVs;
 
+    private int opacity;
+    private boolean isLightSource;
+    private Color tileColor;
+    private boolean collidable;
+
     public Block(byte id, String topTextureRegion, String bottomTextureRegion, String sidesTextureRegion) {
         this.id = id;
         this.topTextureRegion = topTextureRegion;
         this.bottomTextureRegion = bottomTextureRegion;
         this.sidesTextureRegion = sidesTextureRegion;
         this.blockRender = new BasicBlockRender();
+        this.opacity = 32;
+        this.isLightSource = false;
+        this.tileColor = Color.WHITE;
+        this.collidable = true;
     }
 
     public Block(byte id, String textureRegion) {
@@ -86,27 +95,47 @@ public class Block {
     }
 
     public boolean isLightSource() {
-        return false;
+        return isLightSource;
     }
 
     public int getOpacity() {
-        return 32;
+        return opacity;
+    }
+
+    public Block setOpacity(int opacity) {
+        this.opacity = opacity;
+        return this;
     }
 
     public Color getTileColor(int x, int y, int z) {
-        return Color.WHITE;
+        return tileColor;
     }
 
     public IBlockRender getBlockRender() {
         return blockRender;
     }
 
-    public boolean isPlayerCollidable() {
-        return true;
+    public boolean isCollidable() {
+        return collidable;
+    }
+
+    public Block setCollidable(boolean collidable) {
+        this.collidable = collidable;
+        return this;
     }
 
     public boolean isLiquid() {
         return false;
+    }
+
+    public Block setIsLightSource(boolean lightSource) {
+        this.isLightSource = lightSource;
+        return this;
+    }
+
+    public Block setTileColor(Color tileColor) {
+        this.tileColor = tileColor;
+        return this;
     }
 
     public enum Side {

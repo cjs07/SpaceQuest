@@ -116,7 +116,7 @@ public class VoxelRender implements RenderableProvider {
                         worldChunkPosition.set(chunk.getWorldPosition());
                         worldChunkPosition.add(center);
                         if (camera.frustum.boundsInFrustum(worldChunkPosition, dimensions)) {
-                            addToRenderables(renderables, pool, mesh, boxMesh.getTransform());
+                            addToRenderables(renderables, pool, nonCollidableMesh, boxMesh.getTransform());
                         }
                     }
 
