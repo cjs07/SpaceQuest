@@ -2,13 +2,13 @@ package com.deepwelldevelopment.spacequest.util;
 
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
-import com.deepwelldevelopment.spacequest.VoxelEngine;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 
 public class TextureUtils {
 
     public static Vector2[] calculateUVMapping(String regionName) {
         Vector2[] UVList = new Vector2[4];
-        TextureAtlas.AtlasRegion region = VoxelEngine.getTextureatlas().findRegion(regionName);
+        TextureAtlas.AtlasRegion region = SpaceQuest.getSpaceQuest().getTextureAtlas().findRegion(regionName);
 
         float uOffset = region.getU();
         float vOffset = region.getV();
