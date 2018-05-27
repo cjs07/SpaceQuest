@@ -105,6 +105,8 @@ public class World {
                 getBlock((int) x - 1, (int) y, (int) z + 1).onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z + 1);
                 getBlock((int) x, (int) y, (int) z + 1).onNeighborBlockChange(this, (int) x, (int) y, (int) z + 1);
                 getBlock((int) x, (int) y, (int) z - 1).onNeighborBlockChange(this, (int) x, (int) y, (int) z - 1);
+                getBlock((int) x, (int) (y + 1), (int) z).onNeighborBlockChange(this, (int) x, (int) y + 1, (int) z);
+                getBlock((int) x, (int) (y - 1), (int) z).onNeighborBlockChange(this, (int) x, (int) y - 1, (int) z);
             } catch (NullPointerException ex) {
                 ex.printStackTrace();
             }

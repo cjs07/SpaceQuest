@@ -674,7 +674,6 @@ public class Chunk {
                 if (b) {
                     resetMesh();
                 }
-                return;
             }
             if (needMeshUpdate) {
                 recalculateMesh();

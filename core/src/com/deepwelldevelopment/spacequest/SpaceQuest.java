@@ -23,6 +23,7 @@ import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
+import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.biome.OverworldBiomeProvider;
@@ -64,6 +65,7 @@ public class SpaceQuest implements ApplicationListener {
     private IChunkProvider chunkProvider;
     private IBiomeProvider biomeProvider;
     private World world;
+    private PhysicsController physicsController;
 
     public static SpaceQuest getSpaceQuest() {
         return spaceQuest;
@@ -158,6 +160,10 @@ public class SpaceQuest implements ApplicationListener {
         voxelBatch.end();
     }
 
+    public PhysicsController getPhysicsController() {
+        return physicsController;
+    }
+
     private void renderSpriteBatches() {
         spriteBatch.begin();
         font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() +
@@ -174,7 +180,7 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void tickPhysics(float delta) {
-//        PhysicsController.update(delta);
+        physicsController.update(delta);
         camera.update(true);
     }
 
@@ -182,6 +188,7 @@ public class SpaceQuest implements ApplicationListener {
         this.blockProvider = new BlockProvider();
         this.biomeProvider = new OverworldBiomeProvider();
         this.world = new World(blockProvider, biomeProvider);
+        this.physicsController = new PhysicsController(world, camera);
         this.chunkProvider = world.getChunkProvider();
         if (assetManager.isLoaded("blocks.atlas")) {
             assetManager.unload("blocks.atlas");
@@ -262,7 +269,7 @@ public class SpaceQuest implements ApplicationListener {
 
 
     private void setupCameraController() {
-        cameraController = new CameraController(camera);
+        cameraController = new CameraController(camera, physicsController);
         //cameraController = new FlyingCameraController(camera);
         cameraController.setVelocity(7.5f);
         Gdx.input.setInputProcessor(cameraController);
@@ -288,7 +295,7 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void createCamera(int width, int height) {
-        Vector3 previousPosition = new Vector3(0, 140, 0);
+        Vector3 previousPosition = new Vector3(0, 100, 0);
         Matrix4 previousView = null;
         if (camera != null) {
             previousPosition.set(camera.position);
@@ -300,7 +307,7 @@ public class SpaceQuest implements ApplicationListener {
         camera.far = 200;
         camera.position.set(previousPosition);
         if (previousView == null) {
-            camera.lookAt(0, 140, 1);
+            camera.lookAt(0, 100, 1);
             camera.rotate(camera.up, 182);
             camera.update();
         } else {
