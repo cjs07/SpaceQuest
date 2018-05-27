@@ -13,10 +13,12 @@ import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
+import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
+import com.deepwelldevelopment.spacequest.world.biome.OverworldBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
 
 public class VoxelEngine {
@@ -50,20 +52,20 @@ public class VoxelEngine {
     private ColorAttribute skyFogColorAttribute = new ColorAttribute(ColorAttribute.Fog, skyFog);
 
 
-    public VoxelEngine(PerspectiveCamera camera, IBlockProvider blockProvider, IChunkProvider chunkProvider, IBiomeProvider biomeProvider, TextureAtlas textureAtlas, int width, int height, int viewRange) {
+    public VoxelEngine(PerspectiveCamera camera, TextureAtlas textureAtlas, int width, int height, int viewRange) {
         this.camera = camera;
-        this.blockProvider = blockProvider;
-        this.chunkProvider = chunkProvider;
-        this.biomeProvider = biomeProvider;
+        this.blockProvider = new BlockProvider();
+        this.biomeProvider = new OverworldBiomeProvider();
+        this.world = new World(blockProvider, biomeProvider);
+        this.chunkProvider = world.getChunkProvider();
         textureatlas = textureAtlas;
 //        PhysicsController.init();
 
-        world = new World(blockProvider, chunkProvider, biomeProvider, width, height, viewRange);
         setup();
     }
 
-    public VoxelEngine(PerspectiveCamera camera, IBlockProvider blockProvider, IChunkProvider chunkProvider, IBiomeProvider biomeProvider, TextureAtlas textureAtlas) {
-        this(camera, blockProvider, chunkProvider, biomeProvider, textureAtlas, World.WIDTH, World.HEIGHT, World.CHUNKDISTANCE);
+    public VoxelEngine(PerspectiveCamera camera, TextureAtlas textureAtlas) {
+        this(camera, textureAtlas, World.CHUNK_WIDTH, World.MAX_HEIGHT, World.CHUNK_DISTANCE);
     }
 
     public static TextureAtlas getTextureatlas() {

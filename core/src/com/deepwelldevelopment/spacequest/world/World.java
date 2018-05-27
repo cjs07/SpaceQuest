@@ -11,6 +11,7 @@ import com.deepwelldevelopment.spacequest.world.biome.Biome;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
+import com.deepwelldevelopment.spacequest.world.chunk.OverworldChunkProvider;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise2;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise3;
@@ -20,70 +21,76 @@ import java.util.Random;
 
 public class World {
 
+    public static final int CHUNK_WIDTH = 16;
+    public static final int MAX_HEIGHT = 128;
+    public static final int CHUNK_DISTANCE = 4;
+    public static final int GROUND_HEIGHT = 10;
     private static final int MAX_CHUNKS_PER_UPDATE = Runtime.getRuntime().availableProcessors() * 4;
     private static final Object priorityListSync = new Object();
-    public static int WIDTH = 16;
-    public static int HEIGHT = 128;
-    public static long SEED;
-    public static int CHUNKDISTANCE = 4;
-    public static int GROUND_HEIGHT = 10;
-    public static boolean playerIsInWater;
-    private static Array<Chunk> chunksWaitingForUpdate = new Array<>();
-    private static Array<Chunk> chunksUpdatePriorityList = new Array<>();
-    private static IChunkProvider chunkProvider;
-    private static IBiomeProvider biomeProvider;
-    private static IBlockProvider blockProvider;
-    private static Vector3 tmp = new Vector3();
-    private static Vector3 tmp2 = new Vector3();
     private final Vector3 previousCameraPosition = new Vector3();
+    private boolean playerIsInWater;
+    private long seed;
+    private Array<Chunk> chunksWaitingForUpdate = new Array<>();
+    private Array<Chunk> chunksUpdatePriorityList = new Array<>();
+    private IChunkProvider chunkProvider;
+    private IBiomeProvider biomeProvider;
+    private IBlockProvider blockProvider;
+    private Vector3 tmp = new Vector3();
+    private Vector3 tmp2 = new Vector3();
 
-    public World(IBlockProvider blockProvider, IChunkProvider chunkProvider, IBiomeProvider biomeProvider, int width,
-                 int height, int viewRange) {
-        World.blockProvider = blockProvider;
-        World.chunkProvider = chunkProvider;
-        World.biomeProvider = biomeProvider;
-        WIDTH = width;
-        HEIGHT = height;
-        CHUNKDISTANCE = viewRange;
+    public World(IBlockProvider blockProvider, IBiomeProvider biomeProvider) {
+        this.blockProvider = blockProvider;
+        this.chunkProvider = new OverworldChunkProvider(this, blockProvider, biomeProvider);
+        this.biomeProvider = biomeProvider;
 
-        if (SEED == 0) {
-            SEED = new Random().nextLong();
+        if (seed == 0) {
+            seed = new Random().nextLong();
         }
-        System.out.println("Seed is " + SEED);
-        SimplexNoise.init(SEED);
-        SimplexNoise2.init(SEED / 10);
-        SimplexNoise3.init(SEED / 100);
+        System.out.println("Seed is " + seed);
+        SimplexNoise.init(seed);
+        SimplexNoise2.init(seed / 10);
+        SimplexNoise3.init(seed / 100);
     }
 
-    public World(IBlockProvider blockProvider, IChunkProvider chunkProvider, IBiomeProvider biomeProvider) {
-        World.blockProvider = blockProvider;
-        World.chunkProvider = chunkProvider;
-        World.biomeProvider = biomeProvider;
+    public IChunkProvider getChunkProvider() {
+        return chunkProvider;
     }
 
-    public static Chunk findChunk(int x, int z) {
+    public IBiomeProvider getBiomeProvider() {
+        return biomeProvider;
+    }
+
+    public IBlockProvider getBlockProvider() {
+        return blockProvider;
+    }
+
+    public long getSeed() {
+        return seed;
+    }
+
+    public Chunk findChunk(int x, int z) {
         return chunkProvider.getChunkAt(PositionUtils.hashOfPosition(x, z));
     }
 
-    public static Biome findBiome(int x, int z) {
+    public Biome findBiome(int x, int z) {
         return biomeProvider.getBiomeAt(x, z);
     }
 
-    public static void notifyNeighborsAboutLightChange(int chunkPosX, int chunkPosZ, boolean force) {
+    public void notifyNeighborsAboutLightChange(int chunkPosX, int chunkPosZ, boolean force) {
         resetLightOnChunk(findChunk(chunkPosX + 1, chunkPosZ), force);
         resetLightOnChunk(findChunk(chunkPosX - 1, chunkPosZ), force);
         resetLightOnChunk(findChunk(chunkPosX, chunkPosZ + 1), force);
         resetLightOnChunk(findChunk(chunkPosX, chunkPosZ - 1), force);
     }
 
-    private static void resetLightOnChunk(Chunk chunk, boolean force) {
+    private void resetLightOnChunk(Chunk chunk, boolean force) {
         if (chunk != null) {
             chunk.resetLight(force);
         }
     }
 
-    public static void setBlock(float x, float y, float z, Block block, boolean updateLight) {
-        Chunk chunk = World.findChunk((int) Math.floor(x / World.WIDTH), (int) Math.floor(z / World.WIDTH));
+    public void setBlock(float x, float y, float z, Block block, boolean updateLight) {
+        Chunk chunk = this.findChunk((int) Math.floor(x / World.CHUNK_WIDTH), (int) Math.floor(z / World.CHUNK_WIDTH));
         if (chunk != null) {
             int localX = (int) x & 15;
             int localY = (int) y;
@@ -104,18 +111,17 @@ public class World {
         }
     }
 
-    public static void postChunkPriorityUpdate(Chunk chunk) {
+    public void postChunkPriorityUpdate(Chunk chunk) {
         synchronized (priorityListSync) {
             chunksUpdatePriorityList.add(chunk);
         }
     }
 
-    public static Block getBlock(int x, int y, int z) {
-        Chunk chunk = World.findChunk((int) Math.floor(tmp.x / World.WIDTH), (int) Math.floor(tmp.z / World.WIDTH));
+    public Block getBlock(int x, int y, int z) {
+        Chunk chunk = this.findChunk((int) Math.floor(tmp.x / World.CHUNK_WIDTH), (int) Math.floor(tmp.z / World.CHUNK_WIDTH));
         if (chunk != null) {
             byte block = chunk.getBlock(x, y, z);
-            Block blockById = blockProvider.getBlockById(block);
-            return blockById;
+            return blockProvider.getBlockById(block);
         }
         return blockProvider.getBlockById((byte) 0);
     }
@@ -158,9 +164,9 @@ public class World {
         previousCameraPosition.set(camPos);
         checkAndCreateChunk(camPos, 0, 0);
 
-        int radius = 16 * CHUNKDISTANCE;
-        for (int xc = -radius; xc <= radius; xc += WIDTH) {
-            for (int zc = -radius; zc <= radius; zc += WIDTH) {
+        int radius = 16 * CHUNK_DISTANCE;
+        for (int xc = -radius; xc <= radius; xc += CHUNK_WIDTH) {
+            for (int zc = -radius; zc <= radius; zc += CHUNK_WIDTH) {
                 if (xc == 0 && zc == 0) continue;
                 if (xc * xc + zc * zc <= radius * radius) {
                     checkAndCreateChunk(camPos, xc, zc);
@@ -170,11 +176,11 @@ public class World {
     }
 
     private void checkAndCreateChunk(Vector3 camPos, int xc, int zc) {
-        Chunk chunk = findChunk((int) Math.floor((camPos.x + xc) / WIDTH), (int) Math.floor((camPos.z + zc) / WIDTH));
+        Chunk chunk = findChunk((int) Math.floor((camPos.x + xc) / CHUNK_WIDTH), (int) Math.floor((camPos.z + zc) / CHUNK_WIDTH));
         if (chunk == null) {
-            Vector3 worldPosition = new Vector3((int) Math.floor((camPos.x + xc) / WIDTH) * WIDTH, 0, (int) Math.floor((camPos.z + zc) / WIDTH) * WIDTH);
-            int x2 = (int) Math.floor(worldPosition.x / WIDTH);
-            int z2 = (int) Math.floor(worldPosition.z / WIDTH);
+            Vector3 worldPosition = new Vector3((int) Math.floor((camPos.x + xc) / CHUNK_WIDTH) * CHUNK_WIDTH, 0, (int) Math.floor((camPos.z + zc) / CHUNK_WIDTH) * CHUNK_WIDTH);
+            int x2 = (int) Math.floor(worldPosition.x / CHUNK_WIDTH);
+            int z2 = (int) Math.floor(worldPosition.z / CHUNK_WIDTH);
             chunkProvider.createChunk(worldPosition, x2, z2);
         }
     }
@@ -190,7 +196,7 @@ public class World {
         int y = (int) tmp.y;
         int z = (int) Math.floor(tmp.z);
 
-        Chunk chunk = World.findChunk((int) Math.floor(tmp.x / World.WIDTH), (int) Math.floor(tmp.z / World.WIDTH));
+        Chunk chunk = this.findChunk((int) Math.floor(tmp.x / World.CHUNK_WIDTH), (int) Math.floor(tmp.z / World.CHUNK_WIDTH));
         if (chunk != null) {
             byte block1 = chunk.getBlock(x, y, z);
             return isBlockLiquid(blockProvider.getBlockById(block1));

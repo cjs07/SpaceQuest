@@ -40,6 +40,7 @@ public class Chunk {
     protected static Vector3 landscapeRandomOffset3;
     protected static Vector3 landscapeRandomOffset4;
     protected static Vector3 landscapeRandomOffset5;
+
     //contains block id for each block in the chunk
     //will be changed eventually to use a State model along with a statically typed block system so blocks can be
     // compared using double equals
@@ -50,11 +51,10 @@ public class Chunk {
     private final int chunkPosZ;
     private final Object syncToken = new Object();
 
-    protected Array<VoxelMesh> meshes = new Array<>();
-    protected Array<VoxelMesh> alphaMeshes = new Array<>();
-
+    private Array<VoxelMesh> meshes = new Array<>();
+    private Array<VoxelMesh> alphaMeshes = new Array<>();
+    private World world;
     private boolean isReady;
-
     //contains lighting data for each block
     private byte[] lightmap;
     //true if the block at a given position can see the sky (and thus is the highest block in the column for generation)
@@ -70,31 +70,32 @@ public class Chunk {
     private boolean needMeshUpdate;
     private int timesSinceUpdate;
 
-    public Chunk(IBlockProvider blockProvider, Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
+    public Chunk(World world, IBlockProvider blockProvider, Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
         isReady = false;
+        this.world = world;
         this.blockProvider = blockProvider;
         this.worldPosition = worldPosition;
         this.chunkPosX = chunkPosX;
         this.chunkPosZ = chunkPosZ;
         this.biome = biome;
-        map = new byte[World.WIDTH * World.WIDTH * World.HEIGHT];
-        lightmap = new byte[World.WIDTH * World.WIDTH * World.HEIGHT];
-        heightmap = new boolean[World.WIDTH * World.WIDTH * World.HEIGHT];
+        map = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
+        lightmap = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
+        heightmap = new boolean[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         Arrays.fill(lightmap, DARKNESS);
         Arrays.fill(heightmap, false);
 
         //prepare VoxelMeshes for the chunk. Each mesh is 16x16x16
-        for (int i = 0; i < World.HEIGHT / 16; i++) {
+        for (int i = 0; i < World.MAX_HEIGHT / 16; i++) {
             meshes.add(new VoxelMesh());
         }
-        for (int i = 0; i < World.HEIGHT / 16; i++) {
+        for (int i = 0; i < World.MAX_HEIGHT / 16; i++) {
             alphaMeshes.add(new VoxelMesh());
         }
 
         if (random == null) {
             random = new Random();
-            if (World.SEED != 0) {
-                random.setSeed(World.SEED);
+            if (world.getSeed() != 0) {
+                random.setSeed(world.getSeed());
             }
             landscapeRandomOffset1 = new Vector3((float) random.nextDouble() * 10000,
                     (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000);
@@ -114,7 +115,7 @@ public class Chunk {
                 calculateChunk(worldPosition, biome, blockProvider);
                 updateLight();
                 resetMesh();
-                World.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
+                world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
                 isReady = true;
                 recalculateMesh();
             } catch (Exception e) {
@@ -124,9 +125,9 @@ public class Chunk {
     }
 
     private void fillSunlight() {
-        for (int x = 0; x < World.WIDTH; x++) {
-            for (int z = 0; z < World.WIDTH; z++) {
-                for (int y = World.HEIGHT - 1; y > 0; y--) {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                for (int y = World.MAX_HEIGHT - 1; y > 0; y--) {
                     byte block = getByte(x, y, z);
                     if (block == 0) {
                         setLight(x, y, z, LIGHT);
@@ -141,17 +142,17 @@ public class Chunk {
 
     protected void calculateChunk(Vector3 worldPosition, Biome biome, IBlockProvider blockProvider) {
         Vector3 worldPosOfXYZ = new Vector3();
-        for (int y = 0; y < World.HEIGHT; y++) {
-            for (int x = 0; x < World.WIDTH; x++) {
-                for (int z = 0; z < World.WIDTH; z++) {
+        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
                     worldPosOfXYZ.set(x, y, z).add(worldPosition);
                     setBlock(x, y, z, blockProvider.getBlockById(getByteAtWorldPosition(x, y, z, biome, worldPosOfXYZ)), false);
                 }
             }
         }
-        for (int y = 0; y < World.HEIGHT; y++) {
-            for (int x = 0; x < World.WIDTH; x++) {
-                for (int z = 0; z < World.WIDTH; z++) {
+        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
                     float v = random.nextFloat();
                     if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1, z) == 0 && getBlock(x, y + 2, z) == 0) {
                         if (v < 0.2) {
@@ -168,9 +169,9 @@ public class Chunk {
             }
         }
 
-        for (int y = 0; y < World.HEIGHT - 12; y++) {
-            for (int x = 4; x < World.WIDTH - 4; x++) {
-                for (int z = 4; z < World.WIDTH - 4; z++) {
+        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
+            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
+                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
                     byte block = getBlock(x, y, z);
                     if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws.getId()) && getBlock(x, y + 1, z) == 0) {
                         float v = random.nextFloat();
@@ -219,7 +220,7 @@ public class Chunk {
             return BlockProvider.limeStone.getId();
         }
 
-        if (y == World.HEIGHT - 1 || y == World.HEIGHT) {
+        if (y == World.MAX_HEIGHT - 1 || y == World.MAX_HEIGHT) {
             return 0;
         }
 
@@ -229,18 +230,18 @@ public class Chunk {
 //        }
 
 
-//        double caveDensity = SimplexNoise.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
-//        double caveDensity2 = SimplexNoise2.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
-//        if (caveDensity > 0.45 && caveDensity < 0.70 && caveDensity2 > 0.45 && caveDensity2 < 0.70) {
-//            return 0;
-//        }
+        double caveDensity = SimplexNoise.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
+        double caveDensity2 = SimplexNoise2.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
+        if (caveDensity > 0.45 && caveDensity < 0.70 && caveDensity2 > 0.45 && caveDensity2 < 0.70) {
+            return 0;
+        }
 
         double baseDensity = 0;
 
         {
             float frequency = 0.001f;
-            float weight = 1.0f - (y / World.HEIGHT);
-            float weight2 = 0.1f - (y / World.HEIGHT);
+            float weight = 1.0f - (y / World.MAX_HEIGHT);
+            float weight2 = 0.1f - (y / World.MAX_HEIGHT);
 
             for (int i = 0; i < 3; i++) {
                 baseDensity += SimplexNoise.noise(worldPosition.x * frequency, worldPosition.y * frequency, worldPosition.z * frequency) * weight;
@@ -259,7 +260,7 @@ public class Chunk {
             for (int i = 0; i < 3; i++) {
                 mountainDensity += SimplexNoise.noise(worldPosition.x * frequency, worldPosition.y * frequency * 2, worldPosition.z * frequency) * weight;
                 mountainDensity += SimplexNoise3.noise(worldPosition.x * frequency, worldPosition.y * frequency, worldPosition.z * frequency) * weight;
-                frequency *= 4.3f + (y / World.HEIGHT);
+                frequency *= 4.3f + (y / World.MAX_HEIGHT);
                 weight *= 0.4f;
             }
         }
@@ -356,7 +357,7 @@ public class Chunk {
             int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
             int zToFind = (int) Math.floor(chunkPosZ + (z / 16f));
 
-            Chunk chunk = World.findChunk(xToFind, zToFind);
+            Chunk chunk = world.findChunk(xToFind, zToFind);
             if (chunk == this) {
                 System.out.println("Found myself, how silly, to make such a simple math error");
             }
@@ -392,7 +393,7 @@ public class Chunk {
     }
 
     private int getLocationInArray(int x, int y, int z) {
-        return (x * World.WIDTH + z) + (y * World.WIDTH * World.WIDTH);
+        return (x * World.CHUNK_WIDTH + z) + (y * World.CHUNK_WIDTH * World.CHUNK_WIDTH);
     }
 
     public int getBlockCounter() {
@@ -412,12 +413,12 @@ public class Chunk {
         isRecalculating = true;
         Set<VoxelMesh> toRebuild = new HashSet<>();
         Set<VoxelMesh> toRebuildAlpha = new HashSet<>();
-        for (int y = 0; y < World.HEIGHT; y++) {
+        for (int y = 0; y < World.MAX_HEIGHT; y++) {
             VoxelMesh voxelMesh = meshes.get((int) Math.floor(y / 16));
             VoxelMesh alphaVoxelMesh = alphaMeshes.get((int) Math.floor(y / 16));
 
-            for (int x = 0; x < World.WIDTH; x++) {
-                for (int z = 0; z < World.WIDTH; z++) {
+            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
                     byte block = map[getLocationInArray(x, y, z)];
                     if (block == 0) continue;
                     Block blockById = blockProvider.getBlockById(block);
@@ -454,9 +455,9 @@ public class Chunk {
         }
         while (lightUpdatedInLoop) {
             lightUpdatedInLoop = false;
-            for (int y = 0; y < World.HEIGHT; y++) {
-                for (int x = 0; x < World.WIDTH; x++) {
-                    for (int z = 0; z < World.WIDTH; z++) {
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                    for (int z = 0; z < World.CHUNK_WIDTH; z++) {
                         byte calculatedLight = calculatedLight(x, y, z);
                         byte currentLight = getBlockLight(x, y, z);
 
@@ -465,7 +466,7 @@ public class Chunk {
                             if (b) {
                                 lightUpdated = true;
                                 lightUpdatedInLoop = true;
-                                if (z == 0 || z == World.WIDTH - 1 || x == 0 || x == World.WIDTH - 1) {
+                                if (z == 0 || z == World.CHUNK_WIDTH - 1 || x == 0 || x == World.CHUNK_WIDTH - 1) {
                                     borderUpdated = true;
                                 }
                             }
@@ -477,7 +478,7 @@ public class Chunk {
         needLightUpdate = lightUpdated;
         fullRebuildOfLight = false;
         if (borderUpdated) {
-            World.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
+            world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
         }
         return !needLightUpdate;
     }
@@ -585,13 +586,13 @@ public class Chunk {
         }
         if (outsideThisChunkBounds(x, z)) {
             Vector3 worldPosition = this.worldPosition.cpy().add(x, y, z);
-            Chunk chunk = World.findChunk((int) Math.floor(worldPosition.x / World.WIDTH), (int) Math.floor(worldPosition.z / World.WIDTH));
+            Chunk chunk = world.findChunk((int) Math.floor(worldPosition.x / World.CHUNK_WIDTH), (int) Math.floor(worldPosition.z / World.CHUNK_WIDTH));
             if (chunk != null && chunk.isReady) {
                 int normalizedX = x & 15;
                 int normalizedZ = z & 15;
                 return chunk.getBlock(normalizedX, y, normalizedZ);
             }
-            Biome biome = World.findBiome((int) Math.floor(worldPosition.x / World.WIDTH), (int) Math.floor(worldPosition.z / World.WIDTH));
+            Biome biome = world.findBiome((int) Math.floor(worldPosition.x / World.CHUNK_WIDTH), (int) Math.floor(worldPosition.z / World.CHUNK_WIDTH));
             return getByteAtWorldPosition(x, y, z, biome, worldPosition);
             // }
         }
@@ -599,11 +600,11 @@ public class Chunk {
     }
 
     private boolean outsideThisChunkBounds(int x, int z) {
-        return x < 0 || z < 0 || x >= World.WIDTH || z >= World.WIDTH;
+        return x < 0 || z < 0 || x >= World.CHUNK_WIDTH || z >= World.CHUNK_WIDTH;
     }
 
     private boolean outsideHeightBounds(int y) {
-        return y < 0 || y >= World.HEIGHT;
+        return y < 0 || y >= World.MAX_HEIGHT;
     }
 
     public boolean isActive() {
@@ -634,7 +635,7 @@ public class Chunk {
                 int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
                 int zToFind = (int) Math.floor(chunkPosZ + (z / 16f));
 
-                Chunk chunk = World.findChunk(xToFind, zToFind);
+                Chunk chunk = world.findChunk(xToFind, zToFind);
                 if (chunk == this) {
                     System.out.println("Found myself!");
                 }
@@ -690,7 +691,7 @@ public class Chunk {
     public void resetMesh() {
         needMeshUpdate = true;
         if (isReady) {
-            World.postChunkPriorityUpdate(this);
+            world.postChunkPriorityUpdate(this);
         }
     }
 

@@ -79,7 +79,7 @@ public class VoxelRender implements RenderableProvider {
             blockCounter += chunk.getBlockCounter();
             worldChunkPosition.set(chunk.getWorldPosition());
             worldChunkPosition.y = camera.position.y;
-            boolean b = camera.frustum.sphereInFrustum(worldChunkPosition, World.WIDTH * 2f);
+            boolean b = camera.frustum.sphereInFrustum(worldChunkPosition, World.CHUNK_WIDTH * 2f);
             if (!b) {
                 chunk.setActive(false);
             } else {

@@ -187,9 +187,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.deepwelldevelopment.spacequest.block.BlockProvider;
-import com.deepwelldevelopment.spacequest.world.biome.OverworldBiomeProvider;
-import com.deepwelldevelopment.spacequest.world.chunk.OverworldChunkProvider;
 
 import java.nio.FloatBuffer;
 
@@ -246,15 +243,12 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void setup() {
-        BlockProvider blockProvider = new BlockProvider();
-        OverworldBiomeProvider biomeProvider = new OverworldBiomeProvider();
-        OverworldChunkProvider chunkProvider = new OverworldChunkProvider(blockProvider, biomeProvider);
         //texture = new Texture(Gdx.files.internal("data/textures.png"), true);
         // texture.setFilter(Texture.TextureFilter.MipMapNearestNearest, Texture.TextureFilter.Nearest);
 
         textureAtlas = new TextureAtlas(Gdx.files.internal("blocks.atlas"));
 
-        voxelEngine = new VoxelEngine(camera, blockProvider, chunkProvider, biomeProvider, textureAtlas);
+        voxelEngine = new VoxelEngine(camera, textureAtlas);
         enableAnisotropy();
     }
 
