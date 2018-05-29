@@ -12,8 +12,7 @@ import com.deepwelldevelopment.spacequest.util.PositionUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.Biome;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
-import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise2;
-import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise3;
+import com.flowpowered.noise.module.source.Perlin;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,6 +32,8 @@ public class Chunk {
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors() - 1);
+
+    private static double offsetIncrement = 0.005;
 
     protected static Random random;
     protected static Vector3 landscapeRandomOffset1;
@@ -59,6 +60,7 @@ public class Chunk {
     private byte[] lightmap;
     //true if the block at a given position can see the sky (and thus is the highest block in the column for generation)
     private boolean[] heightmap;
+    private int[][] generationHeightmap;
     private Biome biome;
     private int blockCounter;
     private boolean active = true;
@@ -69,6 +71,7 @@ public class Chunk {
     private boolean fullRebuildOfLight;
     private boolean needMeshUpdate;
     private int timesSinceUpdate;
+    private Perlin perlin;
 
     public Chunk(World world, IBlockProvider blockProvider, Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
         isReady = false;
@@ -78,11 +81,21 @@ public class Chunk {
         this.chunkPosX = chunkPosX;
         this.chunkPosZ = chunkPosZ;
         this.biome = biome;
+        this.perlin = new Perlin();
+        perlin.setSeed((int) world.getSeed());
+        perlin.setFrequency(1);
+        perlin.setOctaveCount(6);
+        perlin.setLacunarity(2);
+        perlin.setPersistence(.5);
         map = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         lightmap = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         heightmap = new boolean[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
+        generationHeightmap = new int[World.CHUNK_WIDTH][World.CHUNK_WIDTH];
         Arrays.fill(lightmap, DARKNESS);
         Arrays.fill(heightmap, false);
+        for (int[] arr : generationHeightmap) {
+            Arrays.fill(arr, 47);
+        }
 
         //prepare VoxelMeshes for the chunk. Each mesh is 16x16x16
         for (int i = 0; i < World.MAX_HEIGHT / 16; i++) {
@@ -141,6 +154,20 @@ public class Chunk {
     }
 
     protected void calculateChunk(Vector3 worldPosition, Biome biome, IBlockProvider blockProvider) {
+        //calculates a heightmap for the chunk
+        double xOff = chunkPosX * 16 * offsetIncrement;
+        double zOff = chunkPosZ * 16 * offsetIncrement;
+        double startZ = zOff;
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int z = World.CHUNK_WIDTH - 1; z >= 0; z--) {
+                generationHeightmap[x][z] += (biome.getHeight() * perlin.getValue(xOff, 0, zOff));
+                zOff -= offsetIncrement;
+            }
+            xOff += offsetIncrement;
+            zOff = startZ;
+        }
+
+        //fills the chunk blocks
         Vector3 worldPosOfXYZ = new Vector3();
         for (int y = 0; y < World.MAX_HEIGHT; y++) {
             for (int x = 0; x < World.CHUNK_WIDTH; x++) {
@@ -216,99 +243,29 @@ public class Chunk {
     }
 
     protected byte getByteAtWorldPosition(int x, int y, int z, Biome biome, Vector3 worldPosition) {
-        if (y == 1) {
-            return BlockProvider.limeStone.getId();
-        }
-
-        if (y == World.MAX_HEIGHT - 1 || y == World.MAX_HEIGHT) {
-            return 0;
-        }
-
-//        if (y == random.nextInt(80) && random.nextFloat() < 0.19f && !isBlockTransparent(x, y - 1, z) &&
-//                (getByteAtWorldPosition(x, y - 1, z, biome, worldPosition) == BlockProvider.grass.getId())) {
-//            return BlockProvider.light.getId();
-//        }
-
-
-        double caveDensity = SimplexNoise.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
-        double caveDensity2 = SimplexNoise2.noise(worldPosition.x * 0.01f, worldPosition.y * 0.02f, worldPosition.z * 0.01f);
-        if (caveDensity > 0.45 && caveDensity < 0.70 && caveDensity2 > 0.45 && caveDensity2 < 0.70) {
-            return 0;
-        }
-
-        double baseDensity = 0;
-
-        {
-            float frequency = 0.001f;
-            float weight = 1.0f - (y / World.MAX_HEIGHT);
-            float weight2 = 0.1f - (y / World.MAX_HEIGHT);
-
-            for (int i = 0; i < 3; i++) {
-                baseDensity += SimplexNoise.noise(worldPosition.x * frequency, worldPosition.y * frequency, worldPosition.z * frequency) * weight;
-                baseDensity += SimplexNoise2.noise(worldPosition.x * frequency, worldPosition.y * frequency * 2, worldPosition.z * frequency) * weight2;
-                frequency *= 3.5f;
-                weight *= 0.2f;
+        int height = generationHeightmap[x][z];
+        if (y < 35) { //subsurface area, noise does not affect this height
+            if (y < 30) {
+                return BlockProvider.stone.getId();
+            }
+            if (y > 30 && y < 34) {
+                return biome.getGroundFillerBlock();
+            }
+            if (y == 34) {
+                return biome.getSurfaceBlock();
             }
         }
-
-        double mountainDensity = 0;
-
-        {
-            float frequency = 0.001f;
-            float weight = 1f;
-
-            for (int i = 0; i < 3; i++) {
-                mountainDensity += SimplexNoise.noise(worldPosition.x * frequency, worldPosition.y * frequency * 2, worldPosition.z * frequency) * weight;
-                mountainDensity += SimplexNoise3.noise(worldPosition.x * frequency, worldPosition.y * frequency, worldPosition.z * frequency) * weight;
-                frequency *= 4.3f + (y / World.MAX_HEIGHT);
-                weight *= 0.4f;
-            }
+        int surfaceY = y - 34;
+        if (surfaceY > height) {
+            return BlockProvider.air.getId();
         }
-        mountainDensity += 1;
-
-        mountainDensity *= 48;
-
-        if (mountainDensity > y) {
-            double sandStoneNoise = SimplexNoise.noise(worldPosition.x * 0.008, worldPosition.y * 0.09, worldPosition.z * 0.006) * 0.019;
-            double shaleNoise = SimplexNoise2.noise(worldPosition.x * 0.022, worldPosition.y * 0.1, worldPosition.z * 0.026) * 0.053;
-
-            if (sandStoneNoise >= 0.0009) {
-                return BlockProvider.sandStone.getId();
-            } else if (shaleNoise >= 0.0001) {
-                return BlockProvider.shale.getId();
-            }
-
-            return BlockProvider.limeStone.getId();
+        if (surfaceY == height) {
+            return biome.getSurfaceBlock();
         }
-
-
-        baseDensity += 1;
-
-        baseDensity *= 48;
-
-
-        if (baseDensity > y) {
-            if (y > 48) {
-                return BlockProvider.grass.getId();
-            } else {
-                double sandStoneNoise = SimplexNoise.noise(worldPosition.x * 0.008, worldPosition.y * 0.09, worldPosition.z * 0.006) * 0.019;
-                double shaleNoise = SimplexNoise2.noise(worldPosition.x * 0.022, worldPosition.y * 0.1, worldPosition.z * 0.026) * 0.053;
-
-                if (sandStoneNoise >= 0.0009) {
-                    return BlockProvider.sandStone.getId();
-                } else if (shaleNoise >= 0.0001) {
-                    return BlockProvider.shale.getId();
-                }
-
-                return BlockProvider.limeStone.getId();
-            }
+        if (height - surfaceY < 4) {
+            return biome.getGroundFillerBlock();
         }
-
-        if (y < 49 && y > 0) {
-            return BlockProvider.water.getId();
-        }
-
-        return 0;
+        return BlockProvider.stone.getId();
     }
 
     protected double get2dNoise(Vector3 pos, Vector3 offset, double scale) {
@@ -592,8 +549,9 @@ public class Chunk {
                 int normalizedZ = z & 15;
                 return chunk.getBlock(normalizedX, y, normalizedZ);
             }
-            Biome biome = world.findBiome((int) Math.floor(worldPosition.x / World.CHUNK_WIDTH), (int) Math.floor(worldPosition.z / World.CHUNK_WIDTH));
-            return getByteAtWorldPosition(x, y, z, biome, worldPosition);
+//            Biome biome = world.findBiome((int) Math.floor(worldPosition.x / World.CHUNK_WIDTH), (int) Math.floor(worldPosition.z / World.CHUNK_WIDTH));
+//            return getByteAtWorldPosition(x, y, z, biome, worldPosition);
+            return 0;
             // }
         }
         return map[getLocationInArray(x, y, z)];

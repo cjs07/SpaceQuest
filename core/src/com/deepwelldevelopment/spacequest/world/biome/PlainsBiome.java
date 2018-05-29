@@ -5,7 +5,7 @@ import com.deepwelldevelopment.spacequest.block.BlockProvider;
 public class PlainsBiome extends Biome {
     @Override
     public int getHeight() {
-        return 5;
+        return 47;
     }
 
     @Override
@@ -14,18 +14,23 @@ public class PlainsBiome extends Biome {
     }
 
     @Override
-    public byte getGroundFillerBlock() {
+    public byte getSurfaceBlock() {
         return BlockProvider.grass.getId();
+    }
+
+    @Override
+    public byte getGroundFillerBlock() {
+        return BlockProvider.dirt.getId();
     }
 
     @Override
     public byte getMountainFillerBlock() {
-        return BlockProvider.grass.getId();
+        return BlockProvider.dirt.getId();
     }
 
     @Override
-    public boolean hasSandBeach() {
-        return false;
+    public byte getBeachBlock() {
+        return BlockProvider.dirt.getId();
     }
 
     @Override

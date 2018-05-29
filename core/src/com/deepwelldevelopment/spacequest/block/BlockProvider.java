@@ -31,6 +31,9 @@ public class BlockProvider implements IBlockProvider {
     public static final Block shale = new Block((byte) 11, "limestone");
     //    public static final Block sandStone = new Block((byte) 12, "sandstone");
     public static final Block sandStone = new Block((byte) 12, "limestone");
+    public static final Block stone = new Block((byte) 13, "stone");
+    public static final Block sand = new Block((byte) 14, "sand");
+    public static final Block dirt = new Block((byte) 15, "dirt");
 
     private final Block[] blocks = new Block[128];
 
@@ -48,6 +51,9 @@ public class BlockProvider implements IBlockProvider {
         addBlock(straws);
         addBlock(flower);
         addBlock(water);
+        addBlock(stone);
+        addBlock(sand);
+        addBlock(dirt);
     }
 
     private void addBlock(Block block) {

@@ -158,7 +158,7 @@ public class CameraController extends InputAdapter {
     }
 
     protected void movePlayer(Vector3 moveVector, boolean jump) {
-        physicsController.movePlayer(moveVector, jump);
-//        camera.position.add(moveVector);
+//        physicsController.movePlayer(moveVector, jump);
+        camera.position.add(moveVector);
     }
 }

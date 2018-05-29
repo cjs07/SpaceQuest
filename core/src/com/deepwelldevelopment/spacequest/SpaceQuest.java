@@ -171,7 +171,8 @@ public class SpaceQuest implements ApplicationListener {
                 "/" + VoxelRender.getNumberOfChunks() + "  -  visible/total blocks: " +
                 VoxelRender.getNumberOfVisibleBlocks() + "/" + VoxelRender.getBlockCounter() +
                 "  -  visible vertices:" + VoxelRender.getNumberOfVertices() + "  -  visible indicies: " +
-                VoxelRender.getNumberOfIndices(), 0, 20);
+                VoxelRender.getNumberOfIndices() + " x: " + camera.position.x + " y: " + camera.position.y + " z: " +
+                camera.position.z, 0, 20);
 
         crosshairSprite.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         crosshairSprite.draw(spriteBatch);
