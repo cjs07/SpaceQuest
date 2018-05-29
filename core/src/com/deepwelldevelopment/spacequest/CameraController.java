@@ -98,7 +98,7 @@ public class CameraController extends InputAdapter {
      * @param velocity the velocity in units per second
      */
     public void setVelocity(float velocity) {
-        this.velocity = velocity;
+        this.velocity = velocity / 10;
     }
 
     /**
@@ -120,11 +120,11 @@ public class CameraController extends InputAdapter {
     public void update(float deltaTime) {
         moveVector.set(0, 0, 0);
         if (keys.containsKey(FORWARD)) {
-            tmp.set(camera.direction).nor().scl(velocity).y = 0;
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity);
             moveVector.add(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
-            tmp.set(camera.direction).nor().scl(-velocity).y = 0;
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity);
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
@@ -136,14 +136,14 @@ public class CameraController extends InputAdapter {
             moveVector.add(tmp);
         }
         if (keys.containsKey(UP)) {
-//            tmp.set(camera.up).nor().scl(deltaTime * velocity);
-//            moveVector.add(tmp);
-            jump = true;
+            tmp.set(camera.up).nor().scl(velocity);
+            moveVector.add(tmp);
+//            jump = true;
         }
-//        if (keys.containsKey(DOWN)) {
-//            tmp.set(camera.up).nor().scl(-deltaTime * velocity);
-//            moveVector.add(tmp);
-//        }
+        if (keys.containsKey(DOWN)) {
+            tmp.set(camera.up).nor().scl(-velocity);
+            moveVector.add(tmp);
+        }
 
         //mouse interactions
         long currentTime = System.currentTimeMillis();
@@ -159,5 +159,6 @@ public class CameraController extends InputAdapter {
 
     protected void movePlayer(Vector3 moveVector, boolean jump) {
         physicsController.movePlayer(moveVector, jump);
+//        camera.position.add(moveVector);
     }
 }
