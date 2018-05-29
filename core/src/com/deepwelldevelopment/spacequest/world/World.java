@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.util.PositionUtils;
@@ -203,7 +204,7 @@ public class World {
             byte block1 = chunk.getBlock(x, y, z);
             return isBlockLiquid(blockProvider.getBlockById(block1));
         }
-//        PhysicsController.setPlayerInWater(false);
+        SpaceQuest.getSpaceQuest().getPhysicsController().setPlayerInWater(false);
         return false;
     }
 

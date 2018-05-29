@@ -271,7 +271,7 @@ public class SpaceQuest implements ApplicationListener {
     private void setupCameraController() {
         cameraController = new CameraController(camera, physicsController);
         //cameraController = new FlyingCameraController(camera);
-        cameraController.setVelocity(7.5f);
+        cameraController.setVelocity(0.075f);
         Gdx.input.setInputProcessor(cameraController);
         Gdx.input.setCursorCatched(true);
     }
@@ -295,7 +295,7 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void createCamera(int width, int height) {
-        Vector3 previousPosition = new Vector3(0, 100, 0);
+        Vector3 previousPosition = new Vector3(0, 140, 0);
         Matrix4 previousView = null;
         if (camera != null) {
             previousPosition.set(camera.position);
@@ -307,7 +307,7 @@ public class SpaceQuest implements ApplicationListener {
         camera.far = 200;
         camera.position.set(previousPosition);
         if (previousView == null) {
-            camera.lookAt(0, 100, 1);
+            camera.lookAt(0, 140, 1);
             camera.rotate(camera.up, 182);
             camera.update();
         } else {

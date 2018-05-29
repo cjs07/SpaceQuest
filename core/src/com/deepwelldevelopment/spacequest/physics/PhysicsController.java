@@ -43,6 +43,7 @@ public class PhysicsController {
     private static final short PLAYER = 2;
     private static final short PLAYER_COLLIDES_WITH = WORLD;
     private static final short WORLD_COLLIDES_WITH = PLAYER;
+    private Vector3 jump = new Vector3(0, 5f, 0);
     private btDefaultCollisionConfiguration collisionConfiguration;
     private btCollisionDispatcher dispatcher;
     private btSequentialImpulseConstraintSolver solver;
@@ -75,6 +76,8 @@ public class PhysicsController {
     private Vector3 previousPosition = new Vector3();
 
     private ModelBuilder modelBuilder = new ModelBuilder();
+    private boolean playerInWater;
+    private boolean flight;
 
     private World world;
 
@@ -83,7 +86,7 @@ public class PhysicsController {
         this.camera = camera;
 
         Bullet.init(true, true);
-        btSweep3 = new btAxisSweep3(new Vector3(-1000, -1000, -1000), new Vector3(100, 1100, 100));
+        btSweep3 = new btAxisSweep3(new Vector3(-1000, -1000, -1000), new Vector3(1000, 1000, 1000));
         collisionConfiguration = new btDefaultCollisionConfiguration();
         dispatcher = new btCollisionDispatcher(collisionConfiguration);
         solver = new btSequentialImpulseConstraintSolver();
@@ -113,6 +116,7 @@ public class PhysicsController {
         playerGhostObject.setCollisionShape(capsuleShape);
         playerGhostObject.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CHARACTER_OBJECT);
         characterController = new btKinematicCharacterController(playerGhostObject, capsuleShape, 0.25f);
+        characterController.setGravity(gravity);
 
         collisionWorld.addCollisionObject(playerGhostObject,
                 (short) btBroadphaseProxy.CollisionFilterGroups.CharacterFilter,
@@ -120,6 +124,38 @@ public class PhysicsController {
         collisionWorld.addAction(characterController);
 
         controllers.add(characterController);
+    }
+
+    public void movePlayer(Vector3 force, boolean jump) {
+        if (playerInWater && jump) {
+            characterController.getGravity().y = -5.5f;
+        }
+
+        if (playerInWater && !jump) {
+            characterController.getGravity().y = 0.1f;
+        }
+
+        if (playerInWater) {
+            force.scl(0.3f);
+        }
+
+        characterController.setWalkDirection(force);
+
+        if (jump && characterController.canJump()) {
+            characterController.jump(this.jump);
+        }
+    }
+
+    public boolean isPlayerInWater() {
+        return playerInWater;
+    }
+
+    public void setPlayerInWater(boolean playerInWater) {
+        this.playerInWater = playerInWater;
+    }
+
+    public void toggleFlight() {
+        flight = !flight;
     }
 
     public CollisionObject addEntity(float height, float width, Matrix4 transform) {
@@ -196,15 +232,6 @@ public class PhysicsController {
     }
 
     public void update(float delta) {
-//        System.out.println(characterController.getGravity());
-//
-//        if (playerInWater && characterController.getGravity() == 29.4f) {
-//            characterController.setGravity(0.1f);
-//        }
-//        if (!playerInWater && (characterController.getGravity() != 29.4f)) {
-//            characterController.setGravity(29.4f);
-//        }
-
         synchronized (syncToken) {
             collisionWorld.stepSimulation(delta, 5);
         }
@@ -223,11 +250,11 @@ public class PhysicsController {
             playerGhostObject.getWorldTransform().getTranslation(tmp);
             double headBob = 0.0;
             float mov = tmp.dst(previousPosition);
-            if (/*!playerInWater && */(mov > 0.01f || mov < -0.01f)) {
+            if (!playerInWater && (mov > 0.01f || mov < -0.01f)) {
                 headBob = 0.05 * MathUtils.sin((float) (numberOfTicks * 0.5 * MathUtils.PI / 7));
             }
             tmp2.set(tmp.x, (float) (tmp.y + headBob + 0.7f), tmp.z);
-//            camera.position.set(tmp2);
+            camera.position.set(tmp2);
             previousPosition.set(tmp);
         }
 

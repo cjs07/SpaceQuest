@@ -9,6 +9,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
+import static com.badlogic.gdx.Input.Keys.Q;
+import static com.badlogic.gdx.Input.Keys.SPACE;
+
 public class CameraController extends InputAdapter {
 
     private final Camera camera;
@@ -20,6 +23,7 @@ public class CameraController extends InputAdapter {
     private int BACKWARD = Keys.S;
     private int UP = Keys.SPACE;
     private int DOWN = Keys.SHIFT_LEFT;
+    private int JUMP = SPACE;
     private int LMB = Buttons.LEFT;
     private int RMB = Buttons.RIGHT;
     private float velocity = 4.0f;
@@ -27,6 +31,8 @@ public class CameraController extends InputAdapter {
     private boolean leftHeld;
     private boolean rightHeld;
     private long timeLastBlockChange;
+    private boolean jump;
+    private Vector3 moveVector = new Vector3();
 
     private PhysicsController physicsController;
 
@@ -44,6 +50,10 @@ public class CameraController extends InputAdapter {
     @Override
     public boolean keyUp(int keycode) {
         keys.remove(keycode, 0);
+        switch (keycode) {
+            case Q:
+                Gdx.app.exit();
+        }
         return true;
     }
 
@@ -102,33 +112,38 @@ public class CameraController extends InputAdapter {
 
     public void update() {
         update(Gdx.graphics.getDeltaTime());
+        movePlayer(moveVector, jump);
+        camera.update(true);
+        jump = false;
     }
 
     public void update(float deltaTime) {
+        moveVector.set(0, 0, 0);
         if (keys.containsKey(FORWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(deltaTime * velocity);
-            camera.position.add(tmp);
+            tmp.set(camera.direction).nor().scl(velocity).y = 0;
+            moveVector.add(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-deltaTime * velocity);
-            camera.position.add(tmp);
+            tmp.set(camera.direction).nor().scl(-velocity).y = 0;
+            moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).crs(camera.up).nor().scl(-deltaTime * velocity);
-            camera.position.add(tmp);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity).y = 0;
+            moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).crs(camera.up).nor().scl(deltaTime * velocity);
-            camera.position.add(tmp);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).y = 0;
+            moveVector.add(tmp);
         }
         if (keys.containsKey(UP)) {
-            tmp.set(camera.up).nor().scl(deltaTime * velocity);
-            camera.position.add(tmp);
+//            tmp.set(camera.up).nor().scl(deltaTime * velocity);
+//            moveVector.add(tmp);
+            jump = true;
         }
-        if (keys.containsKey(DOWN)) {
-            tmp.set(camera.up).nor().scl(-deltaTime * velocity);
-            camera.position.add(tmp);
-        }
+//        if (keys.containsKey(DOWN)) {
+//            tmp.set(camera.up).nor().scl(-deltaTime * velocity);
+//            moveVector.add(tmp);
+//        }
 
         //mouse interactions
         long currentTime = System.currentTimeMillis();
@@ -140,6 +155,9 @@ public class CameraController extends InputAdapter {
             physicsController.rayPick(Buttons.RIGHT);
             timeLastBlockChange = System.currentTimeMillis();
         }
-        camera.update(true);
+    }
+
+    protected void movePlayer(Vector3 moveVector, boolean jump) {
+        physicsController.movePlayer(moveVector, jump);
     }
 }
