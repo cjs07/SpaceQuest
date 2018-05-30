@@ -254,7 +254,7 @@ public class PhysicsController {
                 headBob = 0.05 * MathUtils.sin((float) (numberOfTicks * 0.5 * MathUtils.PI / 7));
             }
             tmp2.set(tmp.x, (float) (tmp.y + headBob + 0.7f), tmp.z);
-//            camera.position.set(tmp2);
+            camera.position.set(tmp2);
             previousPosition.set(tmp);
         }
 

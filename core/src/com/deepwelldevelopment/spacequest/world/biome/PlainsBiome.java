@@ -4,6 +4,26 @@ import com.deepwelldevelopment.spacequest.block.BlockProvider;
 
 public class PlainsBiome extends Biome {
     @Override
+    public double perlinFrequency() {
+        return 0.15;
+    }
+
+    @Override
+    public double perlinLacunarity() {
+        return 2;
+    }
+
+    @Override
+    public int perlinOctaves() {
+        return 6;
+    }
+
+    @Override
+    public double perlinPersistence() {
+        return 0.5;
+    }
+
+    @Override
     public int getHeight() {
         return 47;
     }
@@ -36,5 +56,10 @@ public class PlainsBiome extends Biome {
     @Override
     public double getAmountOfWater() {
         return 5;
+    }
+
+    @Override
+    public double getCaveDensity() {
+        return 0.1;
     }
 }

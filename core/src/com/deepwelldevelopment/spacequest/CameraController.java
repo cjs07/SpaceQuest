@@ -138,7 +138,7 @@ public class CameraController extends InputAdapter {
         if (keys.containsKey(UP)) {
             tmp.set(camera.up).nor().scl(velocity);
             moveVector.add(tmp);
-//            jump = true;
+            jump = true;
         }
         if (keys.containsKey(DOWN)) {
             tmp.set(camera.up).nor().scl(-velocity);
@@ -158,7 +158,7 @@ public class CameraController extends InputAdapter {
     }
 
     protected void movePlayer(Vector3 moveVector, boolean jump) {
-//        physicsController.movePlayer(moveVector, jump);
-        camera.position.add(moveVector);
+        physicsController.movePlayer(moveVector, jump);
+//        camera.position.add(moveVector);
     }
 }

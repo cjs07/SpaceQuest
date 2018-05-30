@@ -272,7 +272,8 @@ public class SpaceQuest implements ApplicationListener {
     private void setupCameraController() {
         cameraController = new CameraController(camera, physicsController);
         //cameraController = new FlyingCameraController(camera);
-        cameraController.setVelocity(0.075f);
+//        cameraController.setVelocity(0.075f);
+        cameraController.setVelocity(1.2f);
         Gdx.input.setInputProcessor(cameraController);
         Gdx.input.setCursorCatched(true);
     }

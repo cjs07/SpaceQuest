@@ -12,6 +12,7 @@ import com.deepwelldevelopment.spacequest.util.PositionUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.Biome;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise2;
 import com.flowpowered.noise.module.source.Perlin;
 
 import java.util.Arrays;
@@ -83,10 +84,10 @@ public class Chunk {
         this.biome = biome;
         this.perlin = new Perlin();
         perlin.setSeed((int) world.getSeed());
-        perlin.setFrequency(1);
-        perlin.setOctaveCount(6);
-        perlin.setLacunarity(2);
-        perlin.setPersistence(.5);
+        perlin.setFrequency(biome.perlinFrequency());
+        perlin.setLacunarity(biome.perlinLacunarity());
+        perlin.setOctaveCount(biome.perlinOctaves());
+        perlin.setPersistence(biome.perlinPersistence());
         map = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         lightmap = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         heightmap = new boolean[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
@@ -160,7 +161,7 @@ public class Chunk {
         double startZ = zOff;
         for (int x = 0; x < World.CHUNK_WIDTH; x++) {
             for (int z = World.CHUNK_WIDTH - 1; z >= 0; z--) {
-                generationHeightmap[x][z] += (biome.getHeight() * perlin.getValue(xOff, 0, zOff));
+                generationHeightmap[x][z] += (biome.getHeight() * perlin.getValue(xOff, zOff, 0));
                 zOff -= offsetIncrement;
             }
             xOff += offsetIncrement;
@@ -177,38 +178,40 @@ public class Chunk {
                 }
             }
         }
-        for (int y = 0; y < World.MAX_HEIGHT; y++) {
-            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
-                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
-                    float v = random.nextFloat();
-                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1, z) == 0 && getBlock(x, y + 2, z) == 0) {
-                        if (v < 0.2) {
-                            setBlock(x, y + 1, z, BlockProvider.straws, false);
-                            continue;
-                        }
-
-                        if (v < 0.3) {
-                            setBlock(x, y + 1, z, BlockProvider.flower, false);
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
-            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
-                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
-                    byte block = getBlock(x, y, z);
-                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws.getId()) && getBlock(x, y + 1, z) == 0) {
-                        float v = random.nextFloat();
-                        if (v < 0.009) {
-                            createTree(x, y, z);
-                        }
-                    }
-                }
-            }
-        }
+        cavePass();
+        finalPass();
+//        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+//            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+//                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+//                    float v = random.nextFloat();
+//                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1, z) == 0 && getBlock(x, y + 2, z) == 0) {
+//                        if (v < 0.2) {
+//                            setBlock(x, y + 1, z, BlockProvider.straws, false);
+//                            continue;
+//                        }
+//
+//                        if (v < 0.3) {
+//                            setBlock(x, y + 1, z, BlockProvider.flower, false);
+//                            continue;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
+//            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
+//                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
+//                    byte block = getBlock(x, y, z);
+//                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws.getId()) && getBlock(x, y + 1, z) == 0) {
+//                        float v = random.nextFloat();
+//                        if (v < 0.009) {
+//                            createTree(x, y, z);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     public void createTree(int rootX, int rootY, int rootZ) {
@@ -244,18 +247,18 @@ public class Chunk {
 
     protected byte getByteAtWorldPosition(int x, int y, int z, Biome biome, Vector3 worldPosition) {
         int height = generationHeightmap[x][z];
-        if (y < 35) { //subsurface area, noise does not affect this height
-            if (y < 30) {
-                return BlockProvider.stone.getId();
-            }
-            if (y > 30 && y < 34) {
-                return biome.getGroundFillerBlock();
-            }
-            if (y == 34) {
-                return biome.getSurfaceBlock();
-            }
+        //subsurface area, noise does not affect this height
+        if (y < 30) {
+            return BlockProvider.stone.getId();
         }
-        int surfaceY = y - 34;
+//            if (y > 30 && y < 34) {
+//                return biome.getGroundFillerBlock();
+//            }
+//            if (y == 34) {
+//                return biome.getSurfaceBlock();
+//            }
+
+        int surfaceY = y - 30;
         if (surfaceY > height) {
             return BlockProvider.air.getId();
         }
@@ -266,6 +269,44 @@ public class Chunk {
             return biome.getGroundFillerBlock();
         }
         return BlockProvider.stone.getId();
+    }
+
+    private void cavePass() {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                    double caveValue = Math.abs(perlin.getValue(x * offsetIncrement, y * offsetIncrement, z * offsetIncrement));
+                    int worldX = World.CHUNK_WIDTH * chunkPosX;
+                    int worldZ = World.CHUNK_WIDTH * chunkPosZ;
+                    double caveDensity = SimplexNoise.noise((worldX + x) * 0.01f, y * 0.02f, (worldZ + z) * 0.01f);
+                    double caveDensity2 = SimplexNoise2.noise((worldX + x) * 0.01f, y * 0.02f, (worldZ + z) * 0.01f);
+                    if (caveDensity > 0.45 && caveDensity < 0.70 && caveDensity2 > 0.45 && caveDensity2 < 0.70) {
+                        setBlock(x, y, z, BlockProvider.air, false);
+                    }
+//                    if (caveValue < biome.getCaveDensity()) {
+//                        setBlock(x, y, z, BlockProvider.air, false);
+//                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The final pass in chunk generation. Primarily decorative, replaces dirt with grass where upper layers were
+     * removed, and adds decorative touches (such as rotating logs, and adding other block variants
+     */
+    private void finalPass() {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                    if (blockProvider.getBlockById(getBlock(x, y, z)) == BlockProvider.dirt) {
+                        if (blockProvider.getBlockById(getBlock(x, y + 1, z)) == BlockProvider.air) {
+                            setBlock(x, y, z, BlockProvider.grass, false);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     protected double get2dNoise(Vector3 pos, Vector3 offset, double scale) {
