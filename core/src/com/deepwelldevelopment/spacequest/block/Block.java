@@ -45,11 +45,16 @@ public class Block {
         return id;
     }
 
+    public String getTopTextureRegion() {
+        return topTextureRegion;
+    }
+
     public Vector2[] getTopTextureUVs() {
         if (topTextureUVs == null) {
             topTextureUVs = TextureUtils.calculateUVMapping(topTextureRegion);
         }
         return topTextureUVs;
+
     }
 
     public Vector2[] getBottomTextureUVs() {

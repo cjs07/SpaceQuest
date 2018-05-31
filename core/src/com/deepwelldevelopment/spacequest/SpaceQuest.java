@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
+import com.deepwelldevelopment.spacequest.item.Item;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
@@ -66,6 +67,8 @@ public class SpaceQuest implements ApplicationListener {
     private World world;
     private PhysicsController physicsController;
 
+    private Item item;
+
     public static SpaceQuest getSpaceQuest() {
         return spaceQuest;
     }
@@ -101,6 +104,8 @@ public class SpaceQuest implements ApplicationListener {
         this.world = new World(blockProvider, biomeProvider);
         this.physicsController = new PhysicsController(world, camera);
         this.chunkProvider = world.getChunkProvider();
+
+        item = new Item((byte) 1, "diamond");
     }
 
     @Override
@@ -188,6 +193,7 @@ public class SpaceQuest implements ApplicationListener {
 
         crosshairSprite.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         crosshairSprite.draw(spriteBatch);
+        item.render(spriteBatch);
 
         spriteBatch.end();
     }
@@ -212,7 +218,8 @@ public class SpaceQuest implements ApplicationListener {
 
         crosshair = new Texture(Gdx.files.internal("crosshair.png"));
         crosshairSprite = new Sprite(crosshair);
-        crosshairSprite.setScale(3f);
+//        crosshairSprite.setScale(3f);
+        item.setSprite(textureAtlas.createSprite("diamond"));
 
         Texture skyboxTexture = new Texture(Gdx.files.internal("skybox.png"), true);
         skyboxTexture.setFilter(Texture.TextureFilter.MipMapNearestNearest, Texture.TextureFilter.Nearest);

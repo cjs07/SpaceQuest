@@ -4,93 +4,100 @@ size: 512,64
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+diamond
+  rotate: false
+  xy: 2, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 dirt
   rotate: false
-  xy: 70, 2
+  xy: 70, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 flower
   rotate: false
-  xy: 240, 2
+  xy: 240, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 glass
   rotate: false
-  xy: 410, 2
+  xy: 410, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 grass_side
   rotate: false
-  xy: 2, 2
+  xy: 2, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 grass_top
   rotate: false
-  xy: 138, 2
+  xy: 138, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 leaves
   rotate: false
-  xy: 274, 2
+  xy: 274, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 limestone
   rotate: false
-  xy: 342, 2
+  xy: 342, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 sand
   rotate: false
-  xy: 36, 2
+  xy: 36, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 stone
   rotate: false
-  xy: 308, 2
+  xy: 308, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 trunk
   rotate: false
-  xy: 376, 2
+  xy: 376, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 trunk_top
   rotate: false
-  xy: 104, 2
+  xy: 104, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 wall
   rotate: false
-  xy: 172, 2
+  xy: 172, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 water
   rotate: false
-  xy: 206, 2
+  xy: 206, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
