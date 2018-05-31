@@ -141,14 +141,14 @@ public class CameraController extends InputAdapter {
         }
         if (keys.containsKey(UP)) {
 //            tmp.set(camera.up).nor().scl(velocity * deltaTime);
-            tmp.set(camera.up).nor().scl(velocity);
-            moveVector.add(tmp);
+//            tmp.set(camera.up).nor().scl(velocity);
+//            moveVector.add(tmp);
             jump = true;
         }
         if (keys.containsKey(DOWN)) {
 //            tmp.set(camera.up).nor().scl(-velocity * deltaTime);
-            tmp.set(camera.up).nor().scl(-velocity);
-            moveVector.add(tmp);
+//            tmp.set(camera.up).nor().scl(-velocity);
+//            moveVector.add(tmp);
         }
 
         //mouse interactions

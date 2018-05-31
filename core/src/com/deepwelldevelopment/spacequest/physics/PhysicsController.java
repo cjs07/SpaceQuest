@@ -2,6 +2,7 @@ package com.deepwelldevelopment.spacequest.physics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -280,7 +281,6 @@ public class PhysicsController {
 
     public void rayPick(int button) {
         long start = System.nanoTime();
-        System.out.println("Starting ray pick");
         Ray pickRay = camera.getPickRay(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         rayFrom.set(pickRay.origin);
         rayTo.set(pickRay.direction.scl(5f).add(rayFrom));
@@ -295,7 +295,6 @@ public class PhysicsController {
         collisionWorld.rayTest(rayFrom, rayTo, rayResultCallback);
 
         if (rayResultCallback.hasHit()) {
-            System.out.println("collisionObject:" + rayResultCallback.getCollisionObject() + " " + rayResultCallback.getFlags());
             rayResultCallback.getHitPointWorld(tmp);
             rayResultCallback.getHitNormalWorld(tmp2);
             double hitPosDelX = Math.floor(tmp.x - tmp2.x / 2);
@@ -311,19 +310,19 @@ public class PhysicsController {
             }
             if (button == Input.Buttons.LEFT) {
                 if (tmp.dst(camera.position) < 1.5f) {
-                    System.out.println(tmp.dst(camera.position));
                     return;
                 }
-                Block block;
-                if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-                    block = BlockProvider.wall;
-                } else {
-                    block = BlockProvider.light;
+                if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
+                    Block block;
+                    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                        block = BlockProvider.wall;
+                    } else {
+                        block = BlockProvider.light;
+                    }
+                    world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ, block, true);
                 }
-                world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ, block, true);
             }
         }
-        System.out.println("Ray pick finished. Time: " + (System.nanoTime() - start) / 1E9);
     }
 
     static class WorldInternalTickCallback extends InternalTickCallback {

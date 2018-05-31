@@ -211,4 +211,8 @@ public class World {
     private boolean isBlockLiquid(Block block) {
         return block.isLiquid();
     }
+
+    public boolean blockInteract(int x, int y, int z) {
+        return getBlock(x, y, z).onBlockActivated(x, y, z);
+    }
 }

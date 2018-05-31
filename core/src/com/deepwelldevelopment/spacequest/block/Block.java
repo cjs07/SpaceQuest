@@ -139,6 +139,10 @@ public class Block {
         return this;
     }
 
+    public boolean onBlockActivated(int x, int y, int z) {
+        return false;
+    }
+
     public enum Side {
         FRONT(new Vector3(0, 0, 1)),
         BACK(new Vector3(0, 0, -1)),
