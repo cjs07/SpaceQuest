@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -89,9 +88,19 @@ public class SpaceQuest implements ApplicationListener {
     public void create() {
         spaceQuest = this;
         assetManager = new AssetManager();
+        camera = new PerspectiveCamera(70f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.near = 0.1f;
+        camera.far = 200;
+        camera.position.set(new Vector3(0, 140, 0));
+        camera.lookAt(0, 140, 1);
+        camera.rotate(camera.up, 182);
+        camera.update();
+
         this.blockProvider = new BlockProvider();
         this.biomeProvider = new OverworldBiomeProvider();
         this.world = new World(blockProvider, biomeProvider);
+        this.physicsController = new PhysicsController(world, camera);
+        this.chunkProvider = world.getChunkProvider();
     }
 
     @Override
@@ -189,8 +198,6 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void setup() {
-        this.physicsController = new PhysicsController(world, camera);
-        this.chunkProvider = world.getChunkProvider();
         if (assetManager.isLoaded("blocks.atlas")) {
             assetManager.unload("blocks.atlas");
         }
@@ -297,23 +304,25 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void createCamera(int width, int height) {
-        Vector3 previousPosition = new Vector3(0, 140, 0);
-        Matrix4 previousView = null;
-        if (camera != null) {
-            previousPosition.set(camera.position);
-            previousView = new Matrix4();
-            previousView.set(camera.view);
-        }
-        camera = new PerspectiveCamera(70f, width, height);
-        camera.near = 0.1f;
-        camera.far = 200;
-        camera.position.set(previousPosition);
-        if (previousView == null) {
-            camera.lookAt(0, 140, 1);
-            camera.rotate(camera.up, 182);
-            camera.update();
-        } else {
-            camera.view.set(previousView);
-        }
+//        Vector3 previousPosition = new Vector3(0, 140, 0);
+//        Matrix4 previousView = null;
+//        if (camera != null) {
+//            previousPosition.set(camera.position);
+//            previousView = new Matrix4();
+//            previousView.set(camera.view);
+//        }
+//        camera = new PerspectiveCamera(70f, width, height);
+//        camera.near = 0.1f;
+//        camera.far = 200;
+//        camera.position.set(previousPosition);
+//        if (previousView == null) {
+//            camera.lookAt(0, 140, 1);
+//            camera.rotate(camera.up, 182);
+//            camera.update();
+//        } else {
+//            camera.view.set(previousView);
+//        }
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
     }
 }

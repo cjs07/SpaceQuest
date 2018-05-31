@@ -279,6 +279,10 @@ public class PhysicsController {
         }
     }
 
+    public void setCamera(Camera camera) {
+        this.camera = camera;
+    }
+
     public void rayPick(int button) {
         long start = System.nanoTime();
         Ray pickRay = camera.getPickRay(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);

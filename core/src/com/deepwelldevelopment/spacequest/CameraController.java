@@ -1,6 +1,7 @@
 package com.deepwelldevelopment.spacequest;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
@@ -9,8 +10,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
-import static com.badlogic.gdx.Input.Keys.Q;
-import static com.badlogic.gdx.Input.Keys.SPACE;
+import static com.badlogic.gdx.Input.Keys.*;
 
 public class CameraController extends InputAdapter {
 
@@ -33,6 +33,8 @@ public class CameraController extends InputAdapter {
     private long timeLastBlockChange;
     private boolean jump;
     private Vector3 moveVector = new Vector3();
+    private boolean fullscreen;
+    private boolean cursorCatch;
 
     private PhysicsController physicsController;
 
@@ -53,6 +55,26 @@ public class CameraController extends InputAdapter {
         switch (keycode) {
             case Q:
                 Gdx.app.exit();
+                break;
+            case F:
+                if (fullscreen) {
+                    Gdx.graphics.setWindowedMode(1280, 768);
+                    fullscreen = false;
+                } else {
+                    Graphics.DisplayMode desktopDisplayMode = Gdx.graphics.getDisplayMode(
+                            Gdx.graphics.getPrimaryMonitor());
+                    Gdx.graphics.setFullscreenMode(desktopDisplayMode);
+                    fullscreen = true;
+                }
+                break;
+            case ESCAPE:
+                if (cursorCatch) {
+                    Gdx.input.setCursorCatched(true);
+                    cursorCatch = false;
+                } else {
+                    Gdx.input.setCursorCatched(false);
+                    cursorCatch = true;
+                }
         }
         return true;
     }
