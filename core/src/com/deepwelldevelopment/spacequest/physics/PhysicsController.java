@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy.CollisionFilterGroups;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
@@ -72,6 +71,7 @@ public class PhysicsController {
     private btPairCachingGhostObject playerGhostObject;
     private btAxisSweep3 btSweep3;
     private btCapsuleShape capsuleShape;
+    private btBoxShape boxShape;
     private int numberOfTicks;
     private Vector3 previousPosition = new Vector3();
 
@@ -111,7 +111,8 @@ public class PhysicsController {
         playerGhostObject.setWorldTransform(matrix4);
         btSweep3.getOverlappingPairCache().setInternalGhostPairCallback(new btGhostPairCallback());
 
-        capsuleShape = new btCapsuleShape(0.45f, 0.9f);
+        capsuleShape = new btCapsuleShapeZ(0.45f, 0.9f);
+        boxShape = new btBoxShape(new Vector3(0.4f, 0.4f, 0.9f));
 
         playerGhostObject.setCollisionShape(capsuleShape);
         playerGhostObject.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CHARACTER_OBJECT);
@@ -128,11 +129,11 @@ public class PhysicsController {
 
     public void movePlayer(Vector3 force, boolean jump) {
         if (playerInWater && jump) {
-            characterController.getGravity().y = -5.5f;
-        }
-
-        if (playerInWater && !jump) {
-            characterController.getGravity().y = 0.1f;
+            characterController.getGravity().y = 5.5f;
+        } else if (playerInWater && !jump) {
+            characterController.getGravity().y = -0.1f;
+        } else if (characterController.getGravity().y != gravity.y) {
+            characterController.setGravity(gravity);
         }
 
         if (playerInWater) {
@@ -195,24 +196,34 @@ public class PhysicsController {
             modelBuilder.begin();
             MeshPart part = modelBuilder.part(UUID.randomUUID().toString(), mesh, GL20.GL_TRIANGLES, null);
             modelBuilder.end();
-            Array<MeshPart> meshParts = new Array<>();
+
+            Array<MeshPart> meshParts = new Array<MeshPart>();
             meshParts.add(part);
             btBvhTriangleMeshShape btBvhTriangleMeshShape = new btBvhTriangleMeshShape(meshParts);
             shapes.add(btBvhTriangleMeshShape);
+
+            //btBoxShape collisionShape = new btBoxShape(new Vector3(8,8,8));
+
             btMotionState groundMotionState = new btDefaultMotionState();
             states.add(groundMotionState);
             groundMotionState.setWorldTransform(transform);
-            btRigidBodyConstructionInfo groundBodyContructInfo = new btRigidBodyConstructionInfo(0, groundMotionState, btBvhTriangleMeshShape, new Vector3(0, 0, 0));
-            constructions.add(groundBodyContructInfo);
-            groundBodyContructInfo.setFriction(0);
-            btRigidBody groundRigidBody = new btRigidBody(groundBodyContructInfo);
+            btRigidBody.btRigidBodyConstructionInfo groundBodyConstructionInfo = new btRigidBody.btRigidBodyConstructionInfo(0, groundMotionState, btBvhTriangleMeshShape, new Vector3(0, 0, 0));
+            constructions.add(groundBodyConstructionInfo);
+            //groundBodyConstructionInfo.setLinearDamping(0.2f);
+            groundBodyConstructionInfo.setFriction(0);
+            //groundBodyConstructionInfo.setAngularDamping(0.0f);
+            btRigidBody groundRigidBody = new btRigidBody(groundBodyConstructionInfo);
 
-            if (nonCollidable) {
-                collisionWorld.addRigidBody(groundRigidBody, 64, CollisionFilterGroups.CharacterFilter | CollisionFilterGroups.DefaultFilter);
+            if (!nonCollidable) {
+                collisionWorld.addRigidBody(groundRigidBody, (short) btBroadphaseProxy.CollisionFilterGroups.StaticFilter,
+                        (short) (btBroadphaseProxy.CollisionFilterGroups.CharacterFilter | btBroadphaseProxy.CollisionFilterGroups.DefaultFilter));
             } else {
-                collisionWorld.addRigidBody(groundRigidBody, CollisionFilterGroups.StaticFilter, CollisionFilterGroups.CharacterFilter | CollisionFilterGroups.DefaultFilter);
+                collisionWorld.addRigidBody(groundRigidBody, (short) 64,
+                        (short) (btBroadphaseProxy.CollisionFilterGroups.CharacterFilter | btBroadphaseProxy.CollisionFilterGroups.DefaultFilter));
             }
+
             entities.add(groundRigidBody);
+
             meshes.put(mesh, groundRigidBody);
         }
     }
@@ -253,7 +264,7 @@ public class PhysicsController {
             if (!playerInWater && (mov > 0.01f || mov < -0.01f)) {
                 headBob = 0.05 * MathUtils.sin((float) (numberOfTicks * 0.5 * MathUtils.PI / 7));
             }
-            tmp2.set(tmp.x, (float) (tmp.y + headBob + 0.7f), tmp.z);
+            tmp2.set(tmp.x, (float) (tmp.y + headBob + 0.3f), tmp.z);
             camera.position.set(tmp2);
             previousPosition.set(tmp);
         }

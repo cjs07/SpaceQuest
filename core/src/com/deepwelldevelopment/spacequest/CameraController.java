@@ -120,27 +120,33 @@ public class CameraController extends InputAdapter {
     public void update(float deltaTime) {
         moveVector.set(0, 0, 0);
         if (keys.containsKey(FORWARD)) {
+//            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity * deltaTime);
             tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity);
             moveVector.add(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
+//            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity * deltaTime);
             tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity);
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
+//            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity * deltaTime).y = 0;
             tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity).y = 0;
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
+//            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity * deltaTime).y = 0;
             tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).y = 0;
             moveVector.add(tmp);
         }
         if (keys.containsKey(UP)) {
+//            tmp.set(camera.up).nor().scl(velocity * deltaTime);
             tmp.set(camera.up).nor().scl(velocity);
             moveVector.add(tmp);
             jump = true;
         }
         if (keys.containsKey(DOWN)) {
+//            tmp.set(camera.up).nor().scl(-velocity * deltaTime);
             tmp.set(camera.up).nor().scl(-velocity);
             moveVector.add(tmp);
         }

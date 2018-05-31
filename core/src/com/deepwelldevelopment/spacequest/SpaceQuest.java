@@ -33,7 +33,7 @@ import java.nio.FloatBuffer;
 
 public class SpaceQuest implements ApplicationListener {
 
-    public static final int MAX_UPDATE_ITERATIONS = 20;
+    public static final int MAX_UPDATE_ITERATIONS = 10;
     public static final float fixedTimeStep = 1 / 60f;
     private static SpaceQuest spaceQuest;
 
@@ -89,6 +89,9 @@ public class SpaceQuest implements ApplicationListener {
     public void create() {
         spaceQuest = this;
         assetManager = new AssetManager();
+        this.blockProvider = new BlockProvider();
+        this.biomeProvider = new OverworldBiomeProvider();
+        this.world = new World(blockProvider, biomeProvider);
     }
 
     @Override
@@ -110,7 +113,7 @@ public class SpaceQuest implements ApplicationListener {
         while (accum > fixedTimeStep && iterations < MAX_UPDATE_ITERATIONS) {
             world.update(camera.position);
             tickPhysics(fixedTimeStep);
-            skybox.transform.rotate(Vector3.X, fixedTimeStep / 2).setTranslation(camera.position);
+//            skybox.transform.rotate(Vector3.X, fixedTimeStep / 2).setTranslation(camera.position);
             accum -= fixedTimeStep;
             iterations++;
         }
@@ -186,9 +189,6 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void setup() {
-        this.blockProvider = new BlockProvider();
-        this.biomeProvider = new OverworldBiomeProvider();
-        this.world = new World(blockProvider, biomeProvider);
         this.physicsController = new PhysicsController(world, camera);
         this.chunkProvider = world.getChunkProvider();
         if (assetManager.isLoaded("blocks.atlas")) {
