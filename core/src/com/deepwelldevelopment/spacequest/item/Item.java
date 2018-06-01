@@ -1,6 +1,5 @@
 package com.deepwelldevelopment.spacequest.item;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
@@ -18,10 +17,6 @@ public class Item {
         this.textureRegion = textureRegion;
     }
 
-    public void setSprite(Sprite sprite) {
-        this.sprite = sprite;
-    }
-
     public byte getId() {
         return id;
     }
@@ -37,7 +32,11 @@ public class Item {
         return false;
     }
 
-    public void render(Batch batch) {
-        sprite.draw(batch);
+    public Sprite getSprite() {
+        return sprite;
+    }
+
+    public void setSprite(Sprite sprite) {
+        this.sprite = sprite;
     }
 }

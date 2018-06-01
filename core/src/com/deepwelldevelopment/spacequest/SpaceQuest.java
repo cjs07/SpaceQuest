@@ -22,7 +22,9 @@ import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
+import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.item.Item;
+import com.deepwelldevelopment.spacequest.item.ItemStack;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
@@ -68,6 +70,7 @@ public class SpaceQuest implements ApplicationListener {
     private PhysicsController physicsController;
 
     private Item item;
+    private Hotbar hotbar;
 
     public static SpaceQuest getSpaceQuest() {
         return spaceQuest;
@@ -193,7 +196,8 @@ public class SpaceQuest implements ApplicationListener {
 
         crosshairSprite.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         crosshairSprite.draw(spriteBatch);
-        item.render(spriteBatch);
+//        item.render(spriteBatch);
+        hotbar.render(spriteBatch);
 
         spriteBatch.end();
     }
@@ -201,6 +205,10 @@ public class SpaceQuest implements ApplicationListener {
     private void tickPhysics(float delta) {
         physicsController.update(delta);
         camera.update(true);
+    }
+
+    public BitmapFont getFont() {
+        return font;
     }
 
     private void setup() {
@@ -220,6 +228,8 @@ public class SpaceQuest implements ApplicationListener {
         crosshairSprite = new Sprite(crosshair);
 //        crosshairSprite.setScale(3f);
         item.setSprite(textureAtlas.createSprite("diamond"));
+        hotbar = new Hotbar();
+        hotbar.setStackInSlot(new ItemStack(item), 0);
 
         Texture skyboxTexture = new Texture(Gdx.files.internal("skybox.png"), true);
         skyboxTexture.setFilter(Texture.TextureFilter.MipMapNearestNearest, Texture.TextureFilter.Nearest);

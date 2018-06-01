@@ -27,7 +27,7 @@ flower
   index: -1
 glass
   rotate: false
-  xy: 410, 20
+  xy: 478, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -46,6 +46,20 @@ grass_top
   orig: 32, 32
   offset: 0, 0
   index: -1
+hotbar_selected
+  rotate: false
+  xy: 444, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+hotbar_unselected
+  rotate: false
+  xy: 342, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 leaves
   rotate: false
   xy: 274, 20
@@ -55,7 +69,7 @@ leaves
   index: -1
 limestone
   rotate: false
-  xy: 342, 20
+  xy: 376, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -76,7 +90,7 @@ stone
   index: -1
 trunk
   rotate: false
-  xy: 376, 20
+  xy: 410, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
