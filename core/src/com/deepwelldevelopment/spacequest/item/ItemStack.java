@@ -77,7 +77,7 @@ public class ItemStack {
         sprite.setPosition(x, y);
         sprite.draw(batch);
         if (slotSize > 0) {
-            SpaceQuest.getSpaceQuest().getFont().draw(batch, stackSize + "", x, slotY + slotSize);
+            SpaceQuest.getSpaceQuest().getFont().draw(batch, stackSize + "", slotX + slotSize, slotY + slotSize);
         }
     }
 }

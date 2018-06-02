@@ -66,7 +66,7 @@ public class Hotbar implements IInventory {
             sprite.draw(batch);
             if (stack == ItemStack.EMPTY) continue;
             float itemstackX = sprite.getX() + (sprite.getWidth() / 2) - (stack.getSprite().getWidth() / 2);
-            float itemstackY = sprite.getX() + (sprite.getHeight() / 2) + (stack.getSprite().getHeight() / 2);
+            float itemstackY = sprite.getY() + (sprite.getHeight() / 2) - (stack.getSprite().getHeight() / 2);
             stack.render(batch, itemstackX, itemstackY, sprite.getX(), sprite.getY(), sprite.getWidth());
         }
     }
