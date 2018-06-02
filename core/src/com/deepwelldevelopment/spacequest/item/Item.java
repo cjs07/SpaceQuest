@@ -2,6 +2,7 @@ package com.deepwelldevelopment.spacequest.item;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 
@@ -15,6 +16,9 @@ public class Item {
     public Item(byte id, String textureRegion) {
         this.id = id;
         this.textureRegion = textureRegion;
+        if (SpaceQuest.getSpaceQuest().getTextureAtlas() != null) {
+            sprite = SpaceQuest.getSpaceQuest().getTextureAtlas().createSprite(textureRegion);
+        }
     }
 
     public byte getId() {

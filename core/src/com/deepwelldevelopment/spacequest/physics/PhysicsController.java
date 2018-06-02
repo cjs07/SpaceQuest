@@ -21,6 +21,7 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
@@ -317,13 +318,17 @@ public class PhysicsController {
                     return;
                 }
                 if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-                    Block block;
-                    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-                        block = BlockProvider.wall;
-                    } else {
-                        block = BlockProvider.light;
+                    if (!SpaceQuest.getSpaceQuest().getHotbar().getHeldItem().onItemUse(world, (int) hitPosAddX,
+                            (int) hitPosAddY, (int) hitPosAddZ, (float) hitPosAddX, (float) hitPosAddY,
+                            (float) hitPosAddZ)) {
+                        Block block;
+                        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                            block = BlockProvider.wall;
+                        } else {
+                            block = BlockProvider.light;
+                        }
+                        world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ, block, true);
                     }
-                    world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ, block, true);
                 }
             }
         }

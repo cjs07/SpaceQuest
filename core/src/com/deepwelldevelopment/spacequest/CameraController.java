@@ -8,6 +8,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -23,9 +24,19 @@ public class CameraController extends InputAdapter {
     private int BACKWARD = Keys.S;
     private int UP = Keys.SPACE;
     private int DOWN = Keys.SHIFT_LEFT;
+    private int HOTBAR_1 = Keys.NUM_1;
+    private int HOTBAR_2 = Keys.NUM_2;
+    private int HOTBAR_3 = Keys.NUM_3;
+    private int HOTBAR_4 = Keys.NUM_4;
+    private int HOTBAR_5 = Keys.NUM_5;
+    private int HOTBAR_6 = Keys.NUM_6;
+    private int HOTBAR_7 = Keys.NUM_7;
+    private int HOTBAR_8 = Keys.NUM_8;
+    private int HOTBAR_9 = Keys.NUM_9;
     private int JUMP = SPACE;
     private int LMB = Buttons.LEFT;
     private int RMB = Buttons.RIGHT;
+    private int SCROLL_SENSITIVITY = 1;
     private float velocity = 4.0f;
     private float degreesPerPixel = 0.25f;
     private boolean leftHeld;
@@ -75,6 +86,27 @@ public class CameraController extends InputAdapter {
                     Gdx.input.setCursorCatched(false);
                     cursorCatch = true;
                 }
+                break;
+        }
+
+        if (keycode == HOTBAR_1) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(0);
+        } else if (keycode == HOTBAR_2) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(1);
+        } else if (keycode == HOTBAR_3) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(2);
+        } else if (keycode == HOTBAR_4) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(3);
+        } else if (keycode == HOTBAR_5) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(4);
+        } else if (keycode == HOTBAR_6) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(5);
+        } else if (keycode == HOTBAR_7) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(6);
+        } else if (keycode == HOTBAR_8) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(7);
+        } else if (keycode == HOTBAR_9) {
+            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(8);
         }
         return true;
     }
@@ -86,6 +118,21 @@ public class CameraController extends InputAdapter {
         } else if (button == RMB) {
             rightHeld = true;
         }
+        return true;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        int num = amount / SCROLL_SENSITIVITY;
+        Hotbar hotbar = SpaceQuest.getSpaceQuest().getHotbar();
+        int newSelected = hotbar.getSelectedSlot() + num;
+        while (newSelected >= 9) {
+            newSelected -= 9;
+        }
+        while (newSelected < 0) {
+            newSelected += 9;
+        }
+        hotbar.setSelectedSlot(newSelected);
         return true;
     }
 

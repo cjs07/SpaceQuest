@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
+import com.deepwelldevelopment.spacequest.item.Item;
 import com.deepwelldevelopment.spacequest.item.ItemStack;
 
 public class Hotbar implements IInventory {
@@ -35,6 +36,25 @@ public class Hotbar implements IInventory {
             sprite.setPosition(startX + (sprite.getWidth() * sprite.getScaleX() * i), 50);
             sprites[i] = sprite;
             itemStacks[i] = ItemStack.EMPTY;
+        }
+    }
+
+    public Item getHeldItem() {
+        return itemStacks[selectedSlot].getItem();
+    }
+
+    public int getSelectedSlot() {
+        return selectedSlot;
+    }
+
+    public void setSelectedSlot(int selectedSlot) {
+        if (selectedSlot >= 0 && selectedSlot < HOTBAR_SIZE) {
+            int x = (int) ((Gdx.graphics.getWidth() / 2) - ((unselectedSprite.getWidth() * unselectedSprite.getScaleX() * HOTBAR_SIZE) / 2));
+            sprites[this.selectedSlot] = new Sprite(unselectedSprite);
+            sprites[this.selectedSlot].setPosition(x + (unselectedSprite.getWidth() * unselectedSprite.getScaleX() * this.selectedSlot), 50);
+            sprites[selectedSlot] = new Sprite(selectedSprite);
+            sprites[selectedSlot].setPosition(x + (selectedSprite.getWidth() * selectedSprite.getScaleX() * selectedSlot), 50);
+            this.selectedSlot = selectedSlot;
         }
     }
 

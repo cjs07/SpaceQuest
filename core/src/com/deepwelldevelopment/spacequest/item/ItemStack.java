@@ -20,7 +20,7 @@ public class ItemStack {
         updateEmptyStatus();
         if (item != null) {
             sprite = new Sprite(item.getSprite());
-            sprite.setScale(3);
+//            sprite.setScale(3);
         }
     }
 

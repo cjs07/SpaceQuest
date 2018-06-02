@@ -24,6 +24,7 @@ import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.item.Item;
+import com.deepwelldevelopment.spacequest.item.ItemBlock;
 import com.deepwelldevelopment.spacequest.item.ItemStack;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
@@ -146,8 +147,13 @@ public class SpaceQuest implements ApplicationListener {
 
     }
 
+    public Hotbar getHotbar() {
+        return hotbar;
+    }
+
     @Override
     public void dispose() {
+
         voxelBatch.dispose();
     }
 
@@ -229,7 +235,15 @@ public class SpaceQuest implements ApplicationListener {
 //        crosshairSprite.setScale(3f);
         item.setSprite(textureAtlas.createSprite("diamond"));
         hotbar = new Hotbar();
-        hotbar.setStackInSlot(new ItemStack(item), 0);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.grass)), 0);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.light)), 1);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.dirt)), 2);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.glass)), 3);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.stone)), 4);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.wall)), 5);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.treeTrunk)), 6);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sand)), 7);
+        hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sandStone)), 8);
 
         Texture skyboxTexture = new Texture(Gdx.files.internal("skybox.png"), true);
         skyboxTexture.setFilter(Texture.TextureFilter.MipMapNearestNearest, Texture.TextureFilter.Nearest);
