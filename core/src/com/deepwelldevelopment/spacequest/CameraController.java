@@ -8,6 +8,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
@@ -34,6 +35,7 @@ public class CameraController extends InputAdapter {
     private int HOTBAR_8 = Keys.NUM_8;
     private int HOTBAR_9 = Keys.NUM_9;
     private int JUMP = SPACE;
+    private int INVENTORY = Keys.E;
     private int LMB = Buttons.LEFT;
     private int RMB = Buttons.RIGHT;
     private int SCROLL_SENSITIVITY = 1;
@@ -48,6 +50,7 @@ public class CameraController extends InputAdapter {
     private boolean cursorCatch;
 
     private PhysicsController physicsController;
+    private Gui inventoryGui;
 
     public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
@@ -107,6 +110,8 @@ public class CameraController extends InputAdapter {
             SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(7);
         } else if (keycode == HOTBAR_9) {
             SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(8);
+        } else if (keycode == INVENTORY) {
+            SpaceQuest.getSpaceQuest().openGui(inventoryGui);
         }
         return true;
     }

@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.item.Item;
@@ -69,12 +70,21 @@ public class SpaceQuest implements ApplicationListener {
     private IBiomeProvider biomeProvider;
     private World world;
     private PhysicsController physicsController;
-
     private Item item;
     private Hotbar hotbar;
 
+    private Gui openGui;
+
     public static SpaceQuest getSpaceQuest() {
         return spaceQuest;
+    }
+
+    public void openGui(Gui gui) {
+        this.openGui = gui;
+    }
+
+    public void closeGui() {
+        this.openGui = null;
     }
 
     private void clearOpenGL() {
@@ -147,14 +157,14 @@ public class SpaceQuest implements ApplicationListener {
 
     }
 
-    public Hotbar getHotbar() {
-        return hotbar;
-    }
-
     @Override
     public void dispose() {
 
         voxelBatch.dispose();
+    }
+
+    public Hotbar getHotbar() {
+        return hotbar;
     }
 
     private void renderModelBatches() {
@@ -204,6 +214,9 @@ public class SpaceQuest implements ApplicationListener {
         crosshairSprite.draw(spriteBatch);
 //        item.render(spriteBatch);
         hotbar.render(spriteBatch);
+        if (openGui != null) {
+            openGui.render(spriteBatch, Gdx.input.getX(), Gdx.input.getY());
+        }
 
         spriteBatch.end();
     }
@@ -235,6 +248,7 @@ public class SpaceQuest implements ApplicationListener {
 //        crosshairSprite.setScale(3f);
         item.setSprite(textureAtlas.createSprite("diamond"));
         hotbar = new Hotbar();
+
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.grass)), 0);
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.light)), 1);
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.dirt)), 2);
