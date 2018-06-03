@@ -252,8 +252,6 @@ public class SpaceQuest implements ApplicationListener {
         Material material = setupMaterialAndEnvironment();
         setupRendering(material);
 
-        setupCameraController();
-
         crosshair = new Texture(Gdx.files.internal("crosshair.png"));
         crosshairSprite = new Sprite(crosshair);
 //        crosshairSprite.setScale(3f);
@@ -269,6 +267,8 @@ public class SpaceQuest implements ApplicationListener {
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.treeTrunk)), 6);
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sand)), 7);
         hotbar.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sandStone)), 8);
+
+        setupCameraController();
 
         Texture skyboxTexture = new Texture(Gdx.files.internal("skybox.png"), true);
         skyboxTexture.setFilter(Texture.TextureFilter.MipMapNearestNearest, Texture.TextureFilter.Nearest);

@@ -13,29 +13,56 @@ import com.deepwelldevelopment.spacequest.item.ItemStack;
  */
 public class GuiContainer extends Gui {
 
+    private static Sprite hoveredSlotSprite;
+
     private Sprite backgroundSprite;
     private Container container;
     /** The itemstack attached to the mouse */
     private ItemStack mouseStack;
 
+    private int x;
+    private int y;
+
     public GuiContainer(Container container, String texture) {
+        if (hoveredSlotSprite == null) {
+            hoveredSlotSprite = SpaceQuest.getSpaceQuest().getTextureAtlas().createSprite("gui_slot_hovered");
+            hoveredSlotSprite.setSize(hoveredSlotSprite.getWidth() * GUI_SCALE, hoveredSlotSprite.getHeight() * GUI_SCALE);
+        }
         this.container = container;
         this.backgroundSprite = SpaceQuest.getSpaceQuest().getTextureAtlas().createSprite(texture);
-        backgroundSprite.setScale(2);
-        backgroundSprite.setPosition((Gdx.graphics.getWidth() / 2) - (backgroundSprite.getWidth() / 2),
-                (Gdx.graphics.getHeight() / 2) - (backgroundSprite.getHeight() / 2));
+        backgroundSprite.setSize(backgroundSprite.getWidth() * GUI_SCALE, backgroundSprite.getHeight() * GUI_SCALE);
+        x = (int) ((Gdx.graphics.getWidth() / 2) - (backgroundSprite.getWidth() / 2));
+        y = (int) ((Gdx.graphics.getHeight() / 2) - (backgroundSprite.getHeight() / 2));
+        backgroundSprite.setPosition(x, y);
     }
 
     @Override
     public void render(Batch batch, int mouseX, int mouseY) {
         backgroundSprite.draw(batch);
         super.render(batch, mouseX, mouseY);
+        mouseY = Math.abs((mouseY - Gdx.graphics.getHeight()));
         for (int i = 0; i < container.getSlots().size(); i++) {
             Slot slot = container.getSlots().get(i);
-            slot.getStack().render(batch, slot.getX(), slot.getY(), slot.getX(), slot.getY(), 16);
+            if (slot.getStack() != ItemStack.EMPTY) {
+                slot.getStack().render(batch, x + slot.getX() + (8 * GUI_SCALE) - (slot.getStack().getSprite().getWidth() / 2),
+                        y + slot.getY() + (8 * GUI_SCALE) - (slot.getStack().getSprite().getHeight() / 2),
+                        x + slot.getX(), y + slot.getY(), 16 * GUI_SCALE);
+            }
+            if (isMouseOverSlot(slot, mouseX, mouseY)) {
+                hoveredSlotSprite.setPosition(x + slot.getX(), y + slot.getY());
+                hoveredSlotSprite.draw(batch);
+
+            }
         }
         if (mouseStack != null) {
             mouseStack.render(batch, mouseX, mouseY, 0, 0, 0);
         }
+    }
+
+    private boolean isMouseOverSlot(Slot slot, int x, int y) {
+        return x > this.x + slot.getX() &&
+                x < this.x + slot.getX() + (16 * GUI_SCALE) &&
+                y > this.y + slot.getY() &&
+                y < this.y + slot.getY() + (16 * GUI_SCALE);
     }
 }

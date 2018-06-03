@@ -17,6 +17,10 @@ public class Slot {
         this.index = index;
         this.x = x;
         this.y = y;
+        stack = inventory.getStackInSlot(index);
+        if (stack == null) {
+            stack = ItemStack.EMPTY;
+        }
     }
 
     public void setSlotNumber(int slotNumber) {
@@ -24,7 +28,6 @@ public class Slot {
     }
 
     public int getX() {
-
         return x;
     }
 

@@ -100,7 +100,7 @@ public class CameraController extends InputAdapter {
         }
 
         if (SpaceQuest.getSpaceQuest().isGuiOpen()) {
-
+            SpaceQuest.getSpaceQuest().getOpenGui().keyTyped(keycode);
         } else {
             if (keycode == HOTBAR_1) {
                 SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(0);
@@ -129,20 +129,28 @@ public class CameraController extends InputAdapter {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button == LMB) {
-            leftHeld = true;
-        } else if (button == RMB) {
-            rightHeld = true;
+        if (SpaceQuest.getSpaceQuest().isGuiOpen()) {
+
+        } else {
+            if (button == LMB) {
+                leftHeld = true;
+            } else if (button == RMB) {
+                rightHeld = true;
+            }
         }
         return true;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (button == LMB) {
-            leftHeld = false;
-        } else if (button == RMB) {
-            rightHeld = false;
+        if (SpaceQuest.getSpaceQuest().isGuiOpen()) {
+            SpaceQuest.getSpaceQuest().getOpenGui().mouseClicked(screenX, screenY, button);
+        } else {
+            if (button == LMB) {
+                leftHeld = false;
+            } else if (button == RMB) {
+                rightHeld = false;
+            }
         }
         return true;
     }
