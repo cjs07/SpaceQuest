@@ -1,117 +1,124 @@
 
 blocks.png
-size: 512,64
+size: 512,128
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 diamond
   rotate: false
-  xy: 2, 2
+  xy: 179, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 dirt
   rotate: false
-  xy: 70, 20
+  xy: 36, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 flower
   rotate: false
-  xy: 240, 20
+  xy: 247, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 glass
   rotate: false
-  xy: 478, 20
+  xy: 315, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 grass_side
   rotate: false
-  xy: 2, 20
+  xy: 2, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 grass_top
   rotate: false
-  xy: 138, 20
+  xy: 213, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
+gui_inventory
+  rotate: false
+  xy: 2, 36
+  size: 175, 84
+  orig: 175, 84
+  offset: 0, 0
+  index: -1
 hotbar_selected
   rotate: false
-  xy: 444, 20
+  xy: 315, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 hotbar_unselected
   rotate: false
-  xy: 342, 20
+  xy: 281, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 leaves
   rotate: false
-  xy: 274, 20
+  xy: 104, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 limestone
   rotate: false
-  xy: 376, 20
+  xy: 138, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 sand
   rotate: false
-  xy: 36, 20
+  xy: 179, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 stone
   rotate: false
-  xy: 308, 20
+  xy: 247, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 trunk
   rotate: false
-  xy: 410, 20
+  xy: 281, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 trunk_top
   rotate: false
-  xy: 104, 20
+  xy: 179, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 wall
   rotate: false
-  xy: 172, 20
+  xy: 70, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 water
   rotate: false
-  xy: 206, 20
+  xy: 213, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

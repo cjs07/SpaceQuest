@@ -9,7 +9,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import com.deepwelldevelopment.spacequest.client.gui.Gui;
+import com.deepwelldevelopment.spacequest.client.gui.GuiContainer;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
+import com.deepwelldevelopment.spacequest.inventory.PlayerInventory;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -50,11 +52,14 @@ public class CameraController extends InputAdapter {
     private boolean cursorCatch;
 
     private PhysicsController physicsController;
+    private PlayerInventory playerInventory;
     private Gui inventoryGui;
 
     public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
         this.physicsController = physicsController;
+        playerInventory = new PlayerInventory(SpaceQuest.getSpaceQuest().getHotbar());
+        inventoryGui = new GuiContainer(playerInventory, "gui_inventory");
     }
 
     @Override
@@ -82,36 +87,42 @@ public class CameraController extends InputAdapter {
                 }
                 break;
             case ESCAPE:
-                if (cursorCatch) {
-                    Gdx.input.setCursorCatched(true);
-                    cursorCatch = false;
+                if (SpaceQuest.getSpaceQuest().isGuiOpen()) {
+                    SpaceQuest.getSpaceQuest().closeGui();
                 } else {
-                    Gdx.input.setCursorCatched(false);
-                    cursorCatch = true;
+                    if (cursorCatch) {
+                        releaseCursor();
+                    } else {
+                        catchCursor();
+                    }
                 }
                 break;
         }
 
-        if (keycode == HOTBAR_1) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(0);
-        } else if (keycode == HOTBAR_2) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(1);
-        } else if (keycode == HOTBAR_3) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(2);
-        } else if (keycode == HOTBAR_4) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(3);
-        } else if (keycode == HOTBAR_5) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(4);
-        } else if (keycode == HOTBAR_6) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(5);
-        } else if (keycode == HOTBAR_7) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(6);
-        } else if (keycode == HOTBAR_8) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(7);
-        } else if (keycode == HOTBAR_9) {
-            SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(8);
-        } else if (keycode == INVENTORY) {
-            SpaceQuest.getSpaceQuest().openGui(inventoryGui);
+        if (SpaceQuest.getSpaceQuest().isGuiOpen()) {
+
+        } else {
+            if (keycode == HOTBAR_1) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(0);
+            } else if (keycode == HOTBAR_2) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(1);
+            } else if (keycode == HOTBAR_3) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(2);
+            } else if (keycode == HOTBAR_4) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(3);
+            } else if (keycode == HOTBAR_5) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(4);
+            } else if (keycode == HOTBAR_6) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(5);
+            } else if (keycode == HOTBAR_7) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(6);
+            } else if (keycode == HOTBAR_8) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(7);
+            } else if (keycode == HOTBAR_9) {
+                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(8);
+            } else if (keycode == INVENTORY) {
+                SpaceQuest.getSpaceQuest().openGui(inventoryGui);
+            }
         }
         return true;
     }
@@ -123,21 +134,6 @@ public class CameraController extends InputAdapter {
         } else if (button == RMB) {
             rightHeld = true;
         }
-        return true;
-    }
-
-    @Override
-    public boolean scrolled(int amount) {
-        int num = amount / SCROLL_SENSITIVITY;
-        Hotbar hotbar = SpaceQuest.getSpaceQuest().getHotbar();
-        int newSelected = hotbar.getSelectedSlot() + num;
-        while (newSelected >= 9) {
-            newSelected -= 9;
-        }
-        while (newSelected < 0) {
-            newSelected += 9;
-        }
-        hotbar.setSelectedSlot(newSelected);
         return true;
     }
 
@@ -158,12 +154,39 @@ public class CameraController extends InputAdapter {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
-        float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
-        camera.direction.rotate(camera.up, deltaX);
-        tmp.set(camera.direction).crs(camera.up).nor();
-        camera.direction.rotate(tmp, deltaY);
+        if (!SpaceQuest.getSpaceQuest().isGuiOpen()) {
+            float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
+            float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
+            camera.direction.rotate(camera.up, deltaX);
+            tmp.set(camera.direction).crs(camera.up).nor();
+            camera.direction.rotate(tmp, deltaY);
+        }
         return true;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        int num = amount / SCROLL_SENSITIVITY;
+        Hotbar hotbar = SpaceQuest.getSpaceQuest().getHotbar();
+        int newSelected = hotbar.getSelectedSlot() + num;
+        while (newSelected >= 9) {
+            newSelected -= 9;
+        }
+        while (newSelected < 0) {
+            newSelected += 9;
+        }
+        hotbar.setSelectedSlot(newSelected);
+        return true;
+    }
+
+    public void releaseCursor() {
+        Gdx.input.setCursorCatched(false);
+        cursorCatch = false;
+    }
+
+    public void catchCursor() {
+        Gdx.input.setCursorCatched(true);
+        cursorCatch = true;
     }
 
     /**

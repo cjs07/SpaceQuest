@@ -81,10 +81,21 @@ public class SpaceQuest implements ApplicationListener {
 
     public void openGui(Gui gui) {
         this.openGui = gui;
+        cameraController.releaseCursor();
     }
 
     public void closeGui() {
         this.openGui = null;
+        cameraController.catchCursor();
+    }
+
+    public Gui getOpenGui() {
+        return openGui;
+    }
+
+    public boolean isGuiOpen() {
+        return openGui != null;
+
     }
 
     private void clearOpenGL() {
