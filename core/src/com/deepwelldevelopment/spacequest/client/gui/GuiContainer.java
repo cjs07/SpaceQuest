@@ -1,6 +1,7 @@
 package com.deepwelldevelopment.spacequest.client.gui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
@@ -19,6 +20,7 @@ public class GuiContainer extends Gui {
     private Container container;
     /** The itemstack attached to the mouse */
     private ItemStack mouseStack;
+    private Slot mousedSlot;
 
     private int x;
     private int y;
@@ -34,6 +36,7 @@ public class GuiContainer extends Gui {
         x = (int) ((Gdx.graphics.getWidth() / 2) - (backgroundSprite.getWidth() / 2));
         y = (int) ((Gdx.graphics.getHeight() / 2) - (backgroundSprite.getHeight() / 2));
         backgroundSprite.setPosition(x, y);
+        mouseStack = ItemStack.EMPTY;
     }
 
     @Override
@@ -41,6 +44,7 @@ public class GuiContainer extends Gui {
         backgroundSprite.draw(batch);
         super.render(batch, mouseX, mouseY);
         mouseY = Math.abs((mouseY - Gdx.graphics.getHeight()));
+        mousedSlot = null;
         for (int i = 0; i < container.getSlots().size(); i++) {
             Slot slot = container.getSlots().get(i);
             if (slot.getStack() != ItemStack.EMPTY) {
@@ -51,11 +55,22 @@ public class GuiContainer extends Gui {
             if (isMouseOverSlot(slot, mouseX, mouseY)) {
                 hoveredSlotSprite.setPosition(x + slot.getX(), y + slot.getY());
                 hoveredSlotSprite.draw(batch);
-
+                mousedSlot = slot;
             }
         }
         if (mouseStack != null) {
             mouseStack.render(batch, mouseX, mouseY, 0, 0, 0);
+        }
+    }
+
+    @Override
+    public void mouseClicked(int x, int y, int button) {
+        if (button == Buttons.LEFT) {
+            if (mousedSlot != null) {
+                ItemStack temp = mousedSlot.getStack();
+                mousedSlot.setStack(mouseStack);
+                mouseStack = temp;
+            }
         }
     }
 
