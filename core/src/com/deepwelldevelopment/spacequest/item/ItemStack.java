@@ -74,10 +74,13 @@ public class ItemStack {
 
     public void render(Batch batch, float x, float y, float slotX, float slotY, float slotSize) {
         if (item == null) return;
-        sprite.setPosition(x, y);
-        sprite.draw(batch);
         if (slotSize > 0) {
+            sprite.setPosition(x, y);
+            sprite.draw(batch);
             SpaceQuest.getSpaceQuest().getFont().draw(batch, stackSize + "", slotX + slotSize, slotY + slotSize);
+        } else {
+            sprite.setOriginBasedPosition(x, y);
+            sprite.draw(batch);
         }
     }
 }

@@ -9,7 +9,6 @@ public class Slot {
     private int index;
     private int x;
     private int y;
-    private ItemStack stack;
     private int slotNumber;
 
     public Slot(IInventory inventory, int index, int x, int y) {
@@ -17,10 +16,6 @@ public class Slot {
         this.index = index;
         this.x = x;
         this.y = y;
-        stack = inventory.getStackInSlot(index);
-        if (stack == null) {
-            stack = ItemStack.EMPTY;
-        }
     }
 
     public void setSlotNumber(int slotNumber) {
@@ -36,11 +31,11 @@ public class Slot {
     }
 
     public ItemStack getStack() {
-        return stack;
+        return inventory.getStackInSlot(index);
     }
 
     public void setStack(ItemStack stack) {
-        this.stack = stack;
+        inventory.setStackInSlot(stack, index);
     }
 
     public boolean isItemValid(ItemStack itemStack) {

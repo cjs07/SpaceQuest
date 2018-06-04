@@ -17,7 +17,7 @@ public class PlayerInventory extends Container implements IInventory {
             for (int j = 0; j < 9; j++) {
                 int x = (int) ((8 * Gui.GUI_SCALE) + j * 18 * Gui.GUI_SCALE);
                 int y = (int) ((65 * Gui.GUI_SCALE) - i * 18 * Gui.GUI_SCALE);
-                addSlotToContainer(new Slot(this, i * 3 + j, x, y));
+                addSlotToContainer(new Slot(this, j + i * 9 + 9, x, y));
             }
         }
 
@@ -29,22 +29,22 @@ public class PlayerInventory extends Container implements IInventory {
 
     @Override
     public int getSize() {
-        return 0;
+        return 36;
     }
 
     @Override
     public ItemStack[] getItemStacks() {
-        return new ItemStack[0];
+        return (ItemStack[]) this.itemstacks.toArray();
     }
 
     @Override
     public ItemStack getStackInSlot(int slot) {
-        return null;
+        return itemstacks.get(slot);
     }
 
     @Override
     public void setStackInSlot(ItemStack stack, int slot) {
-
+        this.itemstacks.set(slot, stack);
     }
 
     @Override
