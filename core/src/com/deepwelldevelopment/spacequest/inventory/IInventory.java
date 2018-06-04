@@ -7,8 +7,6 @@ public interface IInventory {
 
     int getSize();
 
-    ItemStack[] getItemStacks();
-
     ItemStack getStackInSlot(int slot);
 
     void setStackInSlot(ItemStack stack, int slot);

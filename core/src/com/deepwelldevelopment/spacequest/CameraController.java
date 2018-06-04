@@ -10,8 +10,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.client.gui.GuiContainer;
+import com.deepwelldevelopment.spacequest.inventory.ContainerPlayer;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
-import com.deepwelldevelopment.spacequest.inventory.PlayerInventory;
+import com.deepwelldevelopment.spacequest.inventory.InventoryPlayer;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -52,14 +53,14 @@ public class CameraController extends InputAdapter {
     private boolean cursorCatch;
 
     private PhysicsController physicsController;
-    private PlayerInventory playerInventory;
+    private InventoryPlayer playerInventory;
     private Gui inventoryGui;
 
     public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
         this.physicsController = physicsController;
-        playerInventory = new PlayerInventory(SpaceQuest.getSpaceQuest().getHotbar());
-        inventoryGui = new GuiContainer(playerInventory, "gui_inventory");
+        playerInventory = new InventoryPlayer();
+        inventoryGui = new GuiContainer(new ContainerPlayer(playerInventory, SpaceQuest.getSpaceQuest().getHotbar()), "gui_inventory");
     }
 
     @Override

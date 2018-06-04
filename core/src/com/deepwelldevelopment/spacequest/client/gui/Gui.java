@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Gui {
 
-    public static final float GUI_SCALE = 2;
+    public static final float GUI_SCALE = 3.0f;
 
     private List<GuiComponent> components;
 

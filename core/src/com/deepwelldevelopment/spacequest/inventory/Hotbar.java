@@ -64,11 +64,6 @@ public class Hotbar implements IInventory {
     }
 
     @Override
-    public ItemStack[] getItemStacks() {
-        return itemStacks;
-    }
-
-    @Override
     public ItemStack getStackInSlot(int slot) {
         return itemStacks[slot];
     }
