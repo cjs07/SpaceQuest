@@ -284,8 +284,7 @@ public class PhysicsController {
         this.camera = camera;
     }
 
-    public void rayPick(int button) {
-        long start = System.nanoTime();
+    public int[] rayPick(int button) {
         Ray pickRay = camera.getPickRay(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         rayFrom.set(pickRay.origin);
         rayTo.set(pickRay.direction.scl(5f).add(rayFrom));
@@ -311,11 +310,11 @@ public class PhysicsController {
             double hitPosAddZ = Math.floor(tmp.z + tmp2.z / 2);
 
             if (button == Input.Buttons.RIGHT) {
-                world.setBlock((float) hitPosDelX, (float) hitPosDelY, (float) hitPosDelZ, BlockProvider.air, true);
+                return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};
             }
             if (button == Input.Buttons.LEFT) {
                 if (tmp.dst(camera.position) < 1.5f) {
-                    return;
+                    return null;
                 }
                 if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
                     if (!SpaceQuest.getSpaceQuest().getHotbar().getHeldItem().onItemUse(world, (int) hitPosAddX,
@@ -328,10 +327,12 @@ public class PhysicsController {
                             block = BlockProvider.light;
                         }
                         world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ, block, true);
+                        return null;
                     }
                 }
             }
         }
+        return null;
     }
 
     static class WorldInternalTickCallback extends InternalTickCallback {

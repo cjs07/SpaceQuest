@@ -178,6 +178,10 @@ public class SpaceQuest implements ApplicationListener {
         return hotbar;
     }
 
+    public World getWorld() {
+        return world;
+    }
+
     private void renderModelBatches() {
         if (!world.isPlayerInWater(camera)) {
 
@@ -186,6 +190,7 @@ public class SpaceQuest implements ApplicationListener {
 //            skyboxRender.end();
         }
         renderVoxelBatch();
+
     }
 
     private void renderVoxelBatch() {

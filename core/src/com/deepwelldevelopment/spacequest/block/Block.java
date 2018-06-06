@@ -24,6 +24,7 @@ public class Block {
     private boolean isLightSource;
     private Color tileColor;
     private boolean collidable;
+    private float hardness;
 
     public Block(byte id, String topTextureRegion, String bottomTextureRegion, String sidesTextureRegion) {
         this.id = id;
@@ -35,10 +36,15 @@ public class Block {
         this.isLightSource = false;
         this.tileColor = Color.WHITE;
         this.collidable = true;
+        this.hardness = 1.0f;
     }
 
     public Block(byte id, String textureRegion) {
         this(id, textureRegion, textureRegion, textureRegion);
+    }
+
+    public float getHardness() {
+        return hardness;
     }
 
     public byte getId() {

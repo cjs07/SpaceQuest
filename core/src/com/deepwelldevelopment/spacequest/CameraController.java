@@ -8,6 +8,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.client.gui.GuiContainer;
 import com.deepwelldevelopment.spacequest.inventory.ContainerPlayer;
@@ -55,6 +57,8 @@ public class CameraController extends InputAdapter {
     private PhysicsController physicsController;
     private InventoryPlayer playerInventory;
     private Gui inventoryGui;
+    private int[] breakingBlockPos;
+    private long breakStart;
 
     public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
@@ -263,11 +267,29 @@ public class CameraController extends InputAdapter {
             physicsController.rayPick(Buttons.LEFT);
             timeLastBlockChange = System.currentTimeMillis();
         }
-        if (rightHeld && currentTime - timeLastBlockChange > 150) {
-            physicsController.rayPick(Buttons.RIGHT);
-            timeLastBlockChange = System.currentTimeMillis();
+        if (rightHeld) {
+            int[] breakingPos = physicsController.rayPick(Buttons.RIGHT);
+            if (breakingPos != null) {
+                if (breakingBlockPos == null) {
+                    breakingBlockPos = breakingPos;
+                }
+                if (breakingPos[0] == breakingBlockPos[0] && breakingPos[1] == breakingBlockPos[1] &&
+                        breakingPos[2] == breakingBlockPos[2]) { //the same block is being broken
+                    Block block = SpaceQuest.getSpaceQuest().getWorld().getBlock(breakingPos[0], breakingPos[1],
+                            breakingPos[2]);
+                    if (System.currentTimeMillis() - breakStart >= block.getHardness() / 0.5f * 1000) {
+                        SpaceQuest.getSpaceQuest().getWorld().setBlock(breakingPos[0], breakingPos[1], breakingPos[2],
+                                BlockProvider.air, false);
+                    }
+                } else {
+                    breakStart = System.currentTimeMillis();
+                    breakingBlockPos = breakingPos;
+                }
+            }
         }
+        timeLastBlockChange = System.currentTimeMillis();
     }
+
 
     protected void movePlayer(Vector3 moveVector, boolean jump) {
         physicsController.movePlayer(moveVector, jump);
