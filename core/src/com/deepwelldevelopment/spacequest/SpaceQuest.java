@@ -19,9 +19,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.gui.Gui;
+import com.deepwelldevelopment.spacequest.client.render.VoxelMesh;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
 import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.item.Item;
@@ -72,6 +74,17 @@ public class SpaceQuest implements ApplicationListener {
     private PhysicsController physicsController;
     private Item item;
     private Hotbar hotbar;
+    private VoxelMesh breakingMesh;
+    private Block breakingBlock0;
+    private Block breakingBlock1;
+    private Block breakingBlock2;
+    private Block breakingBlock3;
+    private Block breakingBlock4;
+    private Block breakingBlock5;
+    private Block breakingBlock6;
+    private Block breakingBlock7;
+    private Block breakingBlock8;
+    private Block breakingBlock9;
 
     private Gui openGui;
 
@@ -131,6 +144,18 @@ public class SpaceQuest implements ApplicationListener {
         this.chunkProvider = world.getChunkProvider();
 
         item = new Item((byte) 1, "diamond");
+
+        breakingMesh = new VoxelMesh();
+        breakingBlock0 = new Block((byte) -1, "breaking_0");
+        breakingBlock0 = new Block((byte) -1, "breaking_1");
+        breakingBlock0 = new Block((byte) -1, "breaking_2");
+        breakingBlock0 = new Block((byte) -1, "breaking_3");
+        breakingBlock0 = new Block((byte) -1, "breaking_4");
+        breakingBlock0 = new Block((byte) -1, "breaking_5");
+        breakingBlock0 = new Block((byte) -1, "breaking_6");
+        breakingBlock0 = new Block((byte) -1, "breaking_7");
+        breakingBlock0 = new Block((byte) -1, "breaking_8");
+        breakingBlock0 = new Block((byte) -1, "breaking_9");
     }
 
     @Override
@@ -180,6 +205,34 @@ public class SpaceQuest implements ApplicationListener {
 
     public World getWorld() {
         return world;
+    }
+
+    public void updateBreaking(int state) {
+        switch (state) {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            case 7:
+                break;
+            case 8:
+                break;
+            case 9:
+                break;
+        }
+    }
+
+    private void setBreakingBlock(Block block) {
     }
 
     private void renderModelBatches() {
@@ -291,7 +344,7 @@ public class SpaceQuest implements ApplicationListener {
 
     private ShaderProgram setupShaders() {
         ShaderProgram.pedantic = true;
-        ShaderProgram shaderProgram = new ShaderProgram(Gdx.files.internal("shaders/shader.vs"), Gdx.files.internal("shaders/shader.fs"));
+        ShaderProgram shaderProgram = new ShaderProgram(Gdx.files.internal("shaders/shader.vert"), Gdx.files.internal("shaders/shader.frag"));
         System.out.println(shaderProgram.isCompiled() ? "Shaders compiled ok" : "Shaders didn't compile ok: " + shaderProgram.getLog());
 
         return shaderProgram;

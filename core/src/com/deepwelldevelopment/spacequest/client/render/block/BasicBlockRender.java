@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ShortArray;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
+import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 import java.util.Arrays;
@@ -39,6 +40,7 @@ public class BasicBlockRender implements IBlockRender {
     protected float[] lightFloat3 = new float[4];
     protected float[] lightFloat4 = new float[4];
     private Vector2[] texCoords = new Vector2[4];
+    private Vector2[] breakCoords = new Vector2[4];
 
     @Override
     public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider,
@@ -48,6 +50,7 @@ public class BasicBlockRender implements IBlockRender {
         Vector2[] sidesTextureUVs = block.getSidesTextureUVs();
         Vector2[] topTextureUVs = block.getTopTextureUVs();
         Vector2[] bottomTextureUVs = block.getBottomTextureUVs();
+        breakCoords = TextureUtils.calculateUVMapping("breaking", 8);
 
         if (block.drawSide(blockProvider, chunk, x, y, z, Block.Side.FRONT)) {
             setAOLightFront(x, y, z, chunk, block);
@@ -100,15 +103,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addFront(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[0].x, points[0].y, points[0].z, texCoords[0].x, texCoords[0].y, frontNormal[0], frontNormal[1],
+                points[0].x, points[0].y, points[0].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, frontNormal[0], frontNormal[1],
                 frontNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3],
-                points[1].x, points[1].y, points[1].z, texCoords[1].x, texCoords[1].y, frontNormal[0], frontNormal[1],
+                points[1].x, points[1].y, points[1].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, frontNormal[0], frontNormal[1],
                 frontNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[2].x, points[2].y, points[2].z, texCoords[2].x, texCoords[2].y, frontNormal[0], frontNormal[1],
+                points[2].x, points[2].y, points[2].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, frontNormal[0], frontNormal[1],
                 frontNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[3].x, points[3].y, points[3].z, texCoords[3].x, texCoords[3].y, frontNormal[0], frontNormal[1],
+                points[3].x, points[3].y, points[3].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, frontNormal[0], frontNormal[1],
                 frontNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +
@@ -116,15 +119,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addBack(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[4].x, points[4].y, points[4].z, texCoords[0].x, texCoords[0].y, backNormal[0], backNormal[1],
+                points[4].x, points[4].y, points[4].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, backNormal[0], backNormal[1],
                 backNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3],
-                points[5].x, points[5].y, points[5].z, texCoords[1].x, texCoords[1].y, backNormal[0], backNormal[1],
+                points[5].x, points[5].y, points[5].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, backNormal[0], backNormal[1],
                 backNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[6].x, points[6].y, points[6].z, texCoords[2].x, texCoords[2].y, backNormal[0], backNormal[1],
+                points[6].x, points[6].y, points[6].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, backNormal[0], backNormal[1],
                 backNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[7].x, points[7].y, points[7].z, texCoords[3].x, texCoords[3].y, backNormal[0], backNormal[1],
+                points[7].x, points[7].y, points[7].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, backNormal[0], backNormal[1],
                 backNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +
@@ -132,15 +135,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addRight(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[1].x, points[1].y, points[1].z, texCoords[0].x, texCoords[0].y, rightNormal[0], rightNormal[1],
+                points[1].x, points[1].y, points[1].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, rightNormal[0], rightNormal[1],
                 rightNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3],
-                points[4].x, points[4].y, points[4].z, texCoords[1].x, texCoords[1].y, rightNormal[0], rightNormal[1],
+                points[4].x, points[4].y, points[4].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, rightNormal[0], rightNormal[1],
                 rightNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[7].x, points[7].y, points[7].z, texCoords[2].x, texCoords[2].y, rightNormal[0], rightNormal[1],
+                points[7].x, points[7].y, points[7].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, rightNormal[0], rightNormal[1],
                 rightNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[2].x, points[2].y, points[2].z, texCoords[3].x, texCoords[3].y, rightNormal[0], rightNormal[1],
+                points[2].x, points[2].y, points[2].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, rightNormal[0], rightNormal[1],
                 rightNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +
@@ -148,15 +151,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addLeft(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[5].x, points[5].y, points[5].z, texCoords[0].x, texCoords[0].y, leftNormal[0], leftNormal[1],
+                points[5].x, points[5].y, points[5].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, leftNormal[0], leftNormal[1],
                 leftNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3],
-                points[0].x, points[0].y, points[0].z, texCoords[1].x, texCoords[1].y, leftNormal[0], leftNormal[1],
+                points[0].x, points[0].y, points[0].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, leftNormal[0], leftNormal[1],
                 leftNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[3].x, points[3].y, points[3].z, texCoords[2].x, texCoords[2].y, leftNormal[0], leftNormal[1],
+                points[3].x, points[3].y, points[3].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, leftNormal[0], leftNormal[1],
                 leftNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[6].x, points[6].y, points[6].z, texCoords[3].x, texCoords[3].y, leftNormal[0], leftNormal[1],
+                points[6].x, points[6].y, points[6].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, leftNormal[0], leftNormal[1],
                 leftNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +
@@ -164,15 +167,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addTop(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[3].x, points[3].y, points[3].z, texCoords[0].x, texCoords[0].y, topNormal[0], topNormal[1],
+                points[3].x, points[3].y, points[3].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, topNormal[0], topNormal[1],
                 topNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3],
-                points[2].x, points[2].y, points[2].z, texCoords[1].x, texCoords[1].y, topNormal[0], topNormal[1],
+                points[2].x, points[2].y, points[2].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, topNormal[0], topNormal[1],
                 topNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[7].x, points[7].y, points[7].z, texCoords[2].x, texCoords[2].y, topNormal[0], topNormal[1],
+                points[7].x, points[7].y, points[7].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, topNormal[0], topNormal[1],
                 topNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[6].x, points[6].y, points[6].z, texCoords[3].x, texCoords[3].y, topNormal[0], topNormal[1],
+                points[6].x, points[6].y, points[6].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, topNormal[0], topNormal[1],
                 topNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +
@@ -181,15 +184,15 @@ public class BasicBlockRender implements IBlockRender {
     }
 
     protected void addBottom(FloatArray vertices, ShortArray indicies) {
-        int vertexOffset = vertices.size / 12;
+        int vertexOffset = vertices.size / 14;
         vertices.addAll(
-                points[5].x, points[5].y, points[5].z, texCoords[0].x, texCoords[0].y, bottomNormal[0], bottomNormal[1],
+                points[5].x, points[5].y, points[5].z, texCoords[0].x, texCoords[0].y, breakCoords[0].x, breakCoords[0].y, bottomNormal[0], bottomNormal[1],
                 bottomNormal[2], lightFloat[0], lightFloat[1], lightFloat[2], lightFloat[3],
-                points[4].x, points[4].y, points[4].z, texCoords[1].x, texCoords[1].y, bottomNormal[0], bottomNormal[1],
+                points[4].x, points[4].y, points[4].z, texCoords[1].x, texCoords[1].y, breakCoords[1].x, breakCoords[1].y, bottomNormal[0], bottomNormal[1],
                 bottomNormal[2], lightFloat2[0], lightFloat2[1], lightFloat2[2], lightFloat2[3],
-                points[1].x, points[1].y, points[1].z, texCoords[2].x, texCoords[2].y, bottomNormal[0], bottomNormal[1],
+                points[1].x, points[1].y, points[1].z, texCoords[2].x, texCoords[2].y, breakCoords[2].x, breakCoords[2].y, bottomNormal[0], bottomNormal[1],
                 bottomNormal[2], lightFloat3[0], lightFloat3[1], lightFloat3[2], lightFloat3[3],
-                points[0].x, points[0].y, points[0].z, texCoords[3].x, texCoords[3].y, bottomNormal[0], bottomNormal[1],
+                points[0].x, points[0].y, points[0].z, texCoords[3].x, texCoords[3].y, breakCoords[3].x, breakCoords[3].y, bottomNormal[0], bottomNormal[1],
                 bottomNormal[2], lightFloat4[0], lightFloat4[1], lightFloat4[2], lightFloat4[3]);
 
         indicies.addAll((short) (vertexOffset), (short) (1 + vertexOffset), (short) (2 + vertexOffset), (short) (2 +

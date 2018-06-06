@@ -1,10 +1,10 @@
-
-
 attribute vec3 a_position;
 uniform mat4 u_projViewTrans;
 uniform mat4 u_worldTrans;
 attribute vec2 a_texCoord0;
+attribute vec2 a_texCoord1;
 varying vec2 v_texCoords0;
+varying vec2 v_texCoords1;
 
 
 attribute vec3 a_normal;
@@ -30,6 +30,7 @@ varying float baselight;
 void main()
 {
     v_texCoords0 = a_texCoord0;
+    v_texCoords1 = a_texCoord1;
 
     float dx = 0.0;
     float dz = 0.0;

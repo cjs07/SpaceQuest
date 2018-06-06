@@ -10,6 +10,7 @@ precision mediump float;
 #endif
 
 varying LOWP vec2 v_texCoords0;
+varying LOWP vec2 v_texCoords1;
 uniform sampler2D u_normalTexture;
 uniform sampler2D u_diffuseTexture;
 
@@ -28,10 +29,18 @@ void main()
     vec3 light = blocklight.rgb+baselight;
 
     vec4 texColor = texture2D(u_diffuseTexture, v_texCoords0.xy).rgba;
+    vec4 breakColor = texture2D(u_diffuseTexture, v_texCoords1.xy).rbga;
 
-    if(texColor.a < 0.5)
+    vec4 finalColor;
+    if (breakColor.a > 0) {
+        finalColor = vec4(breakColor.xyz * light.rgb, breakColor.a);
+    } else {
+        finalColor = vec4(texColor.xyz * light.rgb, texColor.a);
+    }
+
+    if(finalColor.a < 0.5) {
         discard;
-    vec4 finalColor = vec4(texColor.xyz * light.rgb, texColor.a);
+    }
 
     const float LOG2 = 1.442695;
     float z = (gl_FragCoord.z / gl_FragCoord.w)/3.0;
@@ -39,6 +48,6 @@ void main()
     fogFactor = clamp(fogFactor, 0.0, 1.0);
 
     gl_FragColor = mix(v_fogColor, finalColor, fogFactor );
-
+//    gl_FragColor = finalColor;
 }
 

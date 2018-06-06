@@ -4,9 +4,86 @@ size: 512,128
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+breaking
+  rotate: false
+  xy: 70, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 7
+breaking
+  rotate: false
+  xy: 281, 88
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 10
+breaking
+  rotate: false
+  xy: 281, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 8
+breaking
+  rotate: false
+  xy: 315, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 0
+breaking
+  rotate: false
+  xy: 383, 88
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 1
+breaking
+  rotate: false
+  xy: 383, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 2
+breaking
+  rotate: false
+  xy: 417, 88
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 3
+breaking
+  rotate: false
+  xy: 417, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 4
+breaking
+  rotate: false
+  xy: 451, 88
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 5
+breaking
+  rotate: false
+  xy: 451, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 6
+breaking
+  rotate: false
+  xy: 247, 20
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 9
 diamond
   rotate: false
-  xy: 179, 36
+  xy: 485, 104
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -20,14 +97,14 @@ dirt
   index: -1
 flower
   rotate: false
-  xy: 247, 88
+  xy: 104, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 glass
   rotate: false
-  xy: 315, 54
+  xy: 213, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -55,35 +132,35 @@ gui_inventory
   index: -1
 gui_slot_hovered
   rotate: false
-  xy: 172, 18
+  xy: 281, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 hotbar_selected
   rotate: false
-  xy: 315, 88
+  xy: 179, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 hotbar_unselected
   rotate: false
-  xy: 281, 88
+  xy: 315, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 leaves
   rotate: false
-  xy: 104, 2
+  xy: 247, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 limestone
   rotate: false
-  xy: 138, 2
+  xy: 349, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -97,14 +174,14 @@ sand
   index: -1
 stone
   rotate: false
-  xy: 247, 54
+  xy: 138, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 trunk
   rotate: false
-  xy: 281, 54
+  xy: 349, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -118,14 +195,14 @@ trunk_top
   index: -1
 wall
   rotate: false
-  xy: 70, 2
+  xy: 213, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 water
   rotate: false
-  xy: 213, 54
+  xy: 247, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

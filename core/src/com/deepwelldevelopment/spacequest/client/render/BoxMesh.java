@@ -136,7 +136,7 @@ public class BoxMesh {
         Mesh inProgressMesh = null;
         try {
             inProgressMesh = new Mesh(true, 4 * (v.length / 12), 6 * i.length, VertexAttribute.Position(),
-                    VertexAttribute.TexCoords(0), VertexAttribute.Normal(), VertexAttribute.ColorUnpacked());
+                    VertexAttribute.TexCoords(0), VertexAttribute.TexCoords(1), VertexAttribute.Normal(), VertexAttribute.ColorUnpacked());
             inProgressMesh.setVertices(v);
             inProgressMesh.setIndices(i);
         } catch (Exception e) {
