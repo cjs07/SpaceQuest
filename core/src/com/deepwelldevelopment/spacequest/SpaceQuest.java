@@ -195,8 +195,12 @@ public class SpaceQuest implements ApplicationListener {
 
     @Override
     public void dispose() {
-
+        assetManager.dispose();
         voxelBatch.dispose();
+        spriteBatch.dispose();
+        crosshair.dispose();
+        shaderProgram.dispose();
+        font.dispose();
     }
 
     public Hotbar getHotbar() {

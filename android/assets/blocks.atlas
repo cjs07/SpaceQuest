@@ -34,49 +34,49 @@ breaking
   index: 0
 breaking
   rotate: false
-  xy: 383, 88
+  xy: 383, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 breaking
   rotate: false
-  xy: 383, 54
+  xy: 417, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 breaking
   rotate: false
-  xy: 417, 88
+  xy: 417, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 3
 breaking
   rotate: false
-  xy: 417, 54
+  xy: 451, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 4
 breaking
   rotate: false
-  xy: 451, 88
+  xy: 451, 54
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 5
 breaking
   rotate: false
-  xy: 451, 54
+  xy: 179, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 6
 breaking
   rotate: false
-  xy: 247, 20
+  xy: 281, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -104,7 +104,7 @@ flower
   index: -1
 glass
   rotate: false
-  xy: 213, 20
+  xy: 247, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -132,14 +132,14 @@ gui_inventory
   index: -1
 gui_slot_hovered
   rotate: false
-  xy: 281, 36
+  xy: 315, 36
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 hotbar_selected
   rotate: false
-  xy: 179, 20
+  xy: 213, 20
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -172,6 +172,13 @@ sand
   orig: 32, 32
   offset: 0, 0
   index: -1
+selected
+  rotate: false
+  xy: 349, 54
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 stone
   rotate: false
   xy: 138, 2
@@ -181,7 +188,7 @@ stone
   index: -1
 trunk
   rotate: false
-  xy: 349, 54
+  xy: 383, 88
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

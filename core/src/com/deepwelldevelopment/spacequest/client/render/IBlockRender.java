@@ -10,5 +10,5 @@ import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 public interface IBlockRender {
 
     boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider, Chunk chunk, Block block,
-                     FloatArray vertices, ShortArray indices);
+                     FloatArray vertices, ShortArray indices, int breakState);
 }

@@ -59,6 +59,7 @@ public class BoxMesh {
         if (mesh != null && mesh.getNumVertices() > 0 && mesh.getNumIndices() > 0) {
             if (this.nonColliadableMesh != null) {
                 this.nonColliadableMesh.dispose();
+                this.nonColliadableMesh = null;
             }
             this.nonColliadableMesh = mesh;
             this.nonColliadableMesh.calculateBoundingBox(nonColliadableMeshBoundingBox);

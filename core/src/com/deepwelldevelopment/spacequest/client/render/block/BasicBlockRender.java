@@ -44,13 +44,13 @@ public class BasicBlockRender implements IBlockRender {
 
     @Override
     public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider,
-                                         Chunk chunk, Block block, FloatArray vertices, ShortArray indices) {
+                                         Chunk chunk, Block block, FloatArray vertices, ShortArray indices, int breakState) {
         setupMesh(x, y, z);
 
         Vector2[] sidesTextureUVs = block.getSidesTextureUVs();
         Vector2[] topTextureUVs = block.getTopTextureUVs();
         Vector2[] bottomTextureUVs = block.getBottomTextureUVs();
-        breakCoords = TextureUtils.calculateUVMapping("breaking", 8);
+        breakCoords = TextureUtils.calculateUVMapping("breaking", breakState);
 
         if (block.drawSide(blockProvider, chunk, x, y, z, Block.Side.FRONT)) {
             setAOLightFront(x, y, z, chunk, block);

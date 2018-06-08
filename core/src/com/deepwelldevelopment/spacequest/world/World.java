@@ -208,6 +208,16 @@ public class World {
         return false;
     }
 
+    public void updateBreakState(int x, int y, int z, int state) {
+        Chunk chunk = findChunk((int) Math.floor(x / World.CHUNK_WIDTH), (int) Math.floor(z / World.CHUNK_WIDTH));
+        if (chunk != null) {
+            int localX = x & 15;
+            int localY = y;
+            int localZ = z & 15;
+            chunk.setBreakState(localX, localY, localZ, state);
+        }
+    }
+
     private boolean isBlockLiquid(Block block) {
         return block.isLiquid();
     }

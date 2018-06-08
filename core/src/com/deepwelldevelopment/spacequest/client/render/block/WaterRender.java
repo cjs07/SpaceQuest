@@ -11,7 +11,7 @@ import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 public class WaterRender extends BasicBlockRender {
 
     @Override
-    public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider, Chunk chunk, Block block, FloatArray vertices, ShortArray indicies) {
+    public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider, Chunk chunk, Block block, FloatArray vertices, ShortArray indicies, int breakState) {
         Vector2[] topTextureUVs = block.getTopTextureUVs();
         if (chunk.getBlock(x, y + 1, z) == 0) {
             points[0] = pointVector0.set(x, y + 0.69f, z + 1);        //BOTTOM

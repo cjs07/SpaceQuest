@@ -288,6 +288,10 @@ public class CameraController extends InputAdapter {
             }
         }
         timeLastBlockChange = System.currentTimeMillis();
+        int[] temp = physicsController.rayPick(-1);
+        if (temp != null) {
+            SpaceQuest.getSpaceQuest().getWorld().updateBreakState(temp[0], temp[1], temp[2], 4);
+        }
     }
 
 

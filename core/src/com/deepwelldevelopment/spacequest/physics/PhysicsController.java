@@ -309,6 +309,9 @@ public class PhysicsController {
             double hitPosAddY = Math.floor(tmp.y + tmp2.y / 2);
             double hitPosAddZ = Math.floor(tmp.z + tmp2.z / 2);
 
+            if (button == -1) {
+                return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};
+            }
             if (button == Input.Buttons.RIGHT) {
                 return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};
             }

@@ -74,6 +74,11 @@ public class Chunk {
     private int timesSinceUpdate;
     private Perlin perlin;
 
+    private int breakX;
+    private int breakY;
+    private int breakZ;
+    private int breakState;
+
     public Chunk(World world, IBlockProvider blockProvider, Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
         isReady = false;
         this.world = world;
@@ -350,6 +355,18 @@ public class Chunk {
         return alphaMeshes;
     }
 
+    public void setBreakState(int x, int y, int z, int state) {
+        if (x != breakX || y != breakY || z != breakZ || state != breakState) {
+            VoxelMesh mesh = meshes.get((int) Math.floor(y / World.CHUNK_WIDTH));
+            mesh.addBlock(worldPosition, x, y, z, blockProvider, this, blockProvider.getBlockById(getBlock(x, y, z)), state);
+            resetMesh();
+            breakX = x;
+            breakY = y;
+            breakZ = z;
+            breakState = state;
+        }
+    }
+
     public void setBlock(int x, int y, int z, Block block, boolean updateLight) {
         if (outsideThisChunkBounds(x, z)) {
             int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
@@ -430,6 +447,10 @@ public class Chunk {
                 }
             }
         }
+        VoxelMesh mesh = meshes.get((int) Math.floor(breakY / World.CHUNK_WIDTH));
+        mesh.addBlock(worldPosition, breakX, breakY, breakZ, blockProvider, this,
+                blockProvider.getBlockById(getBlock(breakX, breakY, breakZ)), breakState);
+        toRebuild.add(mesh);
 
         synchronized (syncToken) {
             for (BoxMesh voxelMesh : toRebuild) {

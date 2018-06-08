@@ -16,7 +16,7 @@ public class FlowerRender extends BasicBlockRender {
     private final Random random = new Random();
 
     @Override
-    public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider, Chunk chunk, Block block, FloatArray vertices, ShortArray indicies) {
+    public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z, IBlockProvider blockProvider, Chunk chunk, Block block, FloatArray vertices, ShortArray indicies, int breakState) {
         Vector2[] sidesTextureUVs = block.getSidesTextureUVs();
         float sinX = MathUtils.sin(x);
         float sinY = MathUtils.sin(y);
