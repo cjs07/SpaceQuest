@@ -36,7 +36,7 @@ public class Block {
         this.isLightSource = false;
         this.tileColor = Color.WHITE;
         this.collidable = true;
-        this.hardness = 1.0f;
+        this.hardness = 5.0f;
     }
 
     public Block(byte id, String textureRegion) {

@@ -277,9 +277,21 @@ public class CameraController extends InputAdapter {
                         breakingPos[2] == breakingBlockPos[2]) { //the same block is being broken
                     Block block = SpaceQuest.getSpaceQuest().getWorld().getBlock(breakingPos[0], breakingPos[1],
                             breakingPos[2]);
-                    if (System.currentTimeMillis() - breakStart >= block.getHardness() / 0.5f * 1000) {
+                    long passedTime = System.currentTimeMillis() - breakStart;
+                    if (passedTime >= block.getHardness() / 0.5f * 1000) {
                         SpaceQuest.getSpaceQuest().getWorld().setBlock(breakingPos[0], breakingPos[1], breakingPos[2],
                                 BlockProvider.air, false);
+                    } else { //update break state
+                        float breakTime = block.getHardness() / 0.5f * 1000;
+                        float stateTime = breakTime / 11;
+                        int i = 0;
+                        while (passedTime > stateTime) {
+                            passedTime -= stateTime;
+                            i++;
+                        }
+                        System.out.println(i);
+                        SpaceQuest.getSpaceQuest().getWorld().updateBreakState(breakingPos[0], breakingPos[1], breakingPos[2], i);
+
                     }
                 } else {
                     breakStart = System.currentTimeMillis();
@@ -290,7 +302,7 @@ public class CameraController extends InputAdapter {
         timeLastBlockChange = System.currentTimeMillis();
         int[] temp = physicsController.rayPick(-1);
         if (temp != null) {
-            SpaceQuest.getSpaceQuest().getWorld().updateBreakState(temp[0], temp[1], temp[2], 4);
+//            SpaceQuest.getSpaceQuest().getWorld().updateBreakState(temp[0], temp[1], temp[2], 4);
         }
     }
 
