@@ -3,11 +3,12 @@ package com.deepwelldevelopment.spacequest.item;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.world.World;
 
 public class ItemStack {
 
-    public static final ItemStack EMPTY = new ItemStack(null);
+    public static final ItemStack EMPTY = new ItemStack((Item) null);
 
     private Item item;
     private int stackSize;
@@ -26,6 +27,14 @@ public class ItemStack {
 
     public ItemStack(Item item) {
         this(item, 1);
+    }
+
+    public ItemStack(Block block) {
+        this(block, 1);
+    }
+
+    public ItemStack(Block block, int stackSize) {
+        this(Item.getItemFromBlock(block), stackSize);
     }
 
     private void updateEmptyStatus() {
