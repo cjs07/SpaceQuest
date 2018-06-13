@@ -12,4 +12,6 @@ public interface IInventory {
     void setStackInSlot(ItemStack stack, int slot);
 
     void render(Batch batch);
+
+    boolean addStack(ItemStack stack);
 }

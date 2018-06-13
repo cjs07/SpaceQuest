@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.util.PositionUtils;
 import com.deepwelldevelopment.spacequest.world.biome.Biome;
@@ -216,6 +217,10 @@ public class World {
             int localZ = z & 15;
             chunk.setBreakState(localX, localY, localZ, state);
         }
+    }
+
+    public void breakBlock(int x, int y, int z) {
+        setBlock(x, y, z, BlockProvider.air, false);
     }
 
     private boolean isBlockLiquid(Block block) {

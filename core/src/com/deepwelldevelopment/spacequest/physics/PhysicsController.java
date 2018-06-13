@@ -320,7 +320,7 @@ public class PhysicsController {
                     return null;
                 }
                 if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) || Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-                    if (!SpaceQuest.getSpaceQuest().getHotbar().getHeldItem().onItemUse(world, (int) hitPosAddX,
+                    if (!SpaceQuest.getSpaceQuest().getPlayerInventory().getHeldItem().onItemUse(world, (int) hitPosAddX,
                             (int) hitPosAddY, (int) hitPosAddZ, (float) hitPosAddX, (float) hitPosAddY,
                             (float) hitPosAddZ)) {
                         Block block;

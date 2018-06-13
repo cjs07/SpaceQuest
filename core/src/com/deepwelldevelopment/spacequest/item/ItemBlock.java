@@ -10,6 +10,7 @@ public class ItemBlock extends Item {
     public ItemBlock(Block block) {
         super(block.getId(), block.getTopTextureRegion());
         this.block = block;
+        registerBlockMapping(block, this);
     }
 
     @Override

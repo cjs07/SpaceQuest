@@ -9,11 +9,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import com.deepwelldevelopment.spacequest.block.Block;
-import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.client.gui.GuiContainer;
 import com.deepwelldevelopment.spacequest.inventory.ContainerPlayer;
-import com.deepwelldevelopment.spacequest.inventory.Hotbar;
 import com.deepwelldevelopment.spacequest.inventory.InventoryPlayer;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
@@ -60,11 +58,11 @@ public class CameraController extends InputAdapter {
     private int[] breakingBlockPos;
     private long breakStart;
 
-    public CameraController(Camera camera, PhysicsController physicsController) {
+    public CameraController(Camera camera, PhysicsController physicsController, InventoryPlayer playerInventory) {
         this.camera = camera;
         this.physicsController = physicsController;
-        playerInventory = new InventoryPlayer();
-        inventoryGui = new GuiContainer(new ContainerPlayer(playerInventory, SpaceQuest.getSpaceQuest().getHotbar()), "gui_inventory");
+        this.playerInventory = playerInventory;
+        inventoryGui = new GuiContainer(new ContainerPlayer(playerInventory), "gui_inventory");
     }
 
     @Override
@@ -108,23 +106,23 @@ public class CameraController extends InputAdapter {
             SpaceQuest.getSpaceQuest().getOpenGui().keyTyped(keycode);
         } else {
             if (keycode == HOTBAR_1) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(0);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(0);
             } else if (keycode == HOTBAR_2) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(1);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(1);
             } else if (keycode == HOTBAR_3) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(2);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(2);
             } else if (keycode == HOTBAR_4) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(3);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(3);
             } else if (keycode == HOTBAR_5) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(4);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(4);
             } else if (keycode == HOTBAR_6) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(5);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(5);
             } else if (keycode == HOTBAR_7) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(6);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(6);
             } else if (keycode == HOTBAR_8) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(7);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(7);
             } else if (keycode == HOTBAR_9) {
-                SpaceQuest.getSpaceQuest().getHotbar().setSelectedSlot(8);
+                SpaceQuest.getSpaceQuest().getPlayerInventory().setSelectedSlot(8);
             } else if (keycode == INVENTORY) {
                 SpaceQuest.getSpaceQuest().openGui(inventoryGui);
             }
@@ -180,15 +178,14 @@ public class CameraController extends InputAdapter {
     @Override
     public boolean scrolled(int amount) {
         int num = amount / SCROLL_SENSITIVITY;
-        Hotbar hotbar = SpaceQuest.getSpaceQuest().getHotbar();
-        int newSelected = hotbar.getSelectedSlot() + num;
+        int newSelected = playerInventory.getSelectedSlot() + num;
         while (newSelected >= 9) {
             newSelected -= 9;
         }
         while (newSelected < 0) {
             newSelected += 9;
         }
-        hotbar.setSelectedSlot(newSelected);
+        playerInventory.setSelectedSlot(newSelected);
         return true;
     }
 
@@ -272,6 +269,7 @@ public class CameraController extends InputAdapter {
             if (breakingPos != null) {
                 if (breakingBlockPos == null) {
                     breakingBlockPos = breakingPos;
+                    breakStart = System.currentTimeMillis();
                 }
                 if (breakingPos[0] == breakingBlockPos[0] && breakingPos[1] == breakingBlockPos[1] &&
                         breakingPos[2] == breakingBlockPos[2]) { //the same block is being broken
@@ -279,8 +277,10 @@ public class CameraController extends InputAdapter {
                             breakingPos[2]);
                     long passedTime = System.currentTimeMillis() - breakStart;
                     if (passedTime >= block.getHardness() / 0.5f * 1000) {
-                        SpaceQuest.getSpaceQuest().getWorld().setBlock(breakingPos[0], breakingPos[1], breakingPos[2],
-                                BlockProvider.air, false);
+                        SpaceQuest.getSpaceQuest().getWorld().breakBlock(breakingPos[0], breakingPos[1], breakingPos[2]);
+                        playerInventory.addStack(block.getDrop(breakingPos[0], breakingPos[1], breakingPos[2]));
+                        breakingBlockPos = null;
+
                     } else { //update break state
                         float breakTime = block.getHardness() / 0.5f * 1000;
                         float stateTime = breakTime / 11;
@@ -289,9 +289,7 @@ public class CameraController extends InputAdapter {
                             passedTime -= stateTime;
                             i++;
                         }
-                        System.out.println(i);
                         SpaceQuest.getSpaceQuest().getWorld().updateBreakState(breakingPos[0], breakingPos[1], breakingPos[2], i);
-
                     }
                 } else {
                     breakStart = System.currentTimeMillis();

@@ -44,6 +44,11 @@ public class ItemStack {
         return stackSize;
     }
 
+    public void setStackSize(int stackSize) {
+        this.stackSize = stackSize;
+        updateEmptyStatus();
+    }
+
     public int add(int amount) {
         return this.stackSize += amount;
     }
@@ -66,6 +71,31 @@ public class ItemStack {
 
     public boolean onItemUse(World world, int x, int y, int z, float hitX, float hitY, float hitZ) {
         return item.onItemUse(world, x, y, z, hitX, hitY, hitZ);
+    }
+
+    public ItemStack merge(ItemStack other) {
+        if (other == EMPTY) {
+            return this; //short circuit, can't merge an empty stack into another stack
+        }
+        if (this == EMPTY) {
+            return new ItemStack(other.item, other.stackSize);
+        } else if (this.item == other.item) {
+            this.stackSize += other.stackSize;
+            other.stackSize = 0;
+            if (this.stackSize > this.item.getStackSizeCap()) {
+                int diff = this.stackSize - this.item.getStackSizeCap();
+                this.stackSize = this.item.getStackSizeCap();
+                other.stackSize = diff;
+            }
+            return this;
+        }
+
+        return EMPTY;
+    }
+
+    public boolean canMerge(ItemStack other) {
+        if (this == EMPTY || other == EMPTY) return true;
+        return this.item == other.item && this.stackSize < this.item.getStackSizeCap();
     }
 
     public Sprite getSprite() {

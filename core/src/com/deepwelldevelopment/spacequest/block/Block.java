@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
 import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
+import com.deepwelldevelopment.spacequest.item.Item;
+import com.deepwelldevelopment.spacequest.item.ItemBlock;
+import com.deepwelldevelopment.spacequest.item.ItemStack;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
@@ -36,7 +39,8 @@ public class Block {
         this.isLightSource = false;
         this.tileColor = Color.WHITE;
         this.collidable = true;
-        this.hardness = 5.0f;
+        this.hardness = 1.0f;
+        new ItemBlock(this);
     }
 
     public Block(byte id, String textureRegion) {
@@ -148,6 +152,10 @@ public class Block {
     public Block setTileColor(Color tileColor) {
         this.tileColor = tileColor;
         return this;
+    }
+
+    public ItemStack getDrop(int x, int y, int z) {
+        return new ItemStack(Item.getItemFromBlock(this));
     }
 
     public boolean onBlockActivated(int x, int y, int z) {
