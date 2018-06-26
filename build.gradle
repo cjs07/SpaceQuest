@@ -25,8 +25,8 @@ allprojects {
         gdxVersion = '1.9.8'
         roboVMVersion = '2.3.3'
         box2DLightsVersion = '1.4'
-        ashleyVersion = '1.7.0'
-        aiVersion = '1.8.0'
+        ashleyVersion = '1.7.3'
+        aiVersion = '1.8.1'
     }
 
     repositories {
@@ -116,6 +116,8 @@ project(":ios") {
 project(":core") {
     apply plugin: "java"
 
+    sourceSets.test.java.srcDirs = ["/test"]
+
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
@@ -126,13 +128,16 @@ project(":core") {
         compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.0"
-        compile "com.kotcrab.vis:vis-ui:1.3.0"
+        compile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
+        compile "com.kotcrab.vis:vis-ui:1.4.0"
         compile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
         compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
         compile group:'com.flowpowered', name:'flow-noise', version:'1.0.0'
         compile group:'it.unimi.dsi', name:'fastutil', version:'8.1.0'
         compile group:'com.google.guava', name:'guava', version:'25.0-jre'
+
+        testCompile "junit:junit:4.12"
+        testCompile "org.mockito:mockito-core:2.2.7"
     }
 }
 
