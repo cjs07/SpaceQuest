@@ -210,7 +210,8 @@ public class World {
     }
 
     public void updateBreakState(int x, int y, int z, int state) {
-        Chunk chunk = findChunk((int) Math.floor(x / World.CHUNK_WIDTH), (int) Math.floor(z / World.CHUNK_WIDTH));
+        //note to self, bugs caused by data types are very difficult to find
+        Chunk chunk = this.findChunk((int) Math.floor((float) x / World.CHUNK_WIDTH), (int) Math.floor((float) z / World.CHUNK_WIDTH));
         if (chunk != null) {
             int localX = x & 15;
             int localY = y;

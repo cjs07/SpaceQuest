@@ -111,6 +111,8 @@ public class Chunk {
             alphaMeshes.add(new VoxelMesh());
         }
 
+        this.breakState = -1; //no existing breakstate
+
         if (random == null) {
             random = new Random();
             if (world.getSeed() != 0) {
@@ -356,14 +358,32 @@ public class Chunk {
     }
 
     public void setBreakState(int x, int y, int z, int state) {
+        if (outsideThisChunkBounds(x, z)) {
+            System.out.println("this is strange");
+            int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
+            int zToFind = (int) Math.floor(chunkPosZ + (z / 16f));
+
+            Chunk chunk = world.findChunk(xToFind, zToFind);
+            if (chunk == this) {
+                System.out.println("Found myself, how silly, to make such a simple math error");
+            }
+            if (chunk != null) {
+                int normalizedX = x & 15;
+                int normalizedZ = z & 15;
+                chunk.setBreakState(normalizedX, y, normalizedZ, state);
+                return;
+            }
+        }
+        System.out.println("setting break at " + x + ", " + y + ", " + z);
+        if (isRecalculating && isReady) {
+            return;
+        }
         if (x != breakX || y != breakY || z != breakZ || state != breakState) {
-            VoxelMesh mesh = meshes.get((int) Math.floor(y / World.CHUNK_WIDTH));
-            mesh.addBlock(worldPosition, x, y, z, blockProvider, this, blockProvider.getBlockById(getBlock(x, y, z)), state);
-            resetMesh();
             breakX = x;
             breakY = y;
             breakZ = z;
             breakState = state;
+            resetMesh();
         }
     }
 
@@ -447,10 +467,12 @@ public class Chunk {
                 }
             }
         }
-        VoxelMesh mesh = meshes.get((int) Math.floor(breakY / World.CHUNK_WIDTH));
-        mesh.addBlock(worldPosition, breakX, breakY, breakZ, blockProvider, this,
-                blockProvider.getBlockById(getBlock(breakX, breakY, breakZ)), breakState);
-        toRebuild.add(mesh);
+        if (breakState != -1) {
+            VoxelMesh mesh = meshes.get((int) Math.floor(breakY / 16));
+            mesh.addBlock(worldPosition, breakX, breakY, breakZ, blockProvider, this,
+                    blockProvider.getBlockById(getBlock(breakX, breakY, breakZ)), breakState);
+            toRebuild.add(mesh);
+        }
 
         synchronized (syncToken) {
             for (BoxMesh voxelMesh : toRebuild) {

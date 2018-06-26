@@ -18,4 +18,8 @@ public class ItemBlock extends Item {
         world.setBlock(x, y, z, block, block.isLightSource());
         return true;
     }
+
+    public Block getBlock() {
+        return block;
+    }
 }

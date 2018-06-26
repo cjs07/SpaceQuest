@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.world.World;
 
 public class ItemStack {
@@ -20,6 +21,13 @@ public class ItemStack {
         this.stackSize = amount;
         updateEmptyStatus();
         if (item != null) {
+            if (item.getSprite() == null) {
+                if (item instanceof ItemBlock) {
+                    if (((ItemBlock) item).getBlock() == BlockProvider.air) {
+                        System.out.println("null sprite, but the block was not air, the block had id " + ((ItemBlock) item).getBlock().getId());
+                    }
+                }
+            }
             sprite = new Sprite(item.getSprite());
             sprite.setSize(sprite.getWidth() * 0.8f, sprite.getHeight() * 0.8f);
         }

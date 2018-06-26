@@ -40,7 +40,9 @@ public class Block {
         this.tileColor = Color.WHITE;
         this.collidable = true;
         this.hardness = 1.0f;
-        new ItemBlock(this);
+        if (!topTextureRegion.equals("") && !bottomTextureRegion.equals("") && !sidesTextureRegion.equals("")) { //make sure air does not get an itemblock
+            new ItemBlock(this);
+        }
     }
 
     public Block(byte id, String textureRegion) {
