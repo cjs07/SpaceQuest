@@ -51,7 +51,6 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
-        
     }
 }
 
@@ -116,8 +115,7 @@ project(":ios") {
 project(":core") {
     apply plugin: "java"
 
-    sourceSets.test.java.srcDirs = ["/test"]
-
+    sourceSets.test.java.srcDirs = ["test/"]
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
@@ -138,6 +136,30 @@ project(":core") {
 
         testCompile "junit:junit:4.12"
         testCompile "org.mockito:mockito-core:2.2.7"
+        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+        testCompile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        testCompile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
+        testCompile "com.badlogicgames.ashley:ashley:$ashleyVersion"
+        testCompile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        testCompile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
+        testCompile "com.kotcrab.vis:vis-ui:1.4.0"
+        testCompile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
+        testCompile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
+        testCompile group:'com.flowpowered', name:'flow-noise', version:'1.0.0'
+        testCompile group:'it.unimi.dsi', name:'fastutil', version:'8.1.0'
+        testCompile group:'com.google.guava', name:'guava', version:'25.0-jre'
+        testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
     }
 }
 

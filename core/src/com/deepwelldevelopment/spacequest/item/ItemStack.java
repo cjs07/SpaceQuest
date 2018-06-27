@@ -28,8 +28,12 @@ public class ItemStack {
                     }
                 }
             }
-            sprite = new Sprite(item.getSprite());
-            sprite.setSize(sprite.getWidth() * 0.8f, sprite.getHeight() * 0.8f);
+            if (item.getSprite() != null) {
+                sprite = new Sprite(item.getSprite());
+                sprite.setSize(sprite.getWidth() * 0.8f, sprite.getHeight() * 0.8f);
+            } else {
+                //TODO: apply a missing texture for items that do not have a texture
+            }
         }
     }
 
@@ -88,6 +92,10 @@ public class ItemStack {
 
     public boolean onItemUse(World world, int x, int y, int z, float hitX, float hitY, float hitZ) {
         return item.onItemUse(world, x, y, z, hitX, hitY, hitZ);
+    }
+
+    public ItemStack copy() {
+        return new ItemStack(this.item, this.stackSize);
     }
 
     public ItemStack merge(ItemStack other) {
