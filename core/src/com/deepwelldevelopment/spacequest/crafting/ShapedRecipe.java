@@ -42,4 +42,14 @@ public class ShapedRecipe implements IRecipe {
     public ItemStack getResult() {
         return result;
     }
+
+    @Override
+    public boolean matches(CraftingMatrix matrix) {
+        if (matrix.getWidth() < width || matrix.getHeight() < height) return false; //matrix is too small
+        if (matrix.getRecipeWidth() != width || matrix.getRecipeHeight() != height) return false; //recipe size mismatch
+        for (int i = 0; i < ingredients.length; i++) {
+            if (ingredients[i].getItem() != matrix.getIngredient(i).getItem()) return false; //ingredient mismatch
+        }
+        return true; //found no reason for recipes to mismatch
+    }
 }

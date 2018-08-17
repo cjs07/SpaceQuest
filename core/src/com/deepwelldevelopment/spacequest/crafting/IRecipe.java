@@ -30,4 +30,9 @@ public interface IRecipe {
      * Returns the result of the recipe
      */
     ItemStack getResult();
+
+    /**
+     * Determines if the provided crafting matrix matches this recipe.
+     */
+    boolean matches(CraftingMatrix matrix);
 }
