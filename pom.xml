@@ -12,65 +12,8 @@
 
     <properties>
         <lwjgl.version>3.2.3</lwjgl.version>
+        <lwjgl.natives>natives-macos</lwjgl.natives>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>lwjgl-natives-linux-amd64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-macos-amd64</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-macos</lwjgl.natives>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.lwjgl</groupId>
-                    <artifactId>lwjgl-vulkan</artifactId>
-                    <classifier>natives-macos</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-windows-amd64</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-windows</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-windows-x86</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-windows-x86</lwjgl.natives>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -176,10 +119,6 @@
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opus</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-ovr</artifactId>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
@@ -329,11 +268,6 @@
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-ovr</artifactId>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-par</artifactId>
             <classifier>${lwjgl.natives}</classifier>
         </dependency>
@@ -380,6 +314,11 @@
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-vma</artifactId>
+            <classifier>${lwjgl.natives}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-vulkan</artifactId>
             <classifier>${lwjgl.natives}</classifier>
         </dependency>
         <dependency>
