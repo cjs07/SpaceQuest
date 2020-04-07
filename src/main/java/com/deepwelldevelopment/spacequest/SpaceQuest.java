@@ -29,6 +29,13 @@ public class SpaceQuest {
 
     private long window;
 
+    private Vector3f cameraPos = new Vector3f(0.0f, 0.0f, 3.0f);
+    private Vector3f cameraFront = new Vector3f(0.0f, 0.0f, -1.0f);
+    private Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
+
+    private float deltaTime = 0.0f;
+    private float lastFrame = 0.0f;
+
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
@@ -53,12 +60,12 @@ public class SpaceQuest {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(800, 600, "SpaceQuest", NULL, NULL);
         if (window == NULL) {
             throw new RuntimeException("Failed to create GLFW window");
         }
-
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true);
@@ -91,47 +98,60 @@ public class SpaceQuest {
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
         float[] vertices = {
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+        };
+
+        Vector3f[] cubePositions = {
+                new Vector3f(0.0f, 0.0f, 0.0f),
+                new Vector3f(2.0f, 5.0f, -15.0f),
+                new Vector3f(-1.5f, -2.2f, -2.5f),
+                new Vector3f(-3.8f, -2.0f, -12.3f),
+                new Vector3f(2.4f, -0.4f, -3.5f),
+                new Vector3f(-1.7f, 3.0f, -7.5f),
+                new Vector3f(1.3f, -2.0f, -2.5f),
+                new Vector3f(1.5f, 2.0f, -2.5f),
+                new Vector3f(1.5f, 0.2f, -1.5f),
+                new Vector3f(-1.3f, 1.0f, -1.5f)
         };
         int[] indices = {
                 0, 1, 3,
@@ -177,7 +197,6 @@ public class SpaceQuest {
             e.printStackTrace();
         }
 
-        Vector3f cameraPos = new Vector3f(0.0f, 0.0f, 3.0f);
         Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 0.0f);
         Vector3f cameraDirection =
                 new Vector3f().add(cameraPos).sub(cameraTarget).normalize();
@@ -188,8 +207,8 @@ public class SpaceQuest {
 
         Matrix4f model = new Matrix4f().identity();
 
-        Matrix4f view = new Matrix4f().identity().translate(0.0f, 0.0f, -3.0f);
-        Matrix4f projection = new Matrix4f().perspective(
+        Matrix4f view = new Matrix4f().identity();
+        Matrix4f projection = new Matrix4f().identity().perspective(
                 (float) Math.toRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f
         );
 
@@ -199,50 +218,81 @@ public class SpaceQuest {
         int vao = intBuffer.get(0);
         glGenBuffers(intBuffer);
         int vbo = intBuffer.get(0);
-        glGenBuffers(intBuffer);
-        int ebo = intBuffer.get(0);
+//        glGenBuffers(intBuffer);
+//        int ebo = intBuffer.get(0);
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
         Shader shader = new Shader("vertex.vert", "fragment.frag");
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 32, NULL);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 20, NULL);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 32, 12);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 20, 12);
         glEnableVertexAttribArray(1);
 
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 32, 24);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 20, 12);
         glEnableVertexAttribArray(2);
 
         glEnable(GL_DEPTH_TEST);
 
         while (!glfwWindowShouldClose(window)) {
+            float currentFrame = (float) glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
+            float cameraSpeed = 5.0f;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
+            }
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
+            }
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp)
+                        .normalize().mul(cameraSpeed));
+            }
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                cameraPos.add(new Vector3f(cameraFront).cross(cameraUp)
+                        .normalize().mul(cameraSpeed));
+            }
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             shader.use();
 
-            model.identity().rotate((float) glfwGetTime(), 0.5f,
-                    1.0f, 0.0f
-            );
-
+            glBindVertexArray(vao);
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                FloatBuffer fb1 = model.get(stack.mallocFloat(16));
+                view.identity().lookAt(cameraPos,
+                        new Vector3f(cameraPos).add(cameraFront), cameraUp
+                );
                 FloatBuffer fb2 = view.get(stack.mallocFloat(16));
                 FloatBuffer fb3 = projection.get(stack.mallocFloat(16));
-                shader.setMatrix4f("model", fb1);
                 shader.setMatrix4f("view", fb2);
                 shader.setMatrix4f("projection", fb3);
+                for (int i = 0; i < cubePositions.length; i++) {
+                    if (i % 3 == 0) {
+                        model.identity().translate(cubePositions[i]).rotate(
+                                (float) glfwGetTime(), 1.0f, 0.3f, 0.5f);
+                    } else {
+                        model.identity().translate(cubePositions[i]).rotate(
+                                (float) Math.toRadians(20.0f * i), 1.0f, 0.3f,
+                                0.5f
+                        );
+                    }
+                    shader.setMatrix4f("model",
+                            model.get(stack.mallocFloat(16))
+                    );
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                }
             }
 
-            glBindVertexArray(vao);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
             glBindVertexArray(0);
 
             glfwSwapBuffers(window);
@@ -251,7 +301,7 @@ public class SpaceQuest {
         glDeleteTextures(texture);
         glDeleteVertexArrays(vao);
         glDeleteBuffers(vbo);
-        glDeleteBuffers(ebo);
+//        glDeleteBuffers(ebo);
     }
 
     public static void main(String[] args) {
