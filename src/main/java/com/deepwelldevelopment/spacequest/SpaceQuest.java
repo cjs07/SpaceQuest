@@ -16,6 +16,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.deepwelldevelopment.spacequest.util.IOUtils.ioResourceToByteBuffer;
+import static java.lang.Math.*;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -35,6 +36,11 @@ public class SpaceQuest {
 
     private float deltaTime = 0.0f;
     private float lastFrame = 0.0f;
+    private float sensitivity = 0.05f;
+    private float lastX = 400;
+    private float lastY = 300;
+    private float pitch;
+    private float yaw = -90.0f;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -70,6 +76,27 @@ public class SpaceQuest {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true);
             }
+        });
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, (window, x, y) -> {
+            float xOffset = (float) (x - lastX);
+            float yOffset = (float) (lastY - y);
+            lastX = (float) x;
+            lastY = (float) y;
+            xOffset *= sensitivity;
+            yOffset *= sensitivity;
+
+            yaw += xOffset;
+            pitch += yOffset;
+
+            if (pitch > 89.0f) pitch = 89.0f;
+            if (pitch < -89.0f) pitch = -89.0f;
+
+            cameraFront = new Vector3f(
+                    (float) (cos(toRadians(yaw)) * cos(toRadians(pitch))),
+                    (float) (sin(toRadians(pitch))),
+                    (float) (sin(toRadians(yaw)) * cos(toRadians(pitch)))
+            ).normalize();
         });
 
         try (MemoryStack stack = stackPush()) {
@@ -209,7 +236,7 @@ public class SpaceQuest {
 
         Matrix4f view = new Matrix4f().identity();
         Matrix4f projection = new Matrix4f().identity().perspective(
-                (float) Math.toRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f
+                (float) toRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f
         );
 
         IntBuffer intBuffer = BufferUtils.createIntBuffer(1);
@@ -247,7 +274,7 @@ public class SpaceQuest {
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
-            float cameraSpeed = 5.0f;
+            float cameraSpeed = 7.5f * deltaTime;
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
                 cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
             }
@@ -282,7 +309,7 @@ public class SpaceQuest {
                                 (float) glfwGetTime(), 1.0f, 0.3f, 0.5f);
                     } else {
                         model.identity().translate(cubePositions[i]).rotate(
-                                (float) Math.toRadians(20.0f * i), 1.0f, 0.3f,
+                                (float) toRadians(20.0f * i), 1.0f, 0.3f,
                                 0.5f
                         );
                     }
