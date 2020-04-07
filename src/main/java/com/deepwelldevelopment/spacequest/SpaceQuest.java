@@ -275,11 +275,16 @@ public class SpaceQuest {
             lastFrame = currentFrame;
 
             float cameraSpeed = 7.5f * deltaTime;
+            Vector3f temp = new Vector3f();
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-                cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
+                temp.set(cameraFront.x, 0, cameraFront.z).normalize()
+                        .mul(cameraSpeed);
+                cameraPos.add(temp);
             }
             if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-                cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
+                temp.set(cameraFront.x, 0, cameraFront.z).normalize()
+                        .mul(cameraSpeed);
+                cameraPos.sub(temp);
             }
             if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
                 cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp)
