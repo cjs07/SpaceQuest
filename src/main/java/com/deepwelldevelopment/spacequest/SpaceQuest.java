@@ -1,6 +1,8 @@
 package com.deepwelldevelopment.spacequest;
 
 import com.deepwelldevelopment.spacequest.util.Shader;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -10,6 +12,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.deepwelldevelopment.spacequest.util.IOUtils.ioResourceToByteBuffer;
@@ -51,7 +54,7 @@ public class SpaceQuest {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-        window = glfwCreateWindow(300, 300, "SpaceQuest", NULL, NULL);
+        window = glfwCreateWindow(800, 600, "SpaceQuest", NULL, NULL);
         if (window == NULL) {
             throw new RuntimeException("Failed to create GLFW window");
         }
@@ -88,10 +91,47 @@ public class SpaceQuest {
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
         float[] vertices = {
-                0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-                0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
         int[] indices = {
                 0, 1, 3,
@@ -137,6 +177,21 @@ public class SpaceQuest {
             e.printStackTrace();
         }
 
+        Vector3f cameraPos = new Vector3f(0.0f, 0.0f, 3.0f);
+        Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 0.0f);
+        Vector3f cameraDirection =
+                new Vector3f().add(cameraPos).sub(cameraTarget).normalize();
+
+        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+        Vector3f cameraRight =
+                new Vector3f().add(up).cross(cameraDirection).normalize();
+
+        Matrix4f model = new Matrix4f().identity();
+
+        Matrix4f view = new Matrix4f().identity().translate(0.0f, 0.0f, -3.0f);
+        Matrix4f projection = new Matrix4f().perspective(
+                (float) Math.toRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f
+        );
 
         IntBuffer intBuffer = BufferUtils.createIntBuffer(1);
 
@@ -166,18 +221,28 @@ public class SpaceQuest {
         glVertexAttribPointer(2, 2, GL_FLOAT, false, 32, 24);
         glEnableVertexAttribArray(2);
 
+        glEnable(GL_DEPTH_TEST);
+
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             shader.use();
 
-            double timeValue = glfwGetTime();
-            float greenValue = (float) (Math.sin(timeValue) / 2.0f + 0.5f);
+            model.identity().rotate((float) glfwGetTime(), 0.5f,
+                    1.0f, 0.0f
+            );
 
-//            shader.setFloat4("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                FloatBuffer fb1 = model.get(stack.mallocFloat(16));
+                FloatBuffer fb2 = view.get(stack.mallocFloat(16));
+                FloatBuffer fb3 = projection.get(stack.mallocFloat(16));
+                shader.setMatrix4f("model", fb1);
+                shader.setMatrix4f("view", fb2);
+                shader.setMatrix4f("projection", fb3);
+            }
 
             glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
             glBindVertexArray(0);
 
             glfwSwapBuffers(window);

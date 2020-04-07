@@ -5,10 +5,10 @@ import org.lwjgl.PointerBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glDeleteShader;
 
 public class Shader {
 
@@ -94,5 +94,9 @@ public class Shader {
 
     public void setFloat4(String name, float f0, float f1, float f2, float f3) {
         glUniform4f(glGetUniformLocation(id, name), f0, f1, f2, f3);
+    }
+
+    public void setMatrix4f(String name, FloatBuffer mat) {
+        glUniformMatrix4fv(glGetUniformLocation(id, name), false, mat);
     }
 }
