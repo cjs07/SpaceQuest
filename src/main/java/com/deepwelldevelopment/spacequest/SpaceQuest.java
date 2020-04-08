@@ -36,11 +36,8 @@ public class SpaceQuest {
 
     private float deltaTime = 0.0f;
     private float lastFrame = 0.0f;
-    private float sensitivity = 0.05f;
-    private float lastX = 400;
-    private float lastY = 300;
-    private float pitch;
-    private float yaw = -90.0f;
+
+    private Camera camera;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -79,24 +76,7 @@ public class SpaceQuest {
         });
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, (window, x, y) -> {
-            float xOffset = (float) (x - lastX);
-            float yOffset = (float) (lastY - y);
-            lastX = (float) x;
-            lastY = (float) y;
-            xOffset *= sensitivity;
-            yOffset *= sensitivity;
-
-            yaw += xOffset;
-            pitch += yOffset;
-
-            if (pitch > 89.0f) pitch = 89.0f;
-            if (pitch < -89.0f) pitch = -89.0f;
-
-            cameraFront = new Vector3f(
-                    (float) (cos(toRadians(yaw)) * cos(toRadians(pitch))),
-                    (float) (sin(toRadians(pitch))),
-                    (float) (sin(toRadians(yaw)) * cos(toRadians(pitch)))
-            ).normalize();
+            camera.mouseMoved((float) x, (float) y);
         });
 
         try (MemoryStack stack = stackPush()) {
@@ -112,6 +92,8 @@ public class SpaceQuest {
                     (vidMode.width() - pWidth.get(0)) / 2,
                     (vidMode.height() - pHeight.get(0)) / 2
             );
+
+            camera = new Camera(window, 90.0f, 800, 600);
 
             glfwMakeContextCurrent(window);
             glfwSwapInterval(1);
@@ -274,26 +256,7 @@ public class SpaceQuest {
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
-            float cameraSpeed = 7.5f * deltaTime;
-            Vector3f temp = new Vector3f();
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-                temp.set(cameraFront.x, 0, cameraFront.z).normalize()
-                        .mul(cameraSpeed);
-                cameraPos.add(temp);
-            }
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-                temp.set(cameraFront.x, 0, cameraFront.z).normalize()
-                        .mul(cameraSpeed);
-                cameraPos.sub(temp);
-            }
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-                cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp)
-                        .normalize().mul(cameraSpeed));
-            }
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-                cameraPos.add(new Vector3f(cameraFront).cross(cameraUp)
-                        .normalize().mul(cameraSpeed));
-            }
+            camera.update(deltaTime);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -301,11 +264,9 @@ public class SpaceQuest {
 
             glBindVertexArray(vao);
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                view.identity().lookAt(cameraPos,
-                        new Vector3f(cameraPos).add(cameraFront), cameraUp
-                );
-                FloatBuffer fb2 = view.get(stack.mallocFloat(16));
-                FloatBuffer fb3 = projection.get(stack.mallocFloat(16));
+                FloatBuffer fb2 = camera.getView().get(stack.mallocFloat(16));
+                FloatBuffer fb3 =
+                        camera.getProjection().get(stack.mallocFloat(16));
                 shader.setMatrix4f("view", fb2);
                 shader.setMatrix4f("projection", fb3);
                 for (int i = 0; i < cubePositions.length; i++) {
