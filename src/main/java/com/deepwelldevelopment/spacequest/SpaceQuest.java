@@ -30,10 +30,6 @@ public class SpaceQuest {
 
     private long window;
 
-    private Vector3f cameraPos = new Vector3f(0.0f, 0.0f, 3.0f);
-    private Vector3f cameraFront = new Vector3f(0.0f, 0.0f, -1.0f);
-    private Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
-
     private float deltaTime = 0.0f;
     private float lastFrame = 0.0f;
 
@@ -162,10 +158,6 @@ public class SpaceQuest {
                 new Vector3f(1.5f, 0.2f, -1.5f),
                 new Vector3f(-1.3f, 1.0f, -1.5f)
         };
-        int[] indices = {
-                0, 1, 3,
-                1, 2, 3
-        };
 
         int texture = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -206,20 +198,7 @@ public class SpaceQuest {
             e.printStackTrace();
         }
 
-        Vector3f cameraTarget = new Vector3f(0.0f, 0.0f, 0.0f);
-        Vector3f cameraDirection =
-                new Vector3f().add(cameraPos).sub(cameraTarget).normalize();
-
-        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-        Vector3f cameraRight =
-                new Vector3f().add(up).cross(cameraDirection).normalize();
-
         Matrix4f model = new Matrix4f().identity();
-
-        Matrix4f view = new Matrix4f().identity();
-        Matrix4f projection = new Matrix4f().identity().perspective(
-                (float) toRadians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f
-        );
 
         IntBuffer intBuffer = BufferUtils.createIntBuffer(1);
 
@@ -227,16 +206,11 @@ public class SpaceQuest {
         int vao = intBuffer.get(0);
         glGenBuffers(intBuffer);
         int vbo = intBuffer.get(0);
-//        glGenBuffers(intBuffer);
-//        int ebo = intBuffer.get(0);
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
         Shader shader = new Shader("vertex.vert", "fragment.frag");
 
@@ -294,7 +268,6 @@ public class SpaceQuest {
         glDeleteTextures(texture);
         glDeleteVertexArrays(vao);
         glDeleteBuffers(vbo);
-//        glDeleteBuffers(ebo);
     }
 
     public static void main(String[] args) {
