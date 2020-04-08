@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
 public class SpaceQuest implements ApplicationListener {
@@ -19,7 +18,7 @@ public class SpaceQuest implements ApplicationListener {
     private ModelInstance modelInstance;
     private ModelBatch batch;
     private Environment environment;
-    private CameraInputController cameraController;
+    private CameraController cameraController;
 
     @Override
     public void create() {
@@ -49,7 +48,7 @@ public class SpaceQuest implements ApplicationListener {
                 -0.8f, -0.2f
         ));
 
-        cameraController = new CameraInputController(camera);
+        cameraController = new CameraController(camera);
         Gdx.input.setInputProcessor(cameraController);
     }
 
@@ -60,7 +59,7 @@ public class SpaceQuest implements ApplicationListener {
 
     @Override
     public void render() {
-        cameraController.update();
+        cameraController.update(Gdx.graphics.getDeltaTime());
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
                 Gdx.graphics.getHeight()
         );
