@@ -40,6 +40,11 @@ public class CameraController extends InputAdapter {
     @Override
     public boolean keyUp(int keycode) {
         keys.remove(keycode, 0);
+        switch (keycode) {
+            case Keys.ESCAPE:
+                Gdx.app.exit();
+                break;
+        }
         return true;
     }
 
@@ -76,19 +81,23 @@ public class CameraController extends InputAdapter {
 
     public void update(float deltaTime) {
         if (keys.containsKey(FORWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity).scl(deltaTime);
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor()
+                    .scl(velocity).scl(deltaTime);
             camera.translate(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity).scl(deltaTime);
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor()
+                    .scl(-velocity).scl(deltaTime);
             camera.translate(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity).scl(deltaTime);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity)
+                    .scl(deltaTime);
             camera.translate(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).scl(deltaTime);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity)
+                    .scl(deltaTime);
             camera.translate(tmp);
         }
         camera.update();
