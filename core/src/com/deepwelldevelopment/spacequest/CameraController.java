@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
@@ -19,12 +20,15 @@ public class CameraController extends InputAdapter {
     private Vector3 tmp;
 
     private float velocity;
+    private float degreesPerPixel;
 
     public CameraController(Camera camera) {
         this.camera = camera;
         keys = new IntIntMap();
         tmp = new Vector3();
         velocity = 4.0f;
+        degreesPerPixel = 0.25f;
+        Gdx.input.setCursorCatched(true);
     }
 
     @Override
@@ -57,7 +61,12 @@ public class CameraController extends InputAdapter {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        return super.mouseMoved(screenX, screenY);
+        float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
+        float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
+        camera.direction.rotate(camera.up, deltaX);
+        tmp.set(camera.direction).crs(camera.up).nor();
+        camera.direction.rotate(tmp, deltaY);
+        return true;
     }
 
     @Override
