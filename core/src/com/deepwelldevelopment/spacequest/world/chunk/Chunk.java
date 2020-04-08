@@ -1,7 +1,9 @@
 package com.deepwelldevelopment.spacequest.world.chunk;
 
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.client.render.VoxelMesh;
 import com.deepwelldevelopment.spacequest.world.World;
 
 import java.util.concurrent.ExecutorService;
@@ -45,4 +47,27 @@ public class Chunk {
     }
 
     //TODO: chunk methods
+
+    public Vector3 getWorldPosition() {
+        return worldPosition;
+    }
+
+    public int getBlockCounter() {
+        return 0;
+    }
+
+    public void setActive(boolean active) {
+    }
+
+    public Array<VoxelMesh> getMeshes() {
+        return null;
+    }
+
+    public Array<VoxelMesh> getAlphaMeshes() {
+        return null;
+    }
+
+    public boolean isRecalculating() {
+        return false;
+    }
 }

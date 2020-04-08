@@ -41,6 +41,11 @@ public class Block {
 
     //TODO: block behavior and rendering calculation methods
 
+
+    public byte getId() {
+        return id;
+    }
+
     public String getTopTextureRegion() {
         return topTextureRegion;
     }

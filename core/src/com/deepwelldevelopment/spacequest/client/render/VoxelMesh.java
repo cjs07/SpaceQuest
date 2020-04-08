@@ -1,0 +1,35 @@
+package com.deepwelldevelopment.spacequest.client.render;
+
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
+
+public class VoxelMesh extends BoxMesh {
+
+    public boolean addBlock(Vector3 worldPosition, int x, int y, int z,
+            IBlockProvider blockProvider, Chunk chunk, Block block, int breakState) {
+        if (block.getId() == 0) {
+            return true;
+        }
+        synchronized (rebuilding) {
+            setupMesh();
+            if (transform == null) {
+                transform = new Matrix4().setTranslation(worldPosition);
+                transformWithRealY = transform.cpy().translate(0, y, 0);
+            }
+            //TODO: work with the block's BlockRender to add
+            if (block.isCollidable()) {
+                return true;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    public boolean addBlock(Vector3 worldPosition, int x, int y, int z,
+            IBlockProvider blockProvider, Chunk chunk, Block block) {
+        return addBlock(worldPosition, x, y, z, blockProvider, chunk, block, 0);
+    }
+}
