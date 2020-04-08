@@ -1,16 +1,17 @@
 buildscript {
-    
+
 
     repositories {
         mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:3.5.3'
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.3'
-        
+
 
     }
 }
@@ -22,11 +23,11 @@ allprojects {
     version = '1.0'
     ext {
         appName = "SpaceQuest"
-        gdxVersion = '1.9.8'
+        gdxVersion = '1.9.10'
         roboVMVersion = '2.3.3'
-        box2DLightsVersion = '1.4'
+        box2DLightsVersion = '1.5'
         ashleyVersion = '1.7.3'
-        aiVersion = '1.8.1'
+        aiVersion = '1.8.2'
     }
 
     repositories {
@@ -42,15 +43,15 @@ project(":desktop") {
 
 
     dependencies {
-        compile project(":core")
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+        implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
     }
 }
 
@@ -60,37 +61,37 @@ project(":android") {
     configurations { natives }
 
     dependencies {
-        compile project(":core")
-        compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+        implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
-        compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64"
-        compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-x86_64"
-        compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
-        compile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
-        compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        implementation "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        implementation "com.badlogicgames.gdx:gdx-ai:$aiVersion"
+        implementation "com.badlogicgames.ashley:ashley:$ashleyVersion"
+        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64"
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
-        
+        implementation "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
+
     }
 }
 
@@ -100,15 +101,15 @@ project(":ios") {
 
 
     dependencies {
-        compile project(":core")
-        compile "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
-        compile "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
-        compile "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-        compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
-        compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-ios"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-ios"
-        
+        implementation project(":core")
+        implementation "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
+        implementation "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
+        implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+        implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-ios"
+        implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-ios"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-ios"
+
     }
 }
 
@@ -118,48 +119,48 @@ project(":core") {
     sourceSets.test.java.srcDirs = ["test/"]
 
     dependencies {
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
-        compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
-        compile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
-        compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
-        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        compile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
-        compile "com.kotcrab.vis:vis-ui:1.4.0"
-        compile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
-        compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
-        compile group:'com.flowpowered', name:'flow-noise', version:'1.0.0'
-        compile group:'it.unimi.dsi', name:'fastutil', version:'8.1.0'
-        compile group:'com.google.guava', name:'guava', version:'25.0-jre'
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+        implementation "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        implementation "com.badlogicgames.gdx:gdx-ai:$aiVersion"
+        implementation "com.badlogicgames.ashley:ashley:$ashleyVersion"
+        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        implementation "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
+        implementation "com.kotcrab.vis:vis-ui:1.4.4"
+        implementation "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
+        implementation "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
+        implementation group: 'com.flowpowered', name: 'flow-noise', version: '1.0.0'
+        implementation group: 'it.unimi.dsi', name: 'fastutil', version: '8.1.0'
+        implementation group: 'com.google.guava', name: 'guava', version: '25.0-jre'
 
-        testCompile "junit:junit:4.12"
-        testCompile "org.mockito:mockito-core:2.2.7"
-        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
-        testCompile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
-        testCompile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
-        testCompile "com.badlogicgames.ashley:ashley:$ashleyVersion"
-        testCompile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-        testCompile "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
-        testCompile "com.kotcrab.vis:vis-ui:1.4.0"
-        testCompile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
-        testCompile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
-        testCompile group:'com.flowpowered', name:'flow-noise', version:'1.0.0'
-        testCompile group:'it.unimi.dsi', name:'fastutil', version:'8.1.0'
-        testCompile group:'com.google.guava', name:'guava', version:'25.0-jre'
-        testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        testCompile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-        testCompile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
-        testCompile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        testCompile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
-        testCompile "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
-        testCompile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+        testImplementation "junit:junit:4.12"
+        testImplementation "org.mockito:mockito-core:2.2.7"
+        testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+        testImplementation "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-ai:$aiVersion"
+        testImplementation "com.badlogicgames.ashley:ashley:$ashleyVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+        testImplementation "com.underwaterapps.overlap2druntime:overlap2d-runtime-libgdx:0.1.1"
+        testImplementation "com.kotcrab.vis:vis-ui:1.4.4"
+        testImplementation "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
+        testImplementation "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
+        testImplementation group: 'com.flowpowered', name: 'flow-noise', version: '1.0.0'
+        testImplementation group: 'it.unimi.dsi', name: 'fastutil', version: '8.1.0'
+        testImplementation group: 'com.google.guava', name: 'guava', version: '25.0-jre'
+        testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testImplementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        testImplementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        testImplementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        testImplementation "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
+        testImplementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
     }
 }
 

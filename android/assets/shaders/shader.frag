@@ -32,7 +32,7 @@ void main()
     vec4 breakColor = texture2D(u_diffuseTexture, v_texCoords1.xy).rbga;
 
     vec4 finalColor;
-    if (breakColor.a > 0) {
+    if (breakColor.a > 0.0) {
         finalColor = vec4(breakColor.xyz * light.rgb, breakColor.a);
     } else {
         finalColor = vec4(texColor.xyz * light.rgb, texColor.a);
