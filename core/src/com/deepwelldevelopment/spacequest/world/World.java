@@ -7,6 +7,8 @@ import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
+import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
+import com.deepwelldevelopment.spacequest.world.chunk.OverworldChunkProvider;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -24,15 +26,15 @@ public class World {
     private long seed;
     private Array<Chunk> chunksWaitingForUpdate = new Array<>();
     private Array<Chunk> chunksUpdatePriorityList = new Array<>();
-    //    private IChunkProvider chunkProvider;
-//    private IBiomeProvider biomeProvider;
+    private IChunkProvider chunkProvider;
+    //    private IBiomeProvider biomeProvider;
     private IBlockProvider blockProvider;
     private Vector3 tmp = new Vector3();
     private Vector3 tmp2 = new Vector3();
 
     public World(IBlockProvider blockProvider) {
         this.blockProvider = blockProvider;
-        //chunkProvider
+        this.chunkProvider = new OverworldChunkProvider(this, blockProvider);
 
         if (seed == 0) {
             seed = new Random().nextLong();
@@ -131,9 +133,9 @@ public class World {
     }
 
     public void update(Vector3 camPos) {
-//        for (Chunk chunk : chunkProvider.getAllChunks()) {
+        for (Chunk chunk : chunkProvider.getAllChunks()) {
 //            chunk.tick();
-//        }
+        }
 
         if (chunksUpdatePriorityList.size > 0) {
             synchronized (priorityListSync) {
@@ -142,12 +144,12 @@ public class World {
             }
         } else {
             if (chunksUpdatePriorityList.size == 0) {
-//                ArrayMap.Values<Chunk> alLChunks = chunkProvider.getAllChunks();
-//                for (Chunk chunk : alLChunks) {
-//                    if (chunk.isActive()) {
-//                        chunksWaitingForUpdate.add(chunk);
-//                    }
-//                }
+                ArrayMap.Values<Chunk> alLChunks = chunkProvider.getAllChunks();
+                for (Chunk chunk : alLChunks) {
+                    if (chunk.isActive()) {
+                        chunksWaitingForUpdate.add(chunk);
+                    }
+                }
             }
 
             Iterator<Chunk> iterator = chunksWaitingForUpdate.iterator();
@@ -190,7 +192,7 @@ public class World {
                     );
             int x2 = (int) Math.floor(worldPosition.x / CHUNK_WIDTH);
             int z2 = (int) Math.floor(worldPosition.z / CHUNK_WIDTH);
-//            chunkProvider.createChunk(worldPosition, x2, z2);
+            chunkProvider.createChunk(worldPosition, x2, z2);
         }
     }
 
