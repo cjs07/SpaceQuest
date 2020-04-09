@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
 import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
+import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 public class Block {
@@ -62,16 +63,24 @@ public class Block {
         return sidesTextureRegion;
     }
 
-    //TODO: calculate UVs if they aren't already
     public Vector2[] getTopTextureUVs() {
+        if (topTextureUVs == null) {
+            topTextureUVs = TextureUtils.calculateUVMapping(topTextureRegion);
+        }
         return topTextureUVs;
     }
 
     public Vector2[] getBottomTextureUVs() {
+        if (bottomTextureUVs == null) {
+            bottomTextureUVs = TextureUtils.calculateUVMapping(bottomTextureRegion);
+        }
         return bottomTextureUVs;
     }
 
     public Vector2[] getSidesTextureUVs() {
+        if (sidesTextureUVs == null) {
+            sidesTextureUVs = TextureUtils.calculateUVMapping(sidesTextureRegion);
+        }
         return sidesTextureUVs;
     }
 
@@ -125,8 +134,20 @@ public class Block {
     }
 
     public boolean drawSide(IBlockProvider blockProvider, Chunk chunk, int x, int y, int z,
-            Side front) {
-        return false;
+            Side side) {
+        if (y == 0 && side == Side.BOTTOM) {
+            return false;
+        }
+        return blockRenderSide(blockProvider, chunk, x, y, z, side);
+    }
+
+    protected boolean blockRenderSide(IBlockProvider blockProvider, Chunk chunk, int x, int y,
+            int z, Side side) {
+        byte blockAtSide = side.getBlockAt(chunk, x, y, z);
+        if (blockAtSide == 0) {
+            return true;
+        }
+        return blockProvider.getBlockById(blockAtSide).getOpacity() < 32;
     }
 
     public enum Side {

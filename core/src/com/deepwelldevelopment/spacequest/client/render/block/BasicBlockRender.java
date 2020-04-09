@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ShortArray;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
+import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class BasicBlockRender implements IBlockRender {
         Vector2[] sidesTextureUVs = block.getSidesTextureUVs();
         Vector2[] topTextureUVs = block.getTopTextureUVs();
         Vector2[] bottomTextureUVs = block.getBottomTextureUVs();
-//        breakCoords = TextureUtils.calculateUVMapping("breaking", breakState);
+        breakCoords = TextureUtils.calculateUVMapping("breaking", breakState);
 
         if (block.drawSide(blockProvider, chunk, x, y, z, Block.Side.FRONT)) {
             setAOLightFront(x, y, z, chunk, block);

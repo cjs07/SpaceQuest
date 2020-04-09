@@ -104,8 +104,8 @@ public class SpaceQuest implements ApplicationListener {
         camera = new PerspectiveCamera(70f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = 200;
-        camera.position.set(new Vector3(0, 60, 0));
-        camera.lookAt(0, 60, 0);
+        camera.position.set(new Vector3(0, 100, 0));
+        camera.lookAt(0, 100, 0);
         camera.rotate(camera.up, 182);
         camera.update();
 

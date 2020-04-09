@@ -84,7 +84,7 @@ public class World {
 
     private void resetLightOnChunk(Chunk chunk, boolean force) {
         if (chunk != null) {
-//            chunk.resetLight(force);
+            chunk.resetLight(force);
         }
     }
 
@@ -142,13 +142,13 @@ public class World {
 
     public void update(Vector3 camPos) {
         for (Chunk chunk : chunkProvider.getAllChunks()) {
-//            chunk.tick();
+            chunk.tick();
         }
 
         if (chunksUpdatePriorityList.size > 0) {
             synchronized (priorityListSync) {
                 Chunk chunk = chunksUpdatePriorityList.pop();
-//                chunk.update();
+                chunk.update();
             }
         } else {
             if (chunksUpdatePriorityList.size == 0) {
@@ -166,7 +166,7 @@ public class World {
                     Chunk chunk = iterator.next();
                     iterator.remove();
                     if (chunk.isActive()) {
-//                        chunk.update();
+                        chunk.update();
                     }
                 }
             }
