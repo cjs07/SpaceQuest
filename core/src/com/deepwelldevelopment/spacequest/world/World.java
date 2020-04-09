@@ -6,6 +6,9 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.util.PositionUtils;
+import com.deepwelldevelopment.spacequest.world.biome.Biome;
+import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.OverworldChunkProvider;
@@ -27,14 +30,15 @@ public class World {
     private Array<Chunk> chunksWaitingForUpdate = new Array<>();
     private Array<Chunk> chunksUpdatePriorityList = new Array<>();
     private IChunkProvider chunkProvider;
-    //    private IBiomeProvider biomeProvider;
+    private IBiomeProvider biomeProvider;
     private IBlockProvider blockProvider;
     private Vector3 tmp = new Vector3();
     private Vector3 tmp2 = new Vector3();
 
-    public World(IBlockProvider blockProvider) {
+    public World(IBlockProvider blockProvider, IBiomeProvider biomeProvider) {
         this.blockProvider = blockProvider;
         this.chunkProvider = new OverworldChunkProvider(this, blockProvider);
+        this.biomeProvider = biomeProvider;
 
         if (seed == 0) {
             seed = new Random().nextLong();
@@ -43,10 +47,13 @@ public class World {
         //init noise
     }
 
-    //TODO: getChunkProvider
+    public IChunkProvider getChunkProvider() {
+        return chunkProvider;
+    }
 
-    //TODO: getBiomeProvider
-
+    public IBiomeProvider getBiomeProvider() {
+        return biomeProvider;
+    }
 
     public long getSeed() {
         return seed;
@@ -61,11 +68,12 @@ public class World {
     }
 
     public Chunk findChunk(int xToFind, int zToFind) {
-        //TODO: use chunk provider to find chunk
-        return null;
+        return chunkProvider.getChunkAt(PositionUtils.hashOfPosition(xToFind, zToFind));
     }
 
-    //TODO: findBiome
+    public Biome findBiome(int x, int z) {
+        return biomeProvider.getBiomeAt(x, z);
+    }
 
     public void notifyNeighborsAboutLightChange(int chunkPosX, int chunkPosZ, boolean force) {
         resetLightOnChunk(findChunk(chunkPosX + 1, chunkPosZ), force);
