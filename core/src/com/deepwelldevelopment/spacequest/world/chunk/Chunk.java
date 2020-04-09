@@ -8,7 +8,7 @@ import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
 import com.deepwelldevelopment.spacequest.client.render.VoxelMesh;
 import com.deepwelldevelopment.spacequest.world.World;
-import net.dermetfan.gdx.physics.box2d.PositionController.P;
+import com.deepwelldevelopment.spacequest.world.biome.Biome;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public class Chunk {
     //true if the block at a given position can see the sky (and is thus the highest in the column)
     private boolean[] heightmap;
     private int[][] generationHeightmap;
-    //TODO: biome
+    private Biome biome;
     private int blockCounter;
     private boolean active = true;
     private boolean recalculating;
@@ -57,14 +57,14 @@ public class Chunk {
 
     //TODO: add biome and more init stuff
     public Chunk(World world, IBlockProvider blockProvider,
-            Vector3 worldPosition, int chunkPosX, int chunkPosZ) {
+            Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
         this.ready = false;
         this.world = world;
         this.blockProvider = blockProvider;
         this.worldPosition = worldPosition;
         this.chunkPosX = chunkPosX;
         this.chunkPosZ = chunkPosZ;
-        //biome
+        this.biome = biome;
         //perlin
         this.map = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         this.lightmap = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
@@ -91,8 +91,8 @@ public class Chunk {
                 this.recalculating = true;
                 this.fullRebuildOfLight = true;
                 calculateChunk(worldPosition, blockProvider);
-//                updateLight();
-//                world.notifyNeighbordAboutLightChange(chunkPosX, chunkPosZ, false);
+                updateLight();
+                world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
                 resetMesh();
                 ready = true;
                 recalculateMesh();
@@ -105,7 +105,21 @@ public class Chunk {
 
     //TODO: chunk methods
 
-    //TODO: fill sunlight
+    private void fillSunlight() {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                for (int y = World.MAX_HEIGHT - 1; y > 0; y--) {
+                    byte block = getByte(x, y, z);
+                    if (block == 0) {
+                        setLight(x, y, z, LIGHT);
+                        heightmap[getLocationInArray(x, y, z)] = true;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     //TODO: use real generation
     protected void calculateChunk(Vector3 worldPosition, IBlockProvider blockProvider) {
@@ -226,13 +240,129 @@ public class Chunk {
         recalculating = false;
     }
 
-    //TODO: updateLight
+    private boolean updateLight() {
+        boolean lightUpdated = false;
+        boolean lightUpdatedInLoop = true;
+        boolean borderUpdated = false;
+        if (fullRebuildOfLight) {
+            Arrays.fill(lightmap, DARKNESS);
+            Arrays.fill(heightmap, false);
+            fillSunlight();
+        }
+        while (lightUpdatedInLoop) {
+            lightUpdatedInLoop = false;
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                    for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                        byte calculatedLight = calculatedLight(x, y, z);
+                        byte currentLight = getBlockLight(x, y, z);
+                        if (calculatedLight != currentLight) {
+                            if (setLight(x, y, z, calculatedLight)) {
+                                lightUpdated = true;
+                                lightUpdatedInLoop = true;
+                                if (x == 0 || x == World.CHUNK_WIDTH - 1 || z == 0 ||
+                                        z == World.CHUNK_WIDTH - 1) {
+                                    borderUpdated = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        needLightUpdate = lightUpdated;
+        fullRebuildOfLight = false;
+        if (borderUpdated) {
+            world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
+        }
+        return !needLightUpdate;
+    }
 
-    //TODO: calculatedLight
+    private byte calculatedLight(int x, int y, int z) {
+        //basic checks
+        if (y == 0) {
+            return DARKNESS;
+        }
+        if (heightmap[getLocationInArray(x, y, z)]) {
+            return LIGHT;
+        }
 
-    //TODO: setLight
+        byte block = map[getLocationInArray(x, y, z)];
+        if (block != 0 && blockProvider.getBlockById(block).isLightSource()) {
+            return LIGHT;
+        } else {
+            int opaqueValue = 3;
+            if (block != 0 && !blockProvider.getBlockById(block).isLightSource()) {
+                opaqueValue = blockProvider.getBlockById(block).getOpacity();
+            }
 
-    //TODO: isBlockTransparent
+            byte lightFront = getBlockLight(x + 1, y, z);
+            byte lightBack = getBlockLight(x - 1, y, z);
+            byte lightAbove = getBlockLight(x, y + 1, z);
+            byte lightBelow = getBlockLight(x, y - 1, z);
+            byte lightLeft = getBlockLight(x, y, z + 1);
+            byte lightRight = getBlockLight(x, y, z - 1);
+
+            byte finalLight = DARKNESS;
+
+            if (lightFront < finalLight) {
+                finalLight = (byte) (lightFront + opaqueValue);
+            }
+            if (lightBack < finalLight) {
+                finalLight = (byte) (lightBack + opaqueValue);
+            }
+            if (lightAbove < finalLight) {
+                finalLight = (byte) (lightAbove + opaqueValue);
+            }
+            if (lightBelow < finalLight) {
+                finalLight = (byte) (lightBelow + opaqueValue);
+            }
+            if (lightLeft < finalLight) {
+                finalLight = (byte) (lightLeft + opaqueValue);
+            }
+            if (lightRight < finalLight) {
+                finalLight = (byte) (lightRight + opaqueValue);
+            }
+
+            if (finalLight > DARKNESS) {
+                finalLight = DARKNESS;
+            }
+            if (finalLight < LIGHT) {
+                finalLight = LIGHT;
+            }
+            return finalLight;
+        }
+    }
+
+    private boolean setLight(int x, int y, int z, byte light) {
+        int existingLight = lightmap[getLocationInArray(x, y, z)];
+        if (existingLight != light) {
+            lightmap[getLocationInArray(x, y, z)] = light;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isBlockTransparent(int x, int y, int z, Block sourceBlock) {
+        if (y < 0) {
+            return false;
+        }
+
+        byte b = getBlock(x, y, z);
+        Block blockbyId = blockProvider.getBlockById(b);
+        if (sourceBlock != null && sourceBlock.getId() == b) {
+            return false;
+        }
+        if (blockbyId.getOpacity() < 32) {
+            return true;
+        }
+        switch (b) {
+            case 0:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public byte getByte(int x, int y, int z) {
         if (outsideHeightBounds(y)) {
@@ -295,13 +425,75 @@ public class Chunk {
         return false;
     }
 
-    public byte getBlockLight(int x1, int y1, int z1) {
-        return 0;
-    }
-
     public int getBlockCounter() {
         return blockCounter;
     }
 
-    //TODO: stopped at ~line 650 in old codebase
+    public boolean isNeedLightUpdate() {
+        return needLightUpdate;
+    }
+
+    public void resetLight(boolean force) {
+        if (force) {
+            fullRebuildOfLight = true;
+        }
+        needLightUpdate = true;
+    }
+
+    public byte getBlockLight(int x, int y, int z) {
+        if (outsideHeightBounds(y)) {
+            return DARKNESS;
+        }
+        try {
+            if (outsideThisChunkBounds(x, z)) {
+                int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
+                int zToFind = (int) Math.floor(chunkPosZ + (z / 16f));
+
+                Chunk chunk = world.findChunk(xToFind, zToFind);
+                if (chunk == this) {
+                    System.out.println("Found myself");
+                }
+                if (chunk != null) {
+                    int normalizedX = x & 15;
+                    int normalizedZ = z & 15;
+                    return chunk.getBlockLight(normalizedX, y, normalizedZ);
+                } else {
+                    return DARKNESS;
+                }
+            }
+            if (heightmap[getLocationInArray(x, y, z)]) {
+                return LIGHT;
+            }
+            return lightmap[getLocationInArray(x, y, z)];
+        } catch (Exception ex) {
+            System.out.println("Out of bounds (" + x + ", " + y + ", " + z + ")");
+            return DARKNESS;
+        }
+    }
+
+    public void update() {
+        timesSinceUpdate++;
+        if (timesSinceUpdate > 100) {
+            timesSinceUpdate = 0;
+            needLightUpdate = true;
+        }
+        if (!needLightUpdate && !needMeshUpdate) {
+            return;
+        }
+        executorService.submit(() -> {
+            if (needLightUpdate) {
+                timesSinceUpdate = 0;
+                boolean b = updateLight();
+                if (b) {
+                    resetMesh();
+                }
+            }
+            if (needMeshUpdate) {
+                recalculateMesh();
+            }
+        });
+    }
+
+    public void tick() {
+    }
 }

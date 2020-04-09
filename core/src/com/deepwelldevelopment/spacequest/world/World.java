@@ -37,7 +37,7 @@ public class World {
 
     public World(IBlockProvider blockProvider, IBiomeProvider biomeProvider) {
         this.blockProvider = blockProvider;
-        this.chunkProvider = new OverworldChunkProvider(this, blockProvider);
+        this.chunkProvider = new OverworldChunkProvider(this, blockProvider, biomeProvider);
         this.biomeProvider = biomeProvider;
 
         if (seed == 0) {
