@@ -13,4 +13,8 @@ public class World {
     public ArrayMap.Values<Chunk> getChunks() {
         return null;
     }
+
+    public Chunk findChunk(int xToFind, int zToFind) {
+        return null;
+    }
 }
