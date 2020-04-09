@@ -79,6 +79,13 @@ public class CameraController extends InputAdapter {
         return super.scrolled(amount);
     }
 
+    public void update() {
+        update(Gdx.graphics.getDeltaTime());
+        //TODO: move player?
+        camera.update(true);
+        //TODO: jump
+    }
+
     public void update(float deltaTime) {
         if (keys.containsKey(FORWARD)) {
             tmp.set(camera.direction.x, 0, camera.direction.z).nor()
@@ -100,6 +107,5 @@ public class CameraController extends InputAdapter {
                     .scl(deltaTime);
             camera.translate(tmp);
         }
-        camera.update();
     }
 }

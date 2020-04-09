@@ -64,7 +64,7 @@ public class World {
     }
 
     public ArrayMap.Values<Chunk> getChunks() {
-        return null;
+        return chunkProvider.getAllChunks();
     }
 
     public Chunk findChunk(int xToFind, int zToFind) {
