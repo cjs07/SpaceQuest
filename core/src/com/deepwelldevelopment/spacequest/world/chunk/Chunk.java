@@ -70,4 +70,12 @@ public class Chunk {
     public boolean isRecalculating() {
         return false;
     }
+
+    public byte getByte(int i, int i1, int i2) {
+        return 0;
+    }
+
+    public byte getBlockLight(int x1, int y1, int z1) {
+        return 0;
+    }
 }

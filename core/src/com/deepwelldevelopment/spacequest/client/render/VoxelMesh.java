@@ -21,9 +21,13 @@ public class VoxelMesh extends BoxMesh {
             }
             //TODO: work with the block's BlockRender to add
             if (block.isCollidable()) {
-                return true;
+                return block.getBlockRender().addBlock(worldPosition, x, y, z, blockProvider,
+                        chunk, block, vertices, indices, breakState
+                );
             } else {
-                return true;
+                return block.getBlockRender().addBlock(worldPosition, x, y, z, blockProvider,
+                        chunk, block, nonCollidableVertices, nonCollidableIndices, breakState
+                );
             }
         }
     }

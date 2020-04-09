@@ -2,6 +2,10 @@ package com.deepwelldevelopment.spacequest.block;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
+import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
+import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 public class Block {
 
@@ -9,7 +13,7 @@ public class Block {
     private String topTextureRegion;
     private String bottomTextureRegion;
     private String sidesTextureRegion;
-    //TODO: BlockRender
+    protected IBlockRender blockRender;
     private Vector2[] topTextureUVs;
     private Vector2[] bottomTextureUVs;
     private Vector2[] sidesTextureUVs;
@@ -26,7 +30,7 @@ public class Block {
         this.topTextureRegion = topTextureRegion;
         this.bottomTextureRegion = bottomTextureRegion;
         this.sidesTextureRegion = sidesTextureRegion;
-        //TODO: BlockRender
+        this.blockRender = new BasicBlockRender();
         this.opacity = 32;
         this.isLightSource = false;
         this.tileColor = Color.WHITE;
@@ -114,5 +118,33 @@ public class Block {
     public Block setHardness(float hardness) {
         this.hardness = hardness;
         return this;
+    }
+
+    public IBlockRender getBlockRender() {
+        return blockRender;
+    }
+
+    public boolean drawSide(IBlockProvider blockProvider, Chunk chunk, int x, int y, int z,
+            Side front) {
+        return false;
+    }
+
+    public enum Side {
+        FRONT(new Vector3(0, 0, 1)),
+        BACK(new Vector3(0, 0, -1)),
+        RIGHT(new Vector3(1, 0, 0)),
+        LEFT(new Vector3(-1, 0, 0)),
+        TOP(new Vector3(0, 1, 0)),
+        BOTTOM(new Vector3(0, -1, 0));
+
+        private Vector3 sideDirection;
+
+        Side(Vector3 sideDirection) {
+            this.sideDirection = sideDirection;
+        }
+
+        public byte getBlockAt(Chunk chunk, int x, int y, int z) {
+            return chunk.getByte(x + (int) sideDirection.x, y + (int) sideDirection.y, z + (int) sideDirection.z);
+        }
     }
 }
