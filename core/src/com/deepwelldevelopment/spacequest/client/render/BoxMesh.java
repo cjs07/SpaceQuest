@@ -8,6 +8,8 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ShortArray;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
+import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 public class BoxMesh {
 
@@ -76,7 +78,7 @@ public class BoxMesh {
 
     private void rebuild(FloatArray vertices, ShortArray indices, float[] v, short[] i,
             Matrix4 transform, boolean tempAddToPhysics) {
-        //TODO: work with physics
+        PhysicsController physicsController = SpaceQuest.getSpaceQuest().getPhysicsController();
         Mesh inProgressMesh = null;
         try {
             inProgressMesh = new Mesh(true, 4 * (v.length / 12), 6 * i.length,
@@ -97,11 +99,11 @@ public class BoxMesh {
 
         try {
             if (inProgressMesh.getNumVertices() > 0 && inProgressMesh.getNumIndices() > 0) {
-                //add ground mesh to physics
+                physicsController.addGroundMesh(inProgressMesh, transform, !tempAddToPhysics);
                 if (!tempAddToPhysics) {
-                    //remove the mesh from physics
+                    physicsController.removeMesh(getNonCollidableMesh());
                 } else {
-                    //remove the nc mesh from physics
+                    physicsController.removeMesh(getMesh());
                 }
             }
         } catch (GdxRuntimeException e) {

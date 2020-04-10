@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 public class CameraController extends InputAdapter {
 
@@ -18,17 +19,21 @@ public class CameraController extends InputAdapter {
 
     private IntIntMap keys;
     private Vector3 tmp;
+    private Vector3 moveVector;
 
     private float velocity;
     private float degreesPerPixel;
 
-    public CameraController(Camera camera) {
+    private PhysicsController physicsController;
+
+    public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
+        this.physicsController = physicsController;
         keys = new IntIntMap();
         tmp = new Vector3();
+        moveVector = new Vector3();
         velocity = 4.0f;
         degreesPerPixel = 0.25f;
-        Gdx.input.setCursorCatched(true);
     }
 
     @Override
@@ -81,31 +86,43 @@ public class CameraController extends InputAdapter {
 
     public void update() {
         update(Gdx.graphics.getDeltaTime());
-        //TODO: move player?
+        movePlayer(moveVector, false);
         camera.update(true);
         //TODO: jump
     }
 
     public void update(float deltaTime) {
+        moveVector.set(0, 0, 0);
         if (keys.containsKey(FORWARD)) {
             tmp.set(camera.direction.x, 0, camera.direction.z).nor()
                     .scl(velocity).scl(deltaTime);
-            camera.translate(tmp);
+            moveVector.add(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
             tmp.set(camera.direction.x, 0, camera.direction.z).nor()
                     .scl(-velocity).scl(deltaTime);
             camera.translate(tmp);
+            moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity)
                     .scl(deltaTime);
             camera.translate(tmp);
+            moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(velocity)
                     .scl(deltaTime);
             camera.translate(tmp);
+            moveVector.add(tmp);
         }
+    }
+
+    protected void movePlayer(Vector3 moveVector, boolean jump) {
+        physicsController.movePlayer(moveVector, jump);
+    }
+
+    public void setVelocity(float velocity) {
+        this.velocity = velocity;
     }
 }

@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
+import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.biome.OverworldBiomeProvider;
@@ -66,7 +67,7 @@ public class SpaceQuest implements ApplicationListener {
     private IChunkProvider chunkProvider;
     private IBiomeProvider biomeProvider;
     private World world;
-    //TODO: physics controller
+    private PhysicsController physicsController;
     //TODO: item?
 
     //TODO: openGui
@@ -112,7 +113,7 @@ public class SpaceQuest implements ApplicationListener {
         this.blockProvider = new BlockProvider();
         this.biomeProvider = new OverworldBiomeProvider();
         this.world = new World(blockProvider, biomeProvider);
-        //TODO: physics controller
+        this.physicsController = new PhysicsController(world, camera);
         this.chunkProvider = world.getChunkProvider();
         //TODO: player inventory and item?
     }
@@ -133,7 +134,7 @@ public class SpaceQuest implements ApplicationListener {
         renderSpriteBatches();
         while (accum > fixedTimeStep && iterations < MAX_UPDATE_ITERATIONS) {
             world.update(camera.position);
-            //TODO: tickPhysics
+            tickPhysics(fixedTimeStep);
             skybox.transform.rotate(Vector3.X, fixedTimeStep / 2).setTranslation(camera.position);
             accum -= fixedTimeStep;
             iterations++;
@@ -181,7 +182,9 @@ public class SpaceQuest implements ApplicationListener {
         voxelBatch.end();
     }
 
-    //TODO: get physics controller
+    public PhysicsController getPhysicsController() {
+        return physicsController;
+    }
 
     private void renderSpriteBatches() {
         //TODO: render sprites
@@ -191,8 +194,10 @@ public class SpaceQuest implements ApplicationListener {
 
     //TODO: render hotbar
 
-    //TODO: ticKPhysics
-
+    private void tickPhysics(float delta) {
+        physicsController.update(delta);
+        camera.update(true);
+    }
 
     public BitmapFont getFont() {
         return font;
@@ -288,8 +293,8 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void setupCameraController() {
-        cameraController = new CameraController(camera);
-//        cameraController.setVelocity(1.2f);
+        cameraController = new CameraController(camera, physicsController);
+        cameraController.setVelocity(120f);
         Gdx.input.setInputProcessor(cameraController);
         Gdx.input.setCursorCatched(true);
     }
