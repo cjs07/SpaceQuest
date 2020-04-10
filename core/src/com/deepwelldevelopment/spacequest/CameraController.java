@@ -1,6 +1,7 @@
 package com.deepwelldevelopment.spacequest;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
@@ -14,12 +15,16 @@ public class CameraController extends InputAdapter {
     private int BACKWARD = Keys.S;
     private int STRAFE_LEFT = Keys.A;
     private int STRAFE_RIGHT = Keys.D;
+    private int PLACE = Buttons.LEFT;
+    private int BREAK = Buttons.RIGHT;
 
     private final Camera camera;
 
     private IntIntMap keys;
     private Vector3 tmp;
     private Vector3 moveVector;
+    private boolean leftHeld;
+    private boolean rightHeld;
 
     private float velocity;
     private float degreesPerPixel;
@@ -54,14 +59,23 @@ public class CameraController extends InputAdapter {
     }
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer,
-            int button) {
-        return super.touchDown(screenX, screenY, pointer, button);
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (button == PLACE) {
+            leftHeld = true;
+        } else if (button == BREAK) {
+            rightHeld = true;
+        }
+        return true;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return super.touchUp(screenX, screenY, pointer, button);
+        if (button == PLACE) {
+            leftHeld = false;
+        } else if (button == BREAK) {
+            rightHeld = false;
+        }
+        return true;
     }
 
     @Override
@@ -111,6 +125,13 @@ public class CameraController extends InputAdapter {
             tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).scl(deltaTime);
             camera.translate(tmp);
             moveVector.add(tmp);
+        }
+        //TODO: time between block places
+        if (leftHeld) {
+            physicsController.rayPick(Buttons.LEFT);
+        }
+        if (rightHeld) {
+            //TODO: block break logic
         }
     }
 

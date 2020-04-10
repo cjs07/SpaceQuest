@@ -1,6 +1,7 @@
 package com.deepwelldevelopment.spacequest.physics;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
@@ -291,7 +293,49 @@ public class PhysicsController {
         this.camera = camera;
     }
 
-    //TODO: rayPick
+    public int[] rayPick(int button) {
+        Ray pickRay = camera.getPickRay(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+        rayFrom.set(pickRay.origin);
+        rayTo.set(pickRay.direction.scl(5f).add(rayFrom));
+
+        rayResultCallback.setCollisionObject(null);
+        rayResultCallback.setClosestHitFraction(1f);
+        rayResultCallback.setCollisionFilterGroup(CollisionFilterGroups.CharacterFilter);
+        rayResultCallback.setRayFromWorld(rayFrom);
+        rayResultCallback.setRayToWorld(rayTo);
+        collisionWorld.rayTest(rayFrom, rayTo, rayResultCallback);
+
+        if (rayResultCallback.hasHit()) {
+            rayResultCallback.getHitPointWorld(tmp);
+            rayResultCallback.getHitNormalWorld(tmp2);
+
+            double hitPosDelX = Math.floor(tmp.x - tmp2.x / 2);
+            double hitPosDelY = Math.floor(tmp.y - tmp2.y / 2);
+            double hitPosDelZ = Math.floor(tmp.z - tmp2.z / 2);
+
+            double hitPosAddX = Math.floor(tmp.x - tmp2.x / 2);
+            double hitPosAddY = Math.floor(tmp.y - tmp2.y / 2);
+            double hitPosAddZ = Math.floor(tmp.z - tmp2.z / 2);
+
+            if (button == -1) {
+                return new int[]{(int) hitPosDelX, (int) hitPosAddY, (int) hitPosDelZ};
+            }
+            if (button == Buttons.RIGHT) {
+                return new int[]{(int) hitPosDelX, (int) hitPosAddY, (int) hitPosDelZ};
+            }
+            if (button == Buttons.LEFT) {
+                if (tmp.dst(camera.position) < 1.5f) {
+                    return null;
+                }
+                //TODO: interact with the world on raypick
+//                if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) ||
+//                        Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
+//
+//                }
+            }
+        }
+        return null;
+    }
 
     static class WorldInternalTickCallback extends InternalTickCallback {
         WorldInternalTickCallback(btDynamicsWorld dynamicsWorld) {
