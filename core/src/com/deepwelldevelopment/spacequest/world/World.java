@@ -1,8 +1,10 @@
 package com.deepwelldevelopment.spacequest.world;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
@@ -25,7 +27,7 @@ public class World {
     private static final int MAX_CHUNKS_PER_UPDATE = Runtime.getRuntime().availableProcessors() * 4;
     private static final Object priorityListSync = new Object();
     private final Vector3 previousCameraPosition = new Vector3();
-    //TODO: player in water
+    private boolean playerIsInWater;
     private long seed;
     private Array<Chunk> chunksWaitingForUpdate = new Array<>();
     private Array<Chunk> chunksUpdatePriorityList = new Array<>();
@@ -97,26 +99,26 @@ public class World {
             int localZ = (int) z & 15;
             chunk.setBlock(localX, (int) y, localZ, block, updateLight);
             try {
-//                getBlock((int) x + 1, (int) y, (int) z)
-//                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z);
-//                getBlock((int) x + 1, (int) y, (int) z - 1)
-//                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z - 1);
-//                getBlock((int) x + 1, (int) y, (int) z + 1)
-//                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z + 1);
-//                getBlock((int) x - 1, (int) y, (int) z)
-//                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z);
-//                getBlock((int) x - 1, (int) y, (int) z - 1)
-//                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z - 1);
-//                getBlock((int) x - 1, (int) y, (int) z + 1)
-//                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z + 1);
-//                getBlock((int) x, (int) y, (int) z + 1)
-//                        .onNeighborBlockChange(this, (int) x, (int) y, (int) z + 1);
-//                getBlock((int) x, (int) y, (int) z - 1)
-//                        .onNeighborBlockChange(this, (int) x, (int) y, (int) z - 1);
-//                getBlock((int) x, (int) (y + 1), (int) z)
-//                        .onNeighborBlockChange(this, (int) x, (int) y + 1, (int) z);
-//                getBlock((int) x, (int) (y - 1), (int) z)
-//                        .onNeighborBlockChange(this, (int) x, (int) y - 1, (int) z);
+                getBlock((int) x + 1, (int) y, (int) z)
+                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z);
+                getBlock((int) x + 1, (int) y, (int) z - 1)
+                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z - 1);
+                getBlock((int) x + 1, (int) y, (int) z + 1)
+                        .onNeighborBlockChange(this, (int) x + 1, (int) y, (int) z + 1);
+                getBlock((int) x - 1, (int) y, (int) z)
+                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z);
+                getBlock((int) x - 1, (int) y, (int) z - 1)
+                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z - 1);
+                getBlock((int) x - 1, (int) y, (int) z + 1)
+                        .onNeighborBlockChange(this, (int) x - 1, (int) y, (int) z + 1);
+                getBlock((int) x, (int) y, (int) z + 1)
+                        .onNeighborBlockChange(this, (int) x, (int) y, (int) z + 1);
+                getBlock((int) x, (int) y, (int) z - 1)
+                        .onNeighborBlockChange(this, (int) x, (int) y, (int) z - 1);
+                getBlock((int) x, (int) (y + 1), (int) z)
+                        .onNeighborBlockChange(this, (int) x, (int) y + 1, (int) z);
+                getBlock((int) x, (int) (y - 1), (int) z)
+                        .onNeighborBlockChange(this, (int) x, (int) y - 1, (int) z);
             } catch (NullPointerException ex) {
                 ex.printStackTrace();
             }
@@ -204,15 +206,44 @@ public class World {
         }
     }
 
-    //TODO: isPlayerInWater
+    public boolean isPlayerInWater(Camera camera) {
+        tmp.set(camera.position.x, camera.position.y + 0.3f, camera.position.z);
 
-    //TODO: updateBreakState
+        int x = (int) Math.floor(tmp.x);
+        int y = (int) tmp.y;
+        int z = (int) Math.floor(tmp.z);
+
+        Chunk chunk = this.findChunk((int) Math.floor(tmp.x / World.CHUNK_WIDTH),
+                (int) Math.floor(tmp.z / World.CHUNK_WIDTH)
+        );
+        if (chunk != null) {
+            byte block = chunk.getBlock(x, y, z);
+            return isBlockLiquid(blockProvider.getBlockById(block));
+        }
+        SpaceQuest.getSpaceQuest().getPhysicsController().setPlayerInWater(false);
+        return false;
+    }
+
+    public void updateBreakState(int x, int y, int z, int state) {
+        Chunk chunk = this.findChunk((int) Math.floor(x / World.CHUNK_WIDTH),
+                (int) Math.floor(x / World.CHUNK_WIDTH)
+        );
+        if (chunk != null) {
+            int localX = x & 15;
+            int localZ = z & 15;
+            chunk.setBreakState(localX, y, localZ, state);
+        }
+    }
 
     public void breakBlock(int x, int y, int z) {
         setBlock(x, y, z, BlockProvider.air, false);
     }
 
-    //TODO: isBlockLiquid?
+    private boolean isBlockLiquid(Block block) {
+        return block.isLiquid();
+    }
 
-    //TODO: blockInteract
+    public boolean blockInteract(int x, int y, int z) {
+        return getBlock(x, y, z).onBlockActivated(x, y, z);
+    }
 }

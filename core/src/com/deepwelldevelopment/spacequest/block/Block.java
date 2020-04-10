@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
 import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
+import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 public class Block {
@@ -129,6 +130,14 @@ public class Block {
         return this;
     }
 
+    public boolean isLiquid() {
+        return false;
+    }
+
+    public boolean onBlockActivated(int x, int y, int z) {
+        return false;
+    }
+
     public IBlockRender getBlockRender() {
         return blockRender;
     }
@@ -148,6 +157,9 @@ public class Block {
             return true;
         }
         return blockProvider.getBlockById(blockAtSide).getOpacity() < 32;
+    }
+
+    public void onNeighborBlockChange(World world, int x, int y, int z) {
     }
 
     public enum Side {

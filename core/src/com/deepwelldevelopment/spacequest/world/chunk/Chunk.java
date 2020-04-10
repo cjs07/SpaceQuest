@@ -496,4 +496,7 @@ public class Chunk {
 
     public void tick() {
     }
+
+    public void setBreakState(int x, int y, int z, int state) {
+    }
 }
