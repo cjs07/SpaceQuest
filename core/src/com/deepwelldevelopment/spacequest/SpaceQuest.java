@@ -187,7 +187,20 @@ public class SpaceQuest implements ApplicationListener {
     }
 
     private void renderSpriteBatches() {
-        //TODO: render sprites
+        spriteBatch.begin();
+        font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + " - visible/total " +
+                "chunks: " + VoxelRender.getNumberOfVisibleChunks() + "/" +
+                VoxelRender.getNumberOfChunks() + " - visible/total blocks: " +
+                VoxelRender.getNumberOfVisibleBlocks() + "/" + VoxelRender.getBlockCounter() +
+                " -" +
+                " visible vertices: " + VoxelRender.getNumberOfVertices() + " - visibile indices:" +
+                " " + VoxelRender.getNumberOfIndices() + " x: " + camera.position.x + " y: " +
+                camera.position.y + " z: " + camera.position.z, 0, 20);
+        crosshairSprite.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+        crosshairSprite.draw(spriteBatch);
+        //TODO: render hotbar
+        //TODO: GUI render
+        spriteBatch.end();
     }
 
     //TODO: getPlayerInventory
@@ -214,6 +227,8 @@ public class SpaceQuest implements ApplicationListener {
         Material material = setupMaterialAndEnvironemnt();
         setupRendering(material);
 
+        crosshair = new Texture(Gdx.files.internal("crosshair.png"));
+        crosshairSprite = new Sprite(crosshair);
         //TODO: sprites
 
         setupCameraController();
