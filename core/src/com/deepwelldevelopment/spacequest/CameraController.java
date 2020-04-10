@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 
 public class CameraController extends InputAdapter {
@@ -30,6 +31,11 @@ public class CameraController extends InputAdapter {
     private float degreesPerPixel;
 
     private PhysicsController physicsController;
+
+    private int[] breakingBlockPos;
+    private long breakStart;
+    private long timeLastBlockChange;
+
 
     public CameraController(Camera camera, PhysicsController physicsController) {
         this.camera = camera;
@@ -126,12 +132,48 @@ public class CameraController extends InputAdapter {
             camera.translate(tmp);
             moveVector.add(tmp);
         }
-        //TODO: time between block places
-        if (leftHeld) {
+//mouse interactions
+        long currentTime = System.currentTimeMillis();
+        if (leftHeld && currentTime - timeLastBlockChange > 150) {
             physicsController.rayPick(Buttons.LEFT);
+            timeLastBlockChange = System.currentTimeMillis();
         }
         if (rightHeld) {
-            //TODO: block break logic
+            int[] breakingPos = physicsController.rayPick(Buttons.RIGHT);
+            if (breakingPos != null) {
+                if (breakingBlockPos == null) {
+                    breakingBlockPos = breakingPos;
+                    breakStart = System.currentTimeMillis();
+                }
+                if (breakingPos[0] == breakingBlockPos[0] && breakingPos[1] == breakingBlockPos[1] &&
+                        breakingPos[2] == breakingBlockPos[2]) { //the same block is being broken
+                    Block block = SpaceQuest.getSpaceQuest().getWorld().getBlock(breakingPos[0], breakingPos[1],
+                            breakingPos[2]);
+                    long passedTime = System.currentTimeMillis() - breakStart;
+                    if (passedTime >= block.getHardness() / 0.5f * 1000) {
+                        SpaceQuest.getSpaceQuest().getWorld().breakBlock(breakingPos[0], breakingPos[1], breakingPos[2]);
+//                        playerInventory.addStack(block.getDrop(breakingPos[0], breakingPos[1], breakingPos[2]));
+                        breakingBlockPos = null;
+
+                    } else { //update break state
+                        float breakTime = block.getHardness() / 0.5f * 1000;
+                        float stateTime = breakTime / 11;
+                        int i = 0;
+                        while (passedTime > stateTime) {
+                            passedTime -= stateTime;
+                            i++;
+                        }
+                        SpaceQuest.getSpaceQuest().getWorld().updateBreakState(breakingPos[0], breakingPos[1], breakingPos[2], i);
+                    }
+                } else {
+                    breakStart = System.currentTimeMillis();
+                    breakingBlockPos = breakingPos;
+                }
+            }
+        }
+        int[] temp = physicsController.rayPick(-1);
+        if (temp != null) {
+//            SpaceQuest.getSpaceQuest().getWorld().updateBreakState(temp[0], temp[1], temp[2], 4);
         }
     }
 

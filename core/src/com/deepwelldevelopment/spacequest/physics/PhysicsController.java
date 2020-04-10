@@ -2,6 +2,7 @@ package com.deepwelldevelopment.spacequest.physics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -62,8 +63,8 @@ public class PhysicsController {
     private HashMap<btRigidBody, CollisionObject> entityRigidBodies;
     private HashMap<CollisionObject, btRigidBody> entityCollisionObjects;
     private ClosestRayResultCallback rayResultCallback;
-    private Vector3 rayFrom;
-    private Vector3 rayTo;
+    private Vector3 rayFrom = new Vector3();
+    private Vector3 rayTo = new Vector3();
     private Array<btMotionState> states = new Array<>();
     private Array<btRigidBodyConstructionInfo> info = new Array<>();
     private Array<btCollisionShape> shapes = new Array<>();
@@ -327,11 +328,26 @@ public class PhysicsController {
                 if (tmp.dst(camera.position) < 1.5f) {
                     return null;
                 }
-                //TODO: interact with the world on raypick
-//                if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) ||
-//                        Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-//
-//                }
+                if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) ||
+                        Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
+//                    if (!SpaceQuest.getSpaceQuest().getPlayerInventory().getHeldItem()
+//                            .onItemUse(world, (int) hitPosAddX,
+//                                    (int) hitPosAddY, (int) hitPosAddZ, (float) hitPosAddX,
+//                                    (float) hitPosAddY,
+//                                    (float) hitPosAddZ
+//                            )) {
+//                        Block block;
+//                        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+//                                Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+//                            block = BlockProvider.wall;
+//                        } else {
+//                            block = BlockProvider.light;
+//                        }
+//                        world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ,
+//                                block, true
+//                        );
+//                        return null;
+                }
             }
         }
         return null;
