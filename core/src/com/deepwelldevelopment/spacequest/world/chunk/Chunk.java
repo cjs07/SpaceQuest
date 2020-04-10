@@ -2,6 +2,7 @@ package com.deepwelldevelopment.spacequest.world.chunk;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
@@ -9,9 +10,13 @@ import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
 import com.deepwelldevelopment.spacequest.client.render.VoxelMesh;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.Biome;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise2;
+import com.flowpowered.noise.module.source.Perlin;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,7 +30,14 @@ public class Chunk {
             Executors.newFixedThreadPool(
                     Runtime.getRuntime().availableProcessors() - 1);
 
-    //TODO: world gen
+    private static double offsetIncrement = 0.005;
+
+    protected static Random random;
+    protected static Vector3 landscapeRandomOffset1;
+    protected static Vector3 landscapeRandomOffset2;
+    protected static Vector3 landscapeRandomOffset3;
+    protected static Vector3 landscapeRandomOffset4;
+    protected static Vector3 landscapeRandomOffset5;
 
     private final IBlockProvider blockProvider;
     private final byte[] map;
@@ -46,12 +58,13 @@ public class Chunk {
     private int blockCounter;
     private boolean active = true;
     private boolean recalculating;
-    //TODO: noise caches
+    private ArrayMap<Long, Double> noiseCache2d = new ArrayMap<>();
+    private ArrayMap<Long, Double> noiseCache3d = new ArrayMap<>();
     private boolean needLightUpdate = true;
     private boolean fullRebuildOfLight;
     private boolean needMeshUpdate;
     private int timesSinceUpdate;
-    //TODO: Perlin
+    private Perlin perlin;
 
     //TODO: break data
 
@@ -65,7 +78,12 @@ public class Chunk {
         this.chunkPosX = chunkPosX;
         this.chunkPosZ = chunkPosZ;
         this.biome = biome;
-        //perlin
+        this.perlin = new Perlin();
+        this.perlin.setSeed((int) world.getSeed());
+        this.perlin.setFrequency(biome.perlinFrequency());
+        this.perlin.setLacunarity(biome.perlinLacunarity());
+        this.perlin.setOctaveCount(biome.perlinOctaves());
+        this.perlin.setPersistence(biome.perlinPersistence());
         this.map = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         this.lightmap = new byte[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
         this.heightmap = new boolean[World.CHUNK_WIDTH * World.CHUNK_WIDTH * World.MAX_HEIGHT];
@@ -85,7 +103,28 @@ public class Chunk {
 
         //breakstate init
 
-        //random generation init
+        if (random == null) {
+            random = new Random();
+            if (world.getSeed() != 0) {
+                random.setSeed(world.getSeed());
+            }
+            landscapeRandomOffset1 = new Vector3((float) random.nextDouble() * 10000,
+                    (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000
+            );
+            landscapeRandomOffset2 = new Vector3((float) random.nextDouble() * 10000,
+                    (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000
+            );
+            landscapeRandomOffset3 = new Vector3((float) random.nextDouble() * 10000,
+                    (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000
+            );
+            landscapeRandomOffset4 = new Vector3((float) random.nextDouble() * 10000,
+                    (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000
+            );
+            landscapeRandomOffset5 = new Vector3((float) random.nextDouble() * 10000,
+                    (float) random.nextDouble() * 10000, (float) random.nextDouble() * 10000
+            );
+        }
+
         executorService.submit(() -> {
             try {
                 this.recalculating = true;
@@ -121,26 +160,99 @@ public class Chunk {
         }
     }
 
-    //TODO: use real generation
     protected void calculateChunk(Vector3 worldPosition, IBlockProvider blockProvider) {
-        //recalculate heightmap from perlin noise
+        //calculates a heightmap for the chunk
+        double xOff = chunkPosX * 16 * offsetIncrement;
+        double zOff = chunkPosZ * 16 * offsetIncrement;
+        double startZ = zOff;
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int z = World.CHUNK_WIDTH - 1; z >= 0; z--) {
+                generationHeightmap[x][z] += (biome.getHeight() * perlin.getValue(xOff, zOff, 0));
+                zOff -= offsetIncrement;
+            }
+            xOff += offsetIncrement;
+            zOff = startZ;
+        }
+
+        //fills the chunk blocks
         Vector3 worldPosOfXYZ = new Vector3();
         for (int y = 0; y < World.MAX_HEIGHT; y++) {
             for (int x = 0; x < World.CHUNK_WIDTH; x++) {
                 for (int z = 0; z < World.CHUNK_WIDTH; z++) {
                     worldPosOfXYZ.set(x, y, z).add(worldPosition);
-                    setBlock(x, y, z,
-                            blockProvider.getBlockById(getByteAtWorldPosition(x, y, z, worldPosOfXYZ
-                            )), false
+                    setBlock(x, y, z, blockProvider
+                                    .getBlockById(getByteAtWorldPosition(x, y, z, worldPosOfXYZ)),
+                            false
                     );
                 }
             }
         }
-        //cave pass
-        //final pass
+        cavePass();
+        finalPass();
+        //        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+//            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+//                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+//                    float v = random.nextFloat();
+//                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1, z) == 0 && getBlock(x, y + 2, z) == 0) {
+//                        if (v < 0.2) {
+//                            setBlock(x, y + 1, z, BlockProvider.straws, false);
+//                            continue;
+//                        }
+//
+//                        if (v < 0.3) {
+//                            setBlock(x, y + 1, z, BlockProvider.flower, false);
+//                            continue;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
+//            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
+//                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
+//                    byte block = getBlock(x, y, z);
+//                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws.getId()) && getBlock(x, y + 1, z) == 0) {
+//                        float v = random.nextFloat();
+//                        if (v < 0.009) {
+//                            createTree(x, y, z);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
-    //TODO: create tree
+    public void createTree(int rootX, int rootY, int rootZ) {
+        try {
+            int treeHight = 11;
+
+            for (int treeY = 0; treeY < treeHight; treeY++) {
+                setBlock(rootX, treeY + rootY, rootZ, BlockProvider.treeTrunk, false);
+            }
+
+            int bareTrunkY = 0;
+            while (bareTrunkY < 7 + (treeHight / 10)) {
+                bareTrunkY = random.nextInt(12);
+            }
+
+            int radius = 4;
+            for (int treeY = 0; treeY < treeHight; treeY++) {
+                for (int xc = -radius; xc <= radius; ++xc) {
+                    for (int zc = -radius; zc <= radius; ++zc) {
+                        if (xc * xc + zc * zc <= radius * radius) {
+                            if (random.nextInt(1000) > 100) {
+                                setBlock(xc + rootX, treeY + (rootY + bareTrunkY), zc + rootZ, BlockProvider.leaves, false);
+                            }
+                        }
+                    }
+                }
+                radius--;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     protected byte getByteAtWorldPosition(int x, int y, int z, Vector3 worldPosition) {
         int height = generationHeightmap[x][z];
@@ -152,13 +264,60 @@ public class Chunk {
         if (surfaceY > height) {
             return BlockProvider.air.getId();
         }
-        //more calculations
+        if (surfaceY == height) {
+            return biome.getSurfaceBlock();
+        }
+        if (height - surfaceY < 4) {
+            return biome.getGroundFillerBlock();
+        }
         return BlockProvider.stone.getId();
     }
 
-    //TODO: cavePass
+    private void cavePass() {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                    double caveValue = Math.abs(
+                            perlin.getValue(x * offsetIncrement, y * offsetIncrement,
+                                    z * offsetIncrement
+                            ));
+                    int worldX = World.CHUNK_WIDTH * chunkPosX;
+                    int worldZ = World.CHUNK_WIDTH * chunkPosZ;
+                    double caveDensity = SimplexNoise
+                            .noise((worldX + x) * 0.01f, y * 0.02f, (worldZ + z) * 0.01f);
+                    double caveDensity2 = SimplexNoise2
+                            .noise((worldX + x) * 0.01f, y * 0.02f, (worldZ + z) * 0.01f);
+                    if (caveDensity > 0.45 && caveDensity < 0.70 && caveDensity2 > 0.45 &&
+                            caveDensity2 < 0.70) {
+                        setBlock(x, y, z, BlockProvider.air, false);
+                    }
+//                    if (caveValue < biome.getCaveDensity()) {
+//                        setBlock(x, y, z, BlockProvider.air, false);
+//                    }
+                }
+            }
+        }
+    }
 
-    //TODO: finalPass
+    /**
+     * The final pass in chunk generation. Primarily decorative, replaces dirt with grass where
+     * upper layers were removed, and adds decorative touches (such as rotating logs, and adding
+     * other block variants
+     */
+    private void finalPass() {
+        for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+            for (int y = 0; y < World.MAX_HEIGHT; y++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                    if (blockProvider.getBlockById(getBlock(x, y, z)) == BlockProvider.dirt) {
+                        if (blockProvider.getBlockById(getBlock(x, y + 1, z)) ==
+                                BlockProvider.air) {
+                            setBlock(x, y, z, BlockProvider.grass, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     public void setBlock(int x, int y, int z, Block block, boolean updateLight) {
         if (outsideThisChunkBounds(x, z)) {
@@ -183,7 +342,7 @@ public class Chunk {
         blockCounter++;
 
         if (updateLight) {
-//            resetLight(true);
+            resetLight(true);
         }
         needLightUpdate = true;
         resetMesh();

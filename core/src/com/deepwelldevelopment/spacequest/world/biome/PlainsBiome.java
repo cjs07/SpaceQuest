@@ -36,25 +36,25 @@ public class PlainsBiome extends Biome {
     //TODO: use grass as the surface block
     @Override
     public byte getSurfaceBlock() {
-        return BlockProvider.stone.getId();
+        return BlockProvider.grass.getId();
     }
 
     //TODO: use dirt
     @Override
     public byte getGroundFillerBlock() {
-        return BlockProvider.stone.getId();
+        return BlockProvider.dirt.getId();
     }
 
     //TODO: use dirt
     @Override
     public byte getMountainFillerBlock() {
-        return BlockProvider.stone.getId();
+        return BlockProvider.dirt.getId();
     }
 
     //TODO: use dirt
     @Override
     public byte getBeachBlock() {
-        return BlockProvider.stone.getId();
+        return BlockProvider.dirt.getId();
 
     }
 
