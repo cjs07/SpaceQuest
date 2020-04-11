@@ -1,5 +1,6 @@
 package com.deepwelldevelopment.spacequest;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
@@ -33,6 +34,9 @@ import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
 
 import java.nio.FloatBuffer;
 
+/**
+ * Main app class and gdx entry point.
+ */
 public class SpaceQuest implements ApplicationListener {
 
     public static final int MAX_UPDATE_ITERATIONS = 10;
@@ -86,6 +90,9 @@ public class SpaceQuest implements ApplicationListener {
 
     //TODO: isGuiOpen
 
+    /**
+     * Clears the OpenGL rendering environment
+     */
     private void clearOpenGL() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Vector3 direction = camera.direction;
@@ -98,6 +105,9 @@ public class SpaceQuest implements ApplicationListener {
         setSkyColor((v / 2) / 255f, (v / 1) / 255f, (255 - v) - 50 / 255f, 1);
     }
 
+    /**
+     * Called when the {@link Application} is first created.
+     */
     @Override
     public void create() {
         spaceQuest = this;
@@ -118,12 +128,22 @@ public class SpaceQuest implements ApplicationListener {
         //TODO: player inventory and item?
     }
 
+    /**
+     * Called when the {@link Application} is resized. This can happen at any point during a
+     * non-paused state but will never happen before a call to {@link #create()}.
+     *
+     * @param width  the new width in pixels
+     * @param height the new height in pixels
+     */
     @Override
     public void resize(int width, int height) {
         createCamera(width, height);
         setup();
     }
 
+    /**
+     * Called when the {@link Application} should render itself.
+     */
     @Override
     public void render() {
         clearOpenGL();
@@ -141,14 +161,25 @@ public class SpaceQuest implements ApplicationListener {
         }
     }
 
+    /**
+     * Called when the {@link Application} is paused, usually when it's not active or visible
+     * on-screen. An Application is also paused before it is destroyed.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when the {@link Application} is resumed from a paused state, usually when it
+     * regains focus.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when the {@link Application} is destroyed. Preceded by a call to {@link #pause()}.
+     */
     @Override
     public void dispose() {
         assetManager.dispose();
@@ -163,11 +194,17 @@ public class SpaceQuest implements ApplicationListener {
         return world;
     }
 
+    /**
+     * Renders the models. Handles
+     */
     private void renderModelBatches() {
         //TODO: special behavior if palyer is in water?
         renderVoxelBatch();
     }
 
+    /**
+     * Sets up the environment and renders the world
+     */
     private void renderVoxelBatch() {
         //TODO: special behavior if player is in water
         shaderProgram.begin();
@@ -186,6 +223,9 @@ public class SpaceQuest implements ApplicationListener {
         return physicsController;
     }
 
+    /**
+     * Renders the 2D screen on top of the world. This includes the crosshair and on screen GUIs
+     */
     private void renderSpriteBatches() {
         spriteBatch.begin();
         font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + " - visible/total " +
@@ -216,6 +256,10 @@ public class SpaceQuest implements ApplicationListener {
         return font;
     }
 
+    /**
+     * Sets up all the necessary pieces for rendering. This method does no instance-based setup
+     * (world, etc.)
+     */
     private void setup() {
         if (assetManager.isLoaded("blocks.atlas")) {
             assetManager.unload("blocks.atlas");
@@ -224,7 +268,7 @@ public class SpaceQuest implements ApplicationListener {
         textureAtlas = new TextureAtlas(Gdx.files.internal("blocks.atlas"));
 
         font = new BitmapFont();
-        Material material = setupMaterialAndEnvironemnt();
+        Material material = setupMaterialAndEnvironment();
         setupRendering(material);
 
         crosshair = new Texture(Gdx.files.internal("crosshair.png"));
@@ -253,6 +297,11 @@ public class SpaceQuest implements ApplicationListener {
         enableAnisotropy();
     }
 
+    /**
+     * Loads and compiles the shaders
+     *
+     * @return The compiled shader program
+     */
     private ShaderProgram setupShaders() {
         ShaderProgram.pedantic = true;
         ShaderProgram shaderProgram = new ShaderProgram(Gdx.files.internal("shaders/shader.vert"),
@@ -263,6 +312,11 @@ public class SpaceQuest implements ApplicationListener {
         return shaderProgram;
     }
 
+    /**
+     * Initializes and configures rendering
+     *
+     * @param material The primary rendering material
+     */
     private void setupRendering(Material material) {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glCullFace(GL20.GL_BACK);
@@ -292,12 +346,24 @@ public class SpaceQuest implements ApplicationListener {
         return textureAtlas;
     }
 
+    /**
+     * Sets the color of the sky
+     *
+     * @param r Red
+     * @param g Green
+     * @param b Blue
+     * @param a Alpha
+     */
     private void setSkyColor(float r, float g, float b, float a) {
         skyFog.set(r, g, b, a);
         skyFogColorAttribute.color.set(skyFog);
     }
 
-    private Material setupMaterialAndEnvironemnt() {
+    /**
+     * Sets up the material and environment
+     * @return The material
+     */
+    private Material setupMaterialAndEnvironment() {
         environment = new Environment();
         //environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
         //environment.set(new ColorAttribute(ColorAttribute.Fog, 13 / 255f, 41 / 255f, 121 /
@@ -307,6 +373,9 @@ public class SpaceQuest implements ApplicationListener {
         );
     }
 
+    /**
+     * Sets up the custom camera controller
+     */
     private void setupCameraController() {
         cameraController = new CameraController(camera, physicsController);
         cameraController.setVelocity(120f);
@@ -331,6 +400,7 @@ public class SpaceQuest implements ApplicationListener {
         }
     }
 
+    //TODO: is this method needed?
     private void createCamera(int width, int height) {
         camera.viewportWidth = width;
         camera.viewportHeight = height;

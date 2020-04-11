@@ -8,6 +8,7 @@ import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
 import com.deepwelldevelopment.spacequest.client.render.VoxelMesh;
+import com.deepwelldevelopment.spacequest.util.PositionUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.Biome;
 import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
@@ -21,6 +22,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Represents a 16x16x256 collection of blocks in the world.
+ */
 public class Chunk {
 
     public static final byte LIGHT = 1;
@@ -68,7 +72,16 @@ public class Chunk {
 
     //TODO: break data
 
-    //TODO: add biome and more init stuff
+    /**
+     * Creates a new chunk and submits it for initialization
+     *
+     * @param world         The world this chunk belongs to
+     * @param blockProvider The block provider for the world
+     * @param worldPosition The position of the chunk in the world
+     * @param chunkPosX     The chunks x coordinate in the chunk map
+     * @param chunkPosZ     The chunks z coordinate in the chunk map
+     * @param biome         The biome this chunk is in
+     */
     public Chunk(World world, IBlockProvider blockProvider,
             Vector3 worldPosition, int chunkPosX, int chunkPosZ, Biome biome) {
         this.ready = false;
@@ -144,6 +157,12 @@ public class Chunk {
 
     //TODO: chunk methods
 
+    /**
+     * Recalculates which blocks in the chunk are receiving direct sunlight. This also
+     * recalculates the heightmap
+     */
+    //TODO: should the heightmap be cleared here?
+    //note that the setting of the light level flags the chunk to recalculate the entire lightmap
     private void fillSunlight() {
         for (int x = 0; x < World.CHUNK_WIDTH; x++) {
             for (int z = 0; z < World.CHUNK_WIDTH; z++) {
@@ -160,6 +179,12 @@ public class Chunk {
         }
     }
 
+    /**
+     * Calculates and generates this chunk
+     *
+     * @param worldPosition The chunks world position
+     * @param blockProvider The block provider to pull block data from
+     */
     protected void calculateChunk(Vector3 worldPosition, IBlockProvider blockProvider) {
         //calculates a heightmap for the chunk
         double xOff = chunkPosX * 16 * offsetIncrement;
@@ -189,11 +214,12 @@ public class Chunk {
         }
         cavePass();
         finalPass();
-        //        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+//        for (int y = 0; y < World.MAX_HEIGHT; y++) {
 //            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
 //                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
 //                    float v = random.nextFloat();
-//                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1, z) == 0 && getBlock(x, y + 2, z) == 0) {
+//                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1,
+//                    z) == 0 && getBlock(x, y + 2, z) == 0) {
 //                        if (v < 0.2) {
 //                            setBlock(x, y + 1, z, BlockProvider.straws, false);
 //                            continue;
@@ -212,7 +238,8 @@ public class Chunk {
 //            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
 //                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
 //                    byte block = getBlock(x, y, z);
-//                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws.getId()) && getBlock(x, y + 1, z) == 0) {
+//                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws
+//                    .getId()) && getBlock(x, y + 1, z) == 0) {
 //                        float v = random.nextFloat();
 //                        if (v < 0.009) {
 //                            createTree(x, y, z);
@@ -223,6 +250,13 @@ public class Chunk {
 //        }
     }
 
+    /**
+     * Generates a tree in the world
+     *
+     * @param rootX The x coordinate of the tree root in the chunk
+     * @param rootY The y coordinate of the tree root
+     * @param rootZ The z coordinate of the tree root in the chunk
+     */
     public void createTree(int rootX, int rootY, int rootZ) {
         try {
             int treeHight = 11;
@@ -242,7 +276,9 @@ public class Chunk {
                     for (int zc = -radius; zc <= radius; ++zc) {
                         if (xc * xc + zc * zc <= radius * radius) {
                             if (random.nextInt(1000) > 100) {
-                                setBlock(xc + rootX, treeY + (rootY + bareTrunkY), zc + rootZ, BlockProvider.leaves, false);
+                                setBlock(xc + rootX, treeY + (rootY + bareTrunkY), zc + rootZ,
+                                        BlockProvider.leaves, false
+                                );
                             }
                         }
                     }
@@ -254,6 +290,16 @@ public class Chunk {
         }
     }
 
+    /**
+     * Determines the block that should be placed at a given position. The type of block is
+     * determined based on height and the biome of the chunk.
+     *
+     * @param x             The x position of the block in the chunk
+     * @param y             The y position of the block
+     * @param z             The z position of the block in the chunk
+     * @param worldPosition
+     * @return The id of the block that should be placed at this position
+     */
     protected byte getByteAtWorldPosition(int x, int y, int z, Vector3 worldPosition) {
         int height = generationHeightmap[x][z];
         //subsurface area, no noise impact
@@ -273,6 +319,9 @@ public class Chunk {
         return BlockProvider.stone.getId();
     }
 
+    /**
+     * Secondary world generation pass. Generate caves
+     */
     private void cavePass() {
         for (int x = 0; x < World.CHUNK_WIDTH; x++) {
             for (int y = 0; y < World.MAX_HEIGHT; y++) {
@@ -302,7 +351,7 @@ public class Chunk {
     /**
      * The final pass in chunk generation. Primarily decorative, replaces dirt with grass where
      * upper layers were removed, and adds decorative touches (such as rotating logs, and adding
-     * other block variants
+     * other block variants)
      */
     private void finalPass() {
         for (int x = 0; x < World.CHUNK_WIDTH; x++) {
@@ -319,6 +368,15 @@ public class Chunk {
         }
     }
 
+    /**
+     * Sets the block at a given position
+     *
+     * @param x           The x position of the block
+     * @param y           The y position of the block
+     * @param z           The z position of the block
+     * @param block       The block to set to
+     * @param updateLight Whether or not this block change requires light to be updated
+     */
     public void setBlock(int x, int y, int z, Block block, boolean updateLight) {
         if (outsideThisChunkBounds(x, z)) {
             int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
@@ -348,6 +406,14 @@ public class Chunk {
         resetMesh();
     }
 
+    /**
+     * Gets the block at a specified position
+     *
+     * @param x The x position to find
+     * @param y The y position to find
+     * @param z The z position to find
+     * @return The id of the block at the position
+     */
     public byte getBlock(int x, int y, int z) {
         if (outsideHeightBounds(y)) {
             return 0;
@@ -355,10 +421,25 @@ public class Chunk {
         return map[getLocationInArray(x & 15, y, z & 15)];
     }
 
+    /**
+     * Converts standard 3D coordinate triplets into a single number value used for accessing the
+     * one-dimensional arrays used for storing chunk data. These indexes are guaranteed to be
+     * unique within a chunk, but the same coordinates will produce the same index in different
+     * chunks
+     *
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @return The index of the coordinate triple in the storage arrays. The same coordinate
+     * triple will result in the same index in every chunk, and in all data arrays
+     */
     private int getLocationInArray(int x, int y, int z) {
         return (x * World.CHUNK_WIDTH + z) + (y * World.CHUNK_WIDTH * World.CHUNK_WIDTH);
     }
 
+    /**
+     * Recalculates the meshes of this chunk
+     */
     public void recalculateMesh() {
         if (!ready) {
             return;
@@ -380,7 +461,9 @@ public class Chunk {
                         mesh.addBlock(worldPosition, x, y, z, blockProvider, this, blockById);
                         toRebuild.add(mesh);
                     } else {
-                        alphaMesh.addBlock(worldPosition, x, y, z, blockProvider, this, blockById);
+                        alphaMesh.addBlock(worldPosition, x, y, z, blockProvider, this,
+                                blockById
+                        );
                         toRebuildAlpha.add(alphaMesh);
                     }
                 }
@@ -399,6 +482,11 @@ public class Chunk {
         recalculating = false;
     }
 
+    /**
+     * Updates the light in the chunk
+     *
+     * @return True if the light was actually updated
+     */
     private boolean updateLight() {
         boolean lightUpdated = false;
         boolean lightUpdatedInLoop = true;
@@ -437,6 +525,14 @@ public class Chunk {
         return !needLightUpdate;
     }
 
+    /**
+     * Calculates the light level at a given position
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The light level of the position
+     */
     private byte calculatedLight(int x, int y, int z) {
         //basic checks
         if (y == 0) {
@@ -493,6 +589,15 @@ public class Chunk {
         }
     }
 
+    /**
+     * Changes the light level at a position
+     *
+     * @param x     x coordinate
+     * @param y     y coordinate
+     * @param z     z coordinate
+     * @param light The new light level
+     * @return True if the light level was changed (new level was different from old level)
+     */
     private boolean setLight(int x, int y, int z, byte light) {
         int existingLight = lightmap[getLocationInArray(x, y, z)];
         if (existingLight != light) {
@@ -502,6 +607,18 @@ public class Chunk {
         return false;
     }
 
+    //TODO: why is this method here?
+    /**
+     * Check if the block at the specified position exists or not. This is used by the
+     * {@link VoxelMesh} to determinate if it needs to draw a mesh face or not depending on if it
+     * will be visible or hidden by another block.
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @param sourceBlock The block that this request originated from?
+     * @return
+     */
     public boolean isBlockTransparent(int x, int y, int z, Block sourceBlock) {
         if (y < 0) {
             return false;
@@ -523,6 +640,13 @@ public class Chunk {
         }
     }
 
+    /**
+     * Gets the byte value at a specified position
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The id of the block
+     */
     public byte getByte(int x, int y, int z) {
         if (outsideHeightBounds(y)) {
             return 0;
@@ -542,6 +666,12 @@ public class Chunk {
         return map[getLocationInArray(x, y, z)];
     }
 
+    /**
+     * Determines if coordinates are within the bounds of this chunk
+     * @param x x coordinate
+     * @param z z coordinate
+     * @return True if the coordinates are outside of the bounds of this chunk
+     */
     private boolean outsideThisChunkBounds(int x, int z) {
         return x < 0 || z < 0 || x >= World.CHUNK_WIDTH || z >= World.CHUNK_WIDTH;
     }
@@ -551,19 +681,50 @@ public class Chunk {
     }
 
     public void setActive(boolean active) {
+        this.active = active;
     }
 
     public void resetMesh() {
         needMeshUpdate = true;
         if (ready) {
-//            world.postChunkPriorityUpdate(this);
+            world.postChunkPriorityUpdate(this);
         }
     }
 
-    //TODO: get2dNoise
+    protected double get2dNoise(Vector3 pos, Vector3 offset, double scale) {
+        long posHash = PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
+        if (noiseCache2d.containsKey(posHash)) {
+            return noiseCache2d.get(posHash);
+        }
 
-    //TODO: get3DNoise
+        double noiseX = (double) (pos.x + offset.x) * scale;
+        double noiseZ = (double) (pos.z + offset.z) * scale;
+        double noise = SimplexNoise.noise(noiseX, noiseZ);
 
+        noiseCache2d.put(posHash, noise);
+        return noise;
+    }
+
+    protected double get3dNoise(Vector3 pos, Vector3 offset, double scale) {
+        long posHash = PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
+        if (noiseCache3d.containsKey(posHash)) {
+            return noiseCache3d.get(posHash);
+        }
+
+        double noiseX = (double) (pos.x + offset.x) * scale;
+        double noiseY = (double) (pos.y + offset.y) * scale;
+        double noiseZ = (double) (pos.z + offset.z) * scale;
+        double noise = SimplexNoise.noise(noiseX, noiseY, noiseZ);
+
+        noiseCache3d.put(posHash, noise);
+        return noise;
+    }
+
+    /**
+     * Determines if the y value is within the height bounds of the chunk
+     * @param y y coordinate to check
+     * @return True if the y coordinate is outside of the height bounds
+     */
     private boolean outsideHeightBounds(int y) {
         return y < 0 || y >= World.MAX_HEIGHT;
     }
@@ -592,6 +753,10 @@ public class Chunk {
         return needLightUpdate;
     }
 
+    /**
+     * Resets the lighting of the chunk
+     * @param force True if the chunk should completely rebuild the lightmap
+     */
     public void resetLight(boolean force) {
         if (force) {
             fullRebuildOfLight = true;
@@ -599,6 +764,14 @@ public class Chunk {
         needLightUpdate = true;
     }
 
+
+    /**
+     * Gets the light level of a given block
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return
+     */
     public byte getBlockLight(int x, int y, int z) {
         if (outsideHeightBounds(y)) {
             return DARKNESS;
@@ -630,6 +803,9 @@ public class Chunk {
         }
     }
 
+    /**
+     * Updates the chunk. Determines if the chunk should be recalculated
+     */
     public void update() {
         timesSinceUpdate++;
         if (timesSinceUpdate > 100) {
