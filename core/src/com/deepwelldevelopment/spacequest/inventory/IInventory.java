@@ -14,6 +14,4 @@ public interface IInventory {
     void render(Batch batch);
 
     boolean addStack(ItemStack stack);
-
-
 }
