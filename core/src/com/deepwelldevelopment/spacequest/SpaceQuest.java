@@ -7,10 +7,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
@@ -25,7 +22,12 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.client.gui.Gui;
 import com.deepwelldevelopment.spacequest.client.render.VoxelRender;
+import com.deepwelldevelopment.spacequest.inventory.InventoryPlayer;
+import com.deepwelldevelopment.spacequest.item.Item;
+import com.deepwelldevelopment.spacequest.item.ItemBlock;
+import com.deepwelldevelopment.spacequest.item.ItemStack;
 import com.deepwelldevelopment.spacequest.physics.PhysicsController;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
@@ -72,23 +74,35 @@ public class SpaceQuest implements ApplicationListener {
     private IBiomeProvider biomeProvider;
     private World world;
     private PhysicsController physicsController;
-    //TODO: item?
+    private Item item;
 
-    //TODO: openGui
+    private Gui openGui;
 
-    //TODO: inventory and hotbar
+    private InventoryPlayer playerInventory;
+    private Sprite hotbarUnselectedSprite;
+    private Sprite hotbarSelectedSprite;
+    private Sprite[] hotbarSprites;
 
     public static SpaceQuest getSpaceQuest() {
         return spaceQuest;
     }
 
-    //TODO: openGui
+    public void openGui(Gui gui) {
+        this.openGui = gui;
+        cameraController.releaseCursor();
+    }
 
-    //TODO: closeGui
+    public void closeGui() {
+        this.openGui = null;
+    }
 
-    //TODO: getOpenGui
+    public Gui getOpenGui() {
+        return openGui;
+    }
 
-    //TODO: isGuiOpen
+    public boolean isGuiOen() {
+        return openGui != null;
+    }
 
     /**
      * Clears the OpenGL rendering environment
@@ -125,7 +139,9 @@ public class SpaceQuest implements ApplicationListener {
         this.world = new World(blockProvider, biomeProvider);
         this.physicsController = new PhysicsController(world, camera);
         this.chunkProvider = world.getChunkProvider();
-        //TODO: player inventory and item?
+        this.playerInventory = new InventoryPlayer();
+
+        item = new Item((byte) 1, "diamond");
     }
 
     /**
@@ -198,7 +214,11 @@ public class SpaceQuest implements ApplicationListener {
      * Renders the models. Handles
      */
     private void renderModelBatches() {
-        //TODO: special behavior if palyer is in water?
+        if (!world.isPlayerInWater(camera)) {
+            skyboxRender.begin(camera);
+            skyboxRender.render(skybox);
+            skyboxRender.end();
+        }
         renderVoxelBatch();
     }
 
@@ -206,11 +226,16 @@ public class SpaceQuest implements ApplicationListener {
      * Sets up the environment and renders the world
      */
     private void renderVoxelBatch() {
-        //TODO: special behavior if player is in water
-        shaderProgram.begin();
-        shaderProgram.setUniformf("u_fogstr", 0.04f);
-        environment.set(skyFogColorAttribute);
-
+        if (!world.isPlayerInWater(camera)) {
+            shaderProgram.begin();
+            shaderProgram.setUniformf("u_fogstr", 0.04f);
+            environment.set(skyFogColorAttribute);
+        } else {
+            shaderProgram.begin();
+            shaderProgram.setUniformf("u_fogstr", 0.10f);
+            environment.set(fogColorAttribute);
+            Gdx.gl.glClearColor(waterFog.r, waterFog.g, waterFog.b, waterFog.a);
+        }
         voxelBatch.begin(camera);
         voxelBatch.render(voxelRender, environment);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
@@ -238,14 +263,39 @@ public class SpaceQuest implements ApplicationListener {
                 camera.position.y + " z: " + camera.position.z, 0, 20);
         crosshairSprite.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         crosshairSprite.draw(spriteBatch);
-        //TODO: render hotbar
-        //TODO: GUI render
+        renderHotbar(spriteBatch);
+        if (openGui != null) {
+            openGui.render(spriteBatch, Gdx.input.getX(), Gdx.input.getY());
+        }
         spriteBatch.end();
     }
 
-    //TODO: getPlayerInventory
+    public InventoryPlayer getPlayerInventory() {
+        return playerInventory;
+    }
 
-    //TODO: render hotbar
+    private void renderHotbar(Batch batch) {
+        int x = (int) ((Gdx.graphics.getWidth() / 2) -
+                ((hotbarUnselectedSprite.getWidth() * hotbarUnselectedSprite.getScaleX() *
+                        InventoryPlayer.HOTBAR_SIZE) / 2));
+        hotbarSelectedSprite.setPosition(x +
+                (hotbarSelectedSprite.getWidth() * hotbarSelectedSprite.getScaleX() *
+                        playerInventory.getSelectedSlot()), 50);
+        for (int i = 0; i < playerInventory.getHotbar().size(); i++) {
+            ItemStack stack = playerInventory.getHotbar().get(i);
+            Sprite sprite = hotbarSprites[i];
+            sprite.draw(batch);
+            if (stack == ItemStack.EMPTY) continue;
+            float itemstackX =
+                    sprite.getX() + (sprite.getWidth() / 2) - (stack.getSprite().getWidth() / 2);
+            float itemstackY =
+                    sprite.getY() + (sprite.getHeight() / 2) - (stack.getSprite().getHeight() / 2);
+            stack.render(batch, itemstackX, itemstackY, sprite.getX(), sprite.getY(),
+                    sprite.getWidth()
+            );
+        }
+        hotbarSelectedSprite.draw(batch);
+    }
 
     private void tickPhysics(float delta) {
         physicsController.update(delta);
@@ -273,7 +323,35 @@ public class SpaceQuest implements ApplicationListener {
 
         crosshair = new Texture(Gdx.files.internal("crosshair.png"));
         crosshairSprite = new Sprite(crosshair);
-        //TODO: sprites
+        item.setSprite(textureAtlas.createSprite("diamond"));
+
+        hotbarSprites = new Sprite[InventoryPlayer.HOTBAR_SIZE];
+        hotbarUnselectedSprite = textureAtlas.createSprite("hotbar_unselected");
+        hotbarUnselectedSprite.setScale(2, 2);
+        hotbarSelectedSprite = textureAtlas.createSprite("hotbar_selected");
+        hotbarSelectedSprite.setScale(2, 2);
+        int startX = (int) ((Gdx.graphics.getWidth() / 2) -
+                ((hotbarUnselectedSprite.getWidth() * hotbarUnselectedSprite.getScaleX() *
+                        InventoryPlayer.HOTBAR_SIZE) / 2));
+        System.out.println(startX);
+        Sprite sprite = hotbarSelectedSprite;
+        sprite.setPosition(startX, 50);
+        hotbarSprites[0] = sprite;
+        for (int i = 0; i < hotbarSprites.length; i++) {
+            sprite = new Sprite(hotbarUnselectedSprite);
+            sprite.setPosition(startX + (sprite.getWidth() * sprite.getScaleX() * i), 50);
+            hotbarSprites[i] = sprite;
+        }
+
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.grass)), 0);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.light)), 1);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.dirt)), 2);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.glass)), 3);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.stone)), 4);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.wall)), 5);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.treeTrunk)), 6);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sand)), 7);
+        playerInventory.setStackInSlot(new ItemStack(new ItemBlock(BlockProvider.sandStone)), 8);
 
         setupCameraController();
 
@@ -361,13 +439,14 @@ public class SpaceQuest implements ApplicationListener {
 
     /**
      * Sets up the material and environment
+     *
      * @return The material
      */
     private Material setupMaterialAndEnvironment() {
         environment = new Environment();
-        //environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
-        //environment.set(new ColorAttribute(ColorAttribute.Fog, 13 / 255f, 41 / 255f, 121 /
-        // 255f, 0));
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, 13 / 255f, 41 / 255f, 121 /
+                255f, 0));
         return new Material("Material1",
                 new TextureAttribute(TextureAttribute.Diffuse, textureAtlas.getTextures().first())
         );
@@ -377,7 +456,7 @@ public class SpaceQuest implements ApplicationListener {
      * Sets up the custom camera controller
      */
     private void setupCameraController() {
-        cameraController = new CameraController(camera, physicsController);
+        cameraController = new CameraController(camera, physicsController, playerInventory);
         cameraController.setVelocity(120f);
         Gdx.input.setInputProcessor(cameraController);
         Gdx.input.setCursorCatched(true);

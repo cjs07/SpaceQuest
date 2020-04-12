@@ -35,6 +35,13 @@ public class GuiContainer extends Gui {
                     hoveredSlotSprite.getHeight() * GUI_SCALE
             );
         }
+        this.backgroundSprite = SpaceQuest.getSpaceQuest().getTextureAtlas().createSprite(texture);
+        backgroundSprite.setSize(backgroundSprite.getWidth() * GUI_SCALE,
+                backgroundSprite.getHeight() * GUI_SCALE);
+        x = (int) ((Gdx.graphics.getWidth() / 2) - (backgroundSprite.getWidth() / 2));
+        y = (int) ((Gdx.graphics.getHeight() / 2) - (backgroundSprite.getHeight() / 2));
+        backgroundSprite.setPosition(x, y);
+        mouseStack = ItemStack.EMPTY;
     }
 
     @Override
