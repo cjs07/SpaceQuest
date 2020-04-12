@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.deepwelldevelopment.spacequest.SpaceQuest;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
+import com.deepwelldevelopment.spacequest.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,10 @@ public class Item {
             textureUVs = TextureUtils.calculateUVMapping(textureRegion);
         }
         return textureUVs;
+    }
+
+    public boolean onItemUse(World world, int x, int y, int z, float hitX, float hitY, float hitZ) {
+        return false;
     }
 
     public Sprite getSprite() {
