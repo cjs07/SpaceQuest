@@ -1,6 +1,7 @@
 package com.deepwelldevelopment.spacequest.physics;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
@@ -23,6 +24,9 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw.DebugDrawModes;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
+import com.deepwelldevelopment.spacequest.SpaceQuest;
+import com.deepwelldevelopment.spacequest.block.Block;
+import com.deepwelldevelopment.spacequest.block.BlockProvider;
 import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
@@ -319,10 +323,10 @@ public class PhysicsController {
             double hitPosAddZ = Math.floor(tmp.z - tmp2.z / 2);
 
             if (button == -1) {
-                return new int[]{(int) hitPosDelX, (int) hitPosAddY, (int) hitPosDelZ};
+                return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};
             }
             if (button == Buttons.RIGHT) {
-                return new int[]{(int) hitPosDelX, (int) hitPosAddY, (int) hitPosDelZ};
+                return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};
             }
             if (button == Buttons.LEFT) {
                 if (tmp.dst(camera.position) < 1.5f) {
@@ -330,23 +334,24 @@ public class PhysicsController {
                 }
                 if (!world.blockInteract((int) hitPosAddX, (int) hitPosAddY, (int) hitPosAddZ) ||
                         Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-//                    if (!SpaceQuest.getSpaceQuest().getPlayerInventory().getHeldItem()
-//                            .onItemUse(world, (int) hitPosAddX,
-//                                    (int) hitPosAddY, (int) hitPosAddZ, (float) hitPosAddX,
-//                                    (float) hitPosAddY,
-//                                    (float) hitPosAddZ
-//                            )) {
-//                        Block block;
-//                        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
-//                                Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-//                            block = BlockProvider.wall;
-//                        } else {
-//                            block = BlockProvider.light;
-//                        }
-//                        world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ,
-//                                block, true
-//                        );
-//                        return null;
+                    if (!SpaceQuest.getSpaceQuest().getPlayerInventory().getHeldItem()
+                            .onItemUse(world, (int) hitPosAddX,
+                                    (int) hitPosAddY, (int) hitPosAddZ, (float) hitPosAddX,
+                                    (float) hitPosAddY,
+                                    (float) hitPosAddZ
+                            )) {
+                        Block block;
+                        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+                                Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                            block = BlockProvider.wall;
+                        } else {
+                            block = BlockProvider.light;
+                        }
+                        world.setBlock((float) hitPosAddX, (float) hitPosAddY, (float) hitPosAddZ,
+                                block, true
+                        );
+                        return null;
+                    }
                 }
             }
         }

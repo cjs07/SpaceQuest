@@ -220,21 +220,21 @@ public class CameraController extends InputAdapter {
     public void update(float deltaTime) {
         moveVector.set(0, 0, 0);
         if (keys.containsKey(FORWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity).scl(deltaTime);
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(velocity);
             moveVector.add(tmp);
         }
         if (keys.containsKey(BACKWARD)) {
-            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity).scl(deltaTime);
+            tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity);
             camera.translate(tmp);
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity).scl(deltaTime);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity);
             camera.translate(tmp);
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).scl(deltaTime);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity);
             camera.translate(tmp);
             moveVector.add(tmp);
         }
@@ -266,8 +266,9 @@ public class CameraController extends InputAdapter {
                     if (passedTime >= block.getHardness() / 0.5f * 1000) {
                         SpaceQuest.getSpaceQuest().getWorld()
                                 .breakBlock(breakingPos[0], breakingPos[1], breakingPos[2]);
-//                        playerInventory.addStack(block.getDrop(breakingPos[0], breakingPos[1],
-//                        breakingPos[2]));
+                        playerInventory.addStack(block.getDrop(breakingPos[0], breakingPos[1],
+                                breakingPos[2]
+                        ));
                         breakingBlockPos = null;
 
                     } else { //update break state
@@ -300,6 +301,6 @@ public class CameraController extends InputAdapter {
     }
 
     public void setVelocity(float velocity) {
-        this.velocity = velocity;
+        this.velocity = velocity / 10;
     }
 }

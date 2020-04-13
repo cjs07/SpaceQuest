@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.deepwelldevelopment.spacequest.client.render.IBlockRender;
 import com.deepwelldevelopment.spacequest.client.render.block.BasicBlockRender;
+import com.deepwelldevelopment.spacequest.item.Item;
+import com.deepwelldevelopment.spacequest.item.ItemBlock;
+import com.deepwelldevelopment.spacequest.item.ItemStack;
 import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
@@ -38,15 +41,14 @@ public class Block {
         this.tileColor = Color.WHITE;
         this.collidable = true;
         this.hardness = 1.0f;
-        //TODO: ItemBlock init
+        if (!topTextureRegion.equals("") && !bottomTextureRegion.equals("") && !sidesTextureRegion.equals("")) { //make sure air does not get an itemblock
+            new ItemBlock(this);
+        }
     }
 
     public Block(byte id, String textureRegion) {
         this(id, textureRegion, textureRegion, textureRegion);
     }
-
-    //TODO: block behavior and rendering calculation methods
-
 
     public byte getId() {
         return id;
@@ -132,6 +134,10 @@ public class Block {
 
     public boolean isLiquid() {
         return false;
+    }
+
+    public ItemStack getDrop(int x, int y, int z) {
+        return new ItemStack(Item.getItemFromBlock(this));
     }
 
     public boolean onBlockActivated(int x, int y, int z) {

@@ -70,7 +70,10 @@ public class Chunk {
     private int timesSinceUpdate;
     private Perlin perlin;
 
-    //TODO: break data
+    private int breakX;
+    private int breakY;
+    private int breakZ;
+    private int breakState;
 
     /**
      * Creates a new chunk and submits it for initialization
@@ -114,7 +117,7 @@ public class Chunk {
             alphaMeshes.add(new VoxelMesh());
         }
 
-        //breakstate init
+        this.breakState = -1;
 
         if (random == null) {
             random = new Random();
@@ -154,8 +157,6 @@ public class Chunk {
             }
         });
     }
-
-    //TODO: chunk methods
 
     /**
      * Recalculates which blocks in the chunk are receiving direct sunlight. This also
@@ -469,7 +470,13 @@ public class Chunk {
                 }
             }
         }
-        //handle break state
+        if (breakState != -1) {
+            VoxelMesh mesh = meshes.get((int) Math.floor(breakY / 16));
+            mesh.addBlock(worldPosition, breakX, breakY, breakZ, blockProvider, this,
+                    blockProvider.getBlockById(getBlock(breakX, breakY, breakZ)), breakState
+            );
+            toRebuild.add(mesh);
+        }
 
         synchronized (syncToken) {
             for (BoxMesh mesh : toRebuild) {
@@ -608,14 +615,15 @@ public class Chunk {
     }
 
     //TODO: why is this method here?
+
     /**
      * Check if the block at the specified position exists or not. This is used by the
      * {@link VoxelMesh} to determinate if it needs to draw a mesh face or not depending on if it
      * will be visible or hidden by another block.
      *
-     * @param x x coordinate
-     * @param y y coordinate
-     * @param z z coordinate
+     * @param x           x coordinate
+     * @param y           y coordinate
+     * @param z           z coordinate
      * @param sourceBlock The block that this request originated from?
      * @return
      */
@@ -642,6 +650,7 @@ public class Chunk {
 
     /**
      * Gets the byte value at a specified position
+     *
      * @param x x coordinate
      * @param y y coordinate
      * @param z z coordinate
@@ -668,6 +677,7 @@ public class Chunk {
 
     /**
      * Determines if coordinates are within the bounds of this chunk
+     *
      * @param x x coordinate
      * @param z z coordinate
      * @return True if the coordinates are outside of the bounds of this chunk
@@ -692,7 +702,8 @@ public class Chunk {
     }
 
     protected double get2dNoise(Vector3 pos, Vector3 offset, double scale) {
-        long posHash = PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
+        long posHash =
+                PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
         if (noiseCache2d.containsKey(posHash)) {
             return noiseCache2d.get(posHash);
         }
@@ -706,7 +717,8 @@ public class Chunk {
     }
 
     protected double get3dNoise(Vector3 pos, Vector3 offset, double scale) {
-        long posHash = PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
+        long posHash =
+                PositionUtils.hashOfPosition((int) (pos.x + offset.x), (int) (pos.z + offset.z));
         if (noiseCache3d.containsKey(posHash)) {
             return noiseCache3d.get(posHash);
         }
@@ -722,6 +734,7 @@ public class Chunk {
 
     /**
      * Determines if the y value is within the height bounds of the chunk
+     *
      * @param y y coordinate to check
      * @return True if the y coordinate is outside of the height bounds
      */
@@ -755,6 +768,7 @@ public class Chunk {
 
     /**
      * Resets the lighting of the chunk
+     *
      * @param force True if the chunk should completely rebuild the lightmap
      */
     public void resetLight(boolean force) {
@@ -767,6 +781,7 @@ public class Chunk {
 
     /**
      * Gets the light level of a given block
+     *
      * @param x x coordinate
      * @param y y coordinate
      * @param z z coordinate
@@ -833,5 +848,32 @@ public class Chunk {
     }
 
     public void setBreakState(int x, int y, int z, int state) {
+        if (outsideThisChunkBounds(x, z)) {
+            System.out.println("this is strange");
+            int xToFind = (int) Math.floor(chunkPosX + (x / 16f));
+            int zToFind = (int) Math.floor(chunkPosZ + (z / 16f));
+
+            Chunk chunk = world.findChunk(xToFind, zToFind);
+            if (chunk == this) {
+                System.out.println("Found myself, how silly, to make such a simple math error");
+            }
+            if (chunk != null) {
+                int normalizedX = x & 15;
+                int normalizedZ = z & 15;
+                chunk.setBreakState(normalizedX, y, normalizedZ, state);
+                return;
+            }
+        }
+        System.out.println("setting break at " + x + ", " + y + ", " + z);
+        if (recalculating && ready) {
+            return;
+        }
+        if (x != breakX || y != breakY || z != breakZ || state != breakState) {
+            breakX = x;
+            breakY = y;
+            breakZ = z;
+            breakState = state;
+            resetMesh();
+        }
     }
 }

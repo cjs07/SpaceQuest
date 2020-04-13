@@ -19,7 +19,6 @@ public class VoxelMesh extends BoxMesh {
                 transform = new Matrix4().setTranslation(worldPosition);
                 transformWithRealY = transform.cpy().translate(0, y, 0);
             }
-            //TODO: work with the block's BlockRender to add
             if (block.isCollidable()) {
                 return block.getBlockRender().addBlock(worldPosition, x, y, z, blockProvider,
                         chunk, block, vertices, indices, breakState
