@@ -40,7 +40,7 @@ public class BasicBlockRender implements IBlockRender {
     protected float[] lightFloat3 = new float[4];
     protected float[] lightFloat4 = new float[4];
     private Vector2[] texCoords = new Vector2[4];
-    private Vector2[] breakCoords = new Vector2[4];
+    protected Vector2[] breakCoords = new Vector2[4];
 
     @Override
     public synchronized boolean addBlock(Vector3 worldPosition, int x, int y, int z,

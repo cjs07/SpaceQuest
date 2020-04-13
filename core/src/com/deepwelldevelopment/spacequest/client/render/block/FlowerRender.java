@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ShortArray;
 import com.deepwelldevelopment.spacequest.block.Block;
 import com.deepwelldevelopment.spacequest.block.IBlockProvider;
+import com.deepwelldevelopment.spacequest.util.TextureUtils;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 
 import java.util.Random;
@@ -37,6 +38,7 @@ public class FlowerRender extends BasicBlockRender {
 
         setTexCoords(sidesTextureUVs);
         setAOLightTop(x, y, z, chunk, block);
+        breakCoords = TextureUtils.calculateUVMapping("breaking", breakState);
 
         addFront(vertices, indices);
         addBack(vertices, indices);

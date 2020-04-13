@@ -216,40 +216,41 @@ public class Chunk {
         }
         cavePass();
         finalPass();
-//        for (int y = 0; y < World.MAX_HEIGHT; y++) {
-//            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
-//                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
-//                    float v = random.nextFloat();
-//                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1,
-//                    z) == 0 && getBlock(x, y + 2, z) == 0) {
-//                        if (v < 0.2) {
-//                            setBlock(x, y + 1, z, BlockProvider.straws, false);
-//                            continue;
-//                        }
-//
-//                        if (v < 0.3) {
-//                            setBlock(x, y + 1, z, BlockProvider.flower, false);
-//                            continue;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
-//            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
-//                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
-//                    byte block = getBlock(x, y, z);
-//                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws
-//                    .getId()) && getBlock(x, y + 1, z) == 0) {
-//                        float v = random.nextFloat();
-//                        if (v < 0.009) {
-//                            createTree(x, y, z);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        for (int y = 0; y < World.MAX_HEIGHT; y++) {
+            for (int x = 0; x < World.CHUNK_WIDTH; x++) {
+                for (int z = 0; z < World.CHUNK_WIDTH; z++) {
+                    float v = random.nextFloat();
+                    if (getBlock(x, y, z) == BlockProvider.grass.getId() && getBlock(x, y + 1,
+                            z
+                    ) == 0 && getBlock(x, y + 2, z) == 0) {
+                        if (v < 0.2) {
+                            setBlock(x, y + 1, z, BlockProvider.straws, false);
+                            continue;
+                        }
+
+                        if (v < 0.3) {
+                            setBlock(x, y + 1, z, BlockProvider.flower, false);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int y = 0; y < World.MAX_HEIGHT - 12; y++) {
+            for (int x = 4; x < World.CHUNK_WIDTH - 4; x++) {
+                for (int z = 4; z < World.CHUNK_WIDTH - 4; z++) {
+                    byte block = getBlock(x, y, z);
+                    if ((block == BlockProvider.grass.getId() || block == BlockProvider.straws
+                            .getId()) && getBlock(x, y + 1, z) == 0) {
+                        float v = random.nextFloat();
+                        if (v < 0.009) {
+                            createTree(x, y, z);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -551,6 +552,10 @@ public class Chunk {
         }
 
         byte block = map[getLocationInArray(x, y, z)];
+        if (blockProvider.getBlockById(block) == null) {
+            System.out.println("Found an undefined block in the chunk map: " + x + ", " + y + "," +
+                    " " + z + "id: " + block);
+        }
         if (block != 0 && blockProvider.getBlockById(block).isLightSource()) {
             return LIGHT;
         } else {

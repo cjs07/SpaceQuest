@@ -36,8 +36,8 @@ public class BlockProvider implements IBlockProvider {
         addBlock(treeTrunk);
         addBlock(leaves);
         addBlock(straws);
-//        addBlock(flower);
-//        addBlock(water);
+        addBlock(flower);
+        addBlock(water);
         addBlock(stone);
         addBlock(sand);
         addBlock(dirt);
