@@ -626,10 +626,10 @@ public class BasicBlockRender implements IBlockRender {
         float[] finalLight;
         if (block.isLightSource()) {
             blockLight = chunk.getBlockLight(x, y, z);
-            color.set(block.getTileColor());
+            color.set(block.getTileColor(x1, y1, z1));
         } else {
             blockLight = chunk.getBlockLight(x1, y1, z1);
-            color.set(block.getTileColor());
+            color.set(block.getTileColor(x1, y1, z1));
         }
 
         float lightValueR = (float) Math.pow(0.96d, blockLight);

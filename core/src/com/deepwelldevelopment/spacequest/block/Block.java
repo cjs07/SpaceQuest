@@ -105,7 +105,7 @@ public class Block {
         return this;
     }
 
-    public Color getTileColor() {
+    public Color getTileColor(int x, int y, int z) {
         return tileColor;
     }
 
