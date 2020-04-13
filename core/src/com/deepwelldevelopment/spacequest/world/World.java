@@ -14,6 +14,9 @@ import com.deepwelldevelopment.spacequest.world.biome.IBiomeProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.deepwelldevelopment.spacequest.world.chunk.IChunkProvider;
 import com.deepwelldevelopment.spacequest.world.chunk.OverworldChunkProvider;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise2;
+import com.deepwelldevelopment.spacequest.world.noise.SimplexNoise3;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -45,8 +48,10 @@ public class World {
         if (seed == 0) {
             seed = new Random().nextLong();
         }
-        System.out.println("Seed: " + seed);
-        //init noise
+        System.out.println("Seed is " + seed);
+        SimplexNoise.init(seed);
+        SimplexNoise2.init(seed / 10);
+        SimplexNoise3.init(seed / 100);
     }
 
     public IChunkProvider getChunkProvider() {
@@ -225,8 +230,8 @@ public class World {
     }
 
     public void updateBreakState(int x, int y, int z, int state) {
-        Chunk chunk = this.findChunk((int) Math.floor(x / World.CHUNK_WIDTH),
-                (int) Math.floor(x / World.CHUNK_WIDTH)
+        Chunk chunk = this.findChunk((int) Math.floor((float)x / World.CHUNK_WIDTH),
+                (int) Math.floor((float)z / World.CHUNK_WIDTH)
         );
         if (chunk != null) {
             int localX = x & 15;

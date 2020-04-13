@@ -15,9 +15,9 @@ import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 public class Block {
 
     private final byte id;
-    private String topTextureRegion;
-    private String bottomTextureRegion;
-    private String sidesTextureRegion;
+    private final String topTextureRegion;
+    private final String bottomTextureRegion;
+    private final String sidesTextureRegion;
     protected IBlockRender blockRender;
     private Vector2[] topTextureUVs;
     private Vector2[] bottomTextureUVs;

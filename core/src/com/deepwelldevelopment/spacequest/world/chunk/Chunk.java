@@ -23,7 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Represents a 16x16x256 collection of blocks in the world.
+ * Represents a subset of the game world. A chunk is a 16x256x16 section of blocks. A chunk technically expands from
+ * y=0 to the world height limit
  */
 public class Chunk {
 
@@ -147,8 +148,8 @@ public class Chunk {
                 this.fullRebuildOfLight = true;
                 calculateChunk(worldPosition, blockProvider);
                 updateLight();
-                world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
                 resetMesh();
+                world.notifyNeighborsAboutLightChange(chunkPosX, chunkPosZ, false);
                 ready = true;
                 recalculateMesh();
             } catch (Exception e) {

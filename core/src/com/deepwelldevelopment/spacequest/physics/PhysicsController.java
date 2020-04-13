@@ -31,7 +31,6 @@ import com.deepwelldevelopment.spacequest.client.render.BoxMesh;
 import com.deepwelldevelopment.spacequest.world.World;
 import com.deepwelldevelopment.spacequest.world.chunk.Chunk;
 import com.google.common.collect.ArrayListMultimap;
-import net.dermetfan.utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -92,7 +91,7 @@ public class PhysicsController {
         this.world = world;
         this.camera = camera;
 
-        Bullet.init(true);
+        Bullet.init(true, true);
         btSweep3 = new btAxisSweep3(new Vector3(-1000, -1000, -1000), new Vector3(1000, 1000,
                 1000
         ));
@@ -285,7 +284,6 @@ public class PhysicsController {
             previousPosition.set(tmp);
         }
 
-
         for (Entry<btRigidBody, CollisionObject> object : entityRigidBodies.entrySet()) {
             object.getKey().getWorldTransform().getTranslation(tmp);
             object.getValue().setPosition(tmp);
@@ -318,9 +316,9 @@ public class PhysicsController {
             double hitPosDelY = Math.floor(tmp.y - tmp2.y / 2);
             double hitPosDelZ = Math.floor(tmp.z - tmp2.z / 2);
 
-            double hitPosAddX = Math.floor(tmp.x - tmp2.x / 2);
-            double hitPosAddY = Math.floor(tmp.y - tmp2.y / 2);
-            double hitPosAddZ = Math.floor(tmp.z - tmp2.z / 2);
+            double hitPosAddX = Math.floor(tmp.x + tmp2.x / 2);
+            double hitPosAddY = Math.floor(tmp.y + tmp2.y / 2);
+            double hitPosAddZ = Math.floor(tmp.z + tmp2.z / 2);
 
             if (button == -1) {
                 return new int[]{(int) hitPosDelX, (int) hitPosDelY, (int) hitPosDelZ};

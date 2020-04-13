@@ -75,6 +75,7 @@ public class CameraController extends InputAdapter {
         moveVector = new Vector3();
         velocity = 4.0f;
         degreesPerPixel = 0.25f;
+        Gdx.input.setCursorPosition(0, 0);
     }
 
     @Override
@@ -225,17 +226,14 @@ public class CameraController extends InputAdapter {
         }
         if (keys.containsKey(BACKWARD)) {
             tmp.set(camera.direction.x, 0, camera.direction.z).nor().scl(-velocity);
-            camera.translate(tmp);
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity);
-            camera.translate(tmp);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(-velocity).y = 0;
             moveVector.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity);
-            camera.translate(tmp);
+            tmp.set(camera.direction).crs(camera.up).nor().scl(velocity).y = 0;
             moveVector.add(tmp);
         }
         if (keys.containsKey(UP)) {

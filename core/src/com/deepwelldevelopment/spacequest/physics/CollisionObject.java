@@ -8,7 +8,7 @@ import java.util.Collection;
 public class CollisionObject {
 
     private final Collection<PositionListener> listeners = new ArrayList<>();
-    private Vector3 velocity;
+    private Vector3 velocity = new Vector3();
 
     public void setPosition(Vector3 position) {
         for (PositionListener listener : listeners) {
